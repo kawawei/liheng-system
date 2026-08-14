@@ -1,0 +1,43 @@
+# 系統與編輯器設定檔
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# AI 助理與本地工作流目錄
+.agent/
+.cursor/
+
+# Node.js 依賴與建構產物
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+.pnpm-store/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 環境變數與機敏金鑰
+.env
+.env.local
+.env.*.local
+env/local/*.env
+env/server/*.env
+!env/local/.gitkeep
+!env/server/.gitkeep
+!.env.example
+
+# 測試快照與報告
+tests/coverage/
+.nyc_output/
+
+# 上傳暫存檔案
+uploads/
+tmp/
+scratch/
