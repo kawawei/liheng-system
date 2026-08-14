@@ -71,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'super_admin' }) => {
           LH
         </div>
         <div>
-          <div style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>立衡軟體管理系統</div>
+          <div style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>利恒軟體管理系統</div>
           <div style={{ fontSize: '11px', color: '#64748b' }}>Liheng System v1.0</div>
         </div>
       </div>

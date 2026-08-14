@@ -18,11 +18,11 @@ export const DashboardPage: React.FC = () => {
             <TextIcon name="dashboard" size="lg" />
             <span>營運與研發總覽</span>
           </h1>
-          <p className="page-subtitle">立衡軟體即時專案進度、客戶流轉與收支狀態</p>
+          <p className="page-subtitle">利恒軟體即時專案進度、客戶流轉與收支狀態</p>
         </div>
       </div>
 
-      {/* 統計卡片區域 / Stat Cards */}
+      {/* 統計卡片區域 / Stat Cards (整合組件庫與指標規範) */}
       <div
         style={{
           display: 'grid',
@@ -31,45 +31,34 @@ export const DashboardPage: React.FC = () => {
           marginBottom: '24px'
         }}
       >
-        <div className="card">
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>進行中專案</div>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
-            8 <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--text-muted)' }}>個</span>
-          </div>
-          <div style={{ marginTop: '8px' }}>
-            <StatusBadge label="進度正常 6" variant="success" icon="success" />
-          </div>
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>本月活躍客戶</div>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
-            14 <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--text-muted)' }}>家</span>
-          </div>
-          <div style={{ marginTop: '8px' }}>
-            <StatusBadge label="追蹤中 5" variant="info" icon="clock" />
-          </div>
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>待簽署合約</div>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
-            3 <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--text-muted)' }}>份</span>
-          </div>
-          <div style={{ marginTop: '8px' }}>
-            <StatusBadge label="總額 NT$ 1,280,000" variant="warning" icon="warning" />
-          </div>
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>本月專案毛利率</div>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
-            58.4 <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--text-muted)' }}>%</span>
-          </div>
-          <div style={{ marginTop: '8px' }}>
-            <StatusBadge label="健康度良好" variant="success" icon="success" />
-          </div>
-        </div>
+        <caas-metric-card
+          title="進行中專案"
+          value="8 個"
+          trend="+2 個新立案"
+          trend-type="positive"
+          icon="FolderKanban"
+        />
+        <caas-metric-card
+          title="本月活躍客戶"
+          value="14 家"
+          trend="追蹤中 5 家"
+          trend-type="positive"
+          icon="Users"
+        />
+        <caas-metric-card
+          title="待簽署合約"
+          value="3 份"
+          trend="NT$ 1,280,000"
+          trend-type="neutral"
+          icon="FileText"
+        />
+        <caas-metric-card
+          title="本月專案毛利率"
+          value="58.4%"
+          trend="毛利結構優良"
+          trend-type="positive"
+          icon="DollarSign"
+        />
       </div>
 
       {/* 進行中專案清單 / Active Projects Table */}
@@ -93,7 +82,7 @@ export const DashboardPage: React.FC = () => {
             <tbody>
               <tr>
                 <td style={{ fontFamily: 'var(--font-mono)' }}>PJ-20260814-0001</td>
-                <td style={{ fontWeight: 600 }}>立衡智慧工廠物聯網平台</td>
+                <td style={{ fontWeight: 600 }}>利恒智慧工廠物聯網平台</td>
                 <td>台元半導體股份有限公司</td>
                 <td>開發中 (Development)</td>
                 <td>

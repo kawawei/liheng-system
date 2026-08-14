@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
       }}
     >
       <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-        立衡軟體開發內部專案管理平台
+        利恒軟體開發內部專案管理平台
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

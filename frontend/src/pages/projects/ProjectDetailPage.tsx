@@ -31,7 +31,7 @@ export const ProjectDetailPage: React.FC = () => {
     setLineMessages((prev) => [
       ...prev,
       {
-        sender: '立衡後台 (工程師)',
+        sender: '利恒後台 (工程師)',
         text: inputMsg,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
@@ -53,14 +53,14 @@ export const ProjectDetailPage: React.FC = () => {
       <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
         <Link to="/projects" style={{ color: 'var(--primary-600)' }}>專案研發</Link>
         <span style={{ margin: '0 8px' }}>/</span>
-        <span>{id || 'PJ-20260814-0001'} (立衡智慧工廠物聯網平台)</span>
+        <span>{id || 'PJ-20260814-0001'} (利恒智慧工廠物聯網平台)</span>
       </div>
 
       <div className="page-header">
         <div>
           <h1 className="page-title">
             <TextIcon name="projects" size="lg" />
-            <span>立衡智慧工廠物聯網平台</span>
+            <span>利恒智慧工廠物聯網平台</span>
           </h1>
           <p className="page-subtitle">案號：PJ-20260814-0001 ｜ 客戶：台元半導體股份有限公司</p>
         </div>

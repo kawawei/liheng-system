@@ -16,7 +16,7 @@ export const ProjectsPage: React.FC = () => {
     {
       id: 'pj_1',
       projectCode: 'PJ-20260814-0001',
-      name: '立衡智慧工廠物聯網平台',
+      name: '利恒智慧工廠物聯網平台',
       clientId: 'cli_1',
       clientName: '台元半導體股份有限公司',
       stage: 'development',
