@@ -1,0 +1,14 @@
+{
+  "name": "liheng-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "立衡軟體開發專案與營運管理系統 / Liheng System Monorepo",
+  "scripts": {
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build:frontend": "pnpm --filter frontend build",
+    "test:frontend": "pnpm --filter frontend test"
+  },
+  "keywords": [],
+  "author": "Liheng Tech",
+  "license": "UNLICENSED"
+}

@@ -960,18 +960,132 @@ export async function generateBusinessCode(prefix: 'QT' | 'CT' | 'PJ' | 'REC' | 
 | **向量檢索 (AI)** | `POST` | `/api/v1/ai/semantic-search` | 全局自然語言向量檢索 | All |
 | | `POST` | `/api/v1/ai/chat-rag` | 專案 RAG 智慧問答 | All |
 | **社群 (LINE)** | `POST` | `/api/v1/integrations/line/webhook` | LINE Messaging API Webhook | Public (LINE 簽名驗證) |
+| **健康檢查 (Health)** | `GET` | `/api/v1/health` | 全域健康檢查 (含 DB, Redis, pgvector, Uptime) | Public / 監控工具 |
+| | `GET` | `/api/v1/health/liveness` | 存活探針 (Liveness Probe - 驗證伺服器 Process 是否存活) | Public / K8s / Docker |
+| | `GET` | `/api/v1/health/readiness` | 就緒探針 (Readiness Probe - 驗證 DB & Redis 皆已就緒) | Public / K8s / Docker |
 
 ---
 
-## 8. Docker 容器化與構建規範 (Docker & DevOps)
+## 8. Docker 容器化、健康端點與構建規範 (Docker & DevOps)
 
-* **容器命名規範**: `liheng-system-[service]`
-  * `liheng-system-frontend`
-  * `liheng-system-backend`
-  * `liheng-system-postgres`
-  * `liheng-system-redis`
+### 8.1 容器命名規範
+依據規範格式 `[ProjectRootName]-[ServiceName]`：
+* `liheng-system-frontend`
+* `liheng-system-backend`
+* `liheng-system-postgres`
+* `liheng-system-redis`
+
+### 8.2 健康檢查端點架構 (Health Check Architecture)
+
+為確保容器化編排 (Docker Compose / Kubernetes) 能精確監控各服務健康狀態並實現有順序的服務啟動 (`depends_on.condition: service_healthy`)，後端提供標準化健康端點：
+
+#### 1. 端點規格與響應結構 (`GET /api/v1/health`)
+* **HTTP 狀態碼**:
+  * `200 OK`: 所有核心服務 (PostgreSQL, Redis, pgvector) 正常連通。
+  * `503 Service Unavailable`: 核心依賴中斷（如資料庫連線失敗）。
+* **JSON 響應格式**:
+  ```json
+  {
+    "status": "healthy",
+    "timestamp": "2026-08-14T18:12:00.000Z",
+    "uptime": 3600,
+    "version": "1.0.0",
+    "checks": {
+      "database": {
+        "status": "up",
+        "responseTimeMs": 3.2,
+        "pgvector": "enabled"
+      },
+      "redis": {
+        "status": "up",
+        "responseTimeMs": 1.1
+      }
+    },
+    "system": {
+      "memoryUsage": {
+        "heapUsedMB": 42.5,
+        "rssMB": 86.1
+      },
+      "nodeVersion": "v20.x"
+    }
+  }
+  ```
+
+### 8.3 容器 Healthcheck 與相依啟動配置 (Docker Compose Healthcheck)
+
+在 `docker/local/compose.yaml` 與 `docker/server/compose.yaml` 中，各容器必須配置嚴格的 `healthcheck`，後端服務必須等待資料庫與快取達到 `service_healthy` 後方可啟動：
+
+```yaml
+services:
+  # 1. PostgreSQL 16 資料庫容器
+  postgres:
+    container_name: liheng-system-postgres
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${DB_NAME:-liheng_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-liheng_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # 2. Redis 7.2 快取與發號器容器
+  redis:
+    container_name: liheng-system-redis
+    image: redis:7.2-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+  # 3. 後端 API 服務容器
+  backend:
+    container_name: liheng-system-backend
+    build:
+      context: ../../backend
+      dockerfile: ../docker/local/Dockerfile.backend
+    environment:
+      PORT: ${BACKEND_PORT:-3000}
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${BACKEND_PORT:-3000}/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # 4. 前端 Vite / Web 服務容器
+  frontend:
+    container_name: liheng-system-frontend
+    build:
+      context: ../../frontend
+      dockerfile: ../docker/local/Dockerfile.frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5173/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      backend:
+        condition: service_healthy
+```
+
+### 8.4 Dockerfile 構建規範
 * **本地開發環境**: `docker/local/compose.yaml` (搭配 Volume 掛載與熱重載)
-* **生產部署環境**: `docker/server/compose.yaml` (多階段構建，產物映像檔 $< 150\text{MB}$)
+* **生產部署環境**: `docker/server/compose.yaml` (多階段構建，Nginx 託管靜態前端，產物映像檔 $< 150\text{MB}$)
+* **生產 Dockerfile**: 宣告 `HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD wget --quiet --tries=1 --spider http://localhost:3000/api/v1/health || exit 1`
 
 ---
 

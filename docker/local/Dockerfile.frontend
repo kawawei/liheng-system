@@ -1,0 +1,30 @@
+# ========================================
+# 立衡系統 前端本地開發 Dockerfile
+# Liheng System Frontend Local Dev Dockerfile
+# ========================================
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 安裝 pnpm 與 curl / wget
+RUN npm install -g pnpm && apk add --no-cache curl wget
+
+# 複製依賴宣告檔
+COPY package.json pnpm-workspace.yaml* ./
+COPY frontend/package.json ./frontend/
+
+# 安裝依賴
+RUN pnpm install --filter frontend...
+
+# 複製前端原始碼
+COPY frontend/ ./frontend/
+
+WORKDIR /app/frontend
+
+EXPOSE 5173
+
+# 健康檢查 (Healthcheck) 探針
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:5173/ || exit 1
+
+CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "5173"]

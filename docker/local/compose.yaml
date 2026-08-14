@@ -1,0 +1,26 @@
+name: liheng-system-local
+
+services:
+  # ========================================
+  # 前端服務容器 (Vite + React 18 + PWA)
+  # ========================================
+  frontend:
+    container_name: liheng-system-frontend
+    build:
+      context: ../../
+      dockerfile: docker/local/Dockerfile.frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:${BACKEND_PORT:-3001}/api/v1
+    volumes:
+      - ../../frontend:/app/frontend
+      - /app/frontend/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5173/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped

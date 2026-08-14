@@ -210,4 +210,5 @@
 | `TC-PROJECT-001` | PMS | 點擊專案詳情切換至 Tab `logs` 並按 F5 刷新 | URL 為 `?tab=logs`，頁面刷新後仍停留在 `logs` 標籤頁不重置 | 前端測試 |
 | `TC-REALTIME-001`| WebSocket | 後端收到 LINE Webhook 新訊息 | 前端專案詳情 LINE 動態面板即時 Append 訊息，無整頁刷新 | 整合測試 |
 | `TC-FINANCE-001` | 財務 | 專案收款 `300,000`，專案支出 `120,000` | 系統精確結算實際毛利 `180,000`，毛利率 `60.0%` | 單元測試 |
+| `TC-HEALTH-001`  | 容器與監控 | 請求 `GET /api/v1/health` 且 DB/Redis 正常連線 | 回傳 HTTP 200，包含 DB、Redis 與記憶體指標；Docker 容器狀態為 `(healthy)` | 整合測試 |
 
