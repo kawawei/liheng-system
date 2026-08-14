@@ -36,7 +36,7 @@ export const DashboardPage: React.FC = () => {
           value="8 個"
           trend="+2 個新立案"
           trend-type="positive"
-          icon="FolderKanban"
+          icon="Activity"
         />
         <caas-metric-card
           title="本月活躍客戶"
