@@ -19,6 +19,13 @@ import {
   Calendar,
   Layers,
   Activity,
+  LogIn,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  User,
   LucideIcon
 } from 'lucide-react';
 
@@ -48,7 +55,14 @@ export type IconName =
   | 'building'
   | 'calendar'
   | 'layers'
-  | 'activity';
+  | 'activity'
+  | 'login'
+  | 'eye'
+  | 'eye-off'
+  | 'mail'
+  | 'lock'
+  | 'arrow-right'
+  | 'user';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -78,7 +92,14 @@ const iconMap: Record<IconName, LucideIcon> = {
   building: Building2,
   calendar: Calendar,
   layers: Layers,
-  activity: Activity
+  activity: Activity,
+  login: LogIn,
+  eye: Eye,
+  'eye-off': EyeOff,
+  mail: Mail,
+  lock: Lock,
+  'arrow-right': ArrowRight,
+  user: User
 };
 
 const sizeMap: Record<IconSize, number> = {
