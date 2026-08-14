@@ -1,25 +1,22 @@
 # ========================================
-# 立衡系統 前端本地開發 Dockerfile
+# 利恒系統 前端本地開發 Dockerfile
 # Liheng System Frontend Local Dev Dockerfile
 # ========================================
 FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /app/frontend
 
 # 安裝 pnpm 與 curl / wget
 RUN npm install -g pnpm && apk add --no-cache curl wget
 
-# 複製依賴宣告檔
-COPY package.json pnpm-workspace.yaml* ./
-COPY frontend/package.json ./frontend/
+# 複製前端配置與依賴檔
+COPY frontend/package.json frontend/.npmrc* ./
 
-# 安裝依賴
-RUN pnpm install --filter frontend...
+# 獨立安裝前端依賴 (Hoisted 模式，相容 Docker Volume 掛載)
+RUN pnpm install
 
 # 複製前端原始碼
-COPY frontend/ ./frontend/
-
-WORKDIR /app/frontend
+COPY frontend/ ./
 
 EXPOSE 5173
 
