@@ -104,18 +104,20 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                     <Button
                       variant="secondary"
                       size="sm"
+                      title="編輯"
                       onClick={() => onEditClient(c)}
+                      style={{ padding: '6px 10px' }}
                     >
-                      <TextIcon name="file-check" size="sm" />
-                      <span>編輯</span>
+                      <TextIcon name="edit" size="md" />
                     </Button>
                     <Button
                       variant="danger"
                       size="sm"
+                      title="刪除"
                       onClick={() => onDeleteClient(c.id, c.name)}
+                      style={{ padding: '6px 10px' }}
                     >
-                      <TextIcon name="trash" size="sm" />
-                      <span>刪除</span>
+                      <TextIcon name="trash" size="md" />
                     </Button>
                   </div>
                 </td>

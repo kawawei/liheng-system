@@ -64,7 +64,7 @@ export const DashboardPage: React.FC = () => {
       {/* 進行中專案清單 / Active Projects Table */}
       <div style={{ marginTop: '24px' }}>
         <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>
-          重點專案研發動態
+          重點專案管理動態
         </h2>
 
         <div className="table-container">

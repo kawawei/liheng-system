@@ -51,7 +51,7 @@ export const ProjectDetailPage: React.FC = () => {
     <div>
       {/* 麵包屑導航 / Breadcrumbs */}
       <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-        <Link to="/projects" style={{ color: 'var(--primary-600)' }}>專案研發</Link>
+        <Link to="/projects" style={{ color: 'var(--primary-600)' }}>專案管理</Link>
         <span style={{ margin: '0 8px' }}>/</span>
         <span>{id || 'PJ-20260814-0001'} (利恒智慧工廠物聯網平台)</span>
       </div>
@@ -128,8 +128,8 @@ export const ProjectDetailPage: React.FC = () => {
               </div>
               <div style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: 600 }}>M2: 前後端核心模組研發</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>CRM、PMS 看板與 8h JWT 認證</div>
+                  <div style={{ fontWeight: 600 }}>M2: 前後端核心模組開發</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>CRM、WBS 看板與 8h JWT 認證</div>
                 </div>
                 <StatusBadge label="進行中 (70%)" variant="info" icon="clock" />
               </div>

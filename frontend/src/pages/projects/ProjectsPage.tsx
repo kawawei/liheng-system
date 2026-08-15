@@ -6,7 +6,7 @@ import { Project } from '../../types';
 
 /**
  * @file ProjectsPage.tsx
- * @description PMS 專案研發管理看板 / PMS Project Management Page
+ * @description WBS 專案管理看板 / WBS Project Management Page
  * @description_en 7-stage lifecycle Kanban and project list
  * @description_zh 提供 7 大生命週期階段專案看板、進度條與健康狀態指示
  */
@@ -47,9 +47,9 @@ export const ProjectsPage: React.FC = () => {
         <div>
           <h1 className="page-title">
             <TextIcon name="projects" size="lg" />
-            <span>專案研發管理 (PMS)</span>
+            <span>專案管理 (WBS)</span>
           </h1>
-          <p className="page-subtitle">7 大研發生命週期流轉、里程碑進度與工程協同</p>
+          <p className="page-subtitle">7 大專案生命週期流轉、里程碑進度與工程協同</p>
         </div>
       </div>
 
@@ -61,7 +61,7 @@ export const ProjectsPage: React.FC = () => {
               <th>專案名稱</th>
               <th>客戶名稱</th>
               <th>生命週期階段</th>
-              <th>研發進度</th>
+              <th>專案進度</th>
               <th>健康指示</th>
               <th>指派工程師</th>
               <th>預計交付</th>

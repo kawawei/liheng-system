@@ -4,7 +4,6 @@ import { MainLayout } from './components/layout/MainLayout';
 import { LoginPage } from './pages/login/LoginPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { ClientsPage } from './pages/clients/ClientsPage';
-import { ContractsPage } from './pages/contracts/ContractsPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage';
 import { FinancePage } from './pages/finance/FinancePage';
@@ -43,7 +42,6 @@ export const App: React.FC = () => {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="clients" element={<ClientsPage />} />
-          <Route path="contracts" element={<ContractsPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/:id" element={<ProjectDetailPage />} />
           <Route path="finance" element={<FinancePage />} />

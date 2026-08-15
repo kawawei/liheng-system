@@ -8,7 +8,7 @@
 
 | 版本 | 修訂日期 | 修訂者 | 變更說明 / 摘要 | 審核狀態 |
 | :---: | :---: | :---: | :--- | :---: |
-| v1.0.0 | 2026-08-14 | PM / Dev Team | 初稿建立：詳細展開 CRM、合約報價、PMS 專案研發、多階段收支毛利、LINE 專案群組雙向 AI 協同、pgvector 向量檢索之功能規格。 | 待審核 |
+| v1.0.0 | 2026-08-14 | PM / Dev Team | 初稿建立：詳細展開 CRM、合約報價、WBS 專案管理、多階段收支毛利、LINE 專案群組雙向 AI 協同、pgvector 向量檢索之功能規格。 | 待審核 |
 | v1.0.1 | 2026-08-14 | PM / Dev Team | 全面規範對齊：完全禁用 Emoji、文字 Icon 大中小尺寸標準、亮色主題、@kawawei/frontend-modules 組件庫、PWA 規範、URL 標籤頁狀態保持、WebSocket 全量即時更新、8 小時憑證過期自動跳轉、Redis 年月日+四位序號自動發號規則、後端強制驗證與禁止預設資料。 | 待審核 |
 | v1.0.2 | 2026-08-14 | PM / Dev Team | 補齊測試案例與驗收標準：新增第 6 章「功能測試案例與驗收清單」，包含欄位防呆、8h 憑證過期自動跳轉、Redis 單號原子性與 WebSocket 雙向推播驗證。 | 待審核 |
 
@@ -130,7 +130,7 @@
 
 ---
 
-### 2.3 專案研發管理頁面 (PMS - `/projects/:id`)
+### 2.3 專案管理頁面 (WBS - `/projects/:id`)
 
 #### 2.3.1 專案詳情 Tab 頁籤規格 (URL 雙向綁定)
 * 頁面 URL 範例：`/projects/PJ-20260814-0001?tab=milestones`
@@ -214,7 +214,7 @@
 | `TC-AUTH-002` | 認證 | Token 效期達到 8 小時或 API 回傳 401 | 自動清空本地 Token，無需手動刷新直接跳轉 `/login` | 單元/E2E |
 | `TC-CLIENT-001`| CRM | 輸入統編為 `12345` 點擊儲存 | 後端 Zod 攔截回傳 422，前端 Input 標紅並提示需為 8 碼數字 | 單元測試 |
 | `TC-CONTRACT-001`| 合約 | 建立合約輸入未稅金額 `100,000` | 前端自動計算含稅 `105,000`，由 Redis 發出單號 `CT-YYYYMMDD-0001` | 整合測試 |
-| `TC-PROJECT-001` | PMS | 點擊專案詳情切換至 Tab `logs` 並按 F5 刷新 | URL 為 `?tab=logs`，頁面刷新後仍停留在 `logs` 標籤頁不重置 | 前端測試 |
+| `TC-PROJECT-001` | WBS | 點擊專案詳情切換至 Tab `logs` 並按 F5 刷新 | URL 為 `?tab=logs`，頁面刷新後仍停留在 `logs` 標籤頁不重置 | 前端測試 |
 | `TC-REALTIME-001`| WebSocket | 後端收到 LINE Webhook 新訊息 | 前端專案詳情 LINE 動態面板即時 Append 訊息，無整頁刷新 | 整合測試 |
 | `TC-FINANCE-001` | 財務 | 專案收款 `300,000`，專案支出 `120,000` | 系統精確結算實際毛利 `180,000`，毛利率 `60.0%` | 單元測試 |
 | `TC-HEALTH-001`  | 容器與監控 | 請求 `GET /api/v1/health` 且 DB/Redis 正常連線 | 回傳 HTTP 200，包含 DB、Redis 與記憶體指標；Docker 容器狀態為 `(healthy)` | 整合測試 |

@@ -25,8 +25,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard', label: '系統總覽', icon: 'dashboard', roles: ['super_admin', 'engineer'] },
   { to: '/clients', label: '客戶管理 (CRM)', icon: 'users', roles: ['super_admin', 'engineer'] },
-  { to: '/contracts', label: '合約與報價', icon: 'contracts', roles: ['super_admin', 'engineer'] },
-  { to: '/projects', label: '專案研發 (PMS)', icon: 'projects', roles: ['super_admin', 'engineer'] },
+  { to: '/projects', label: '專案管理 (WBS)', icon: 'projects', roles: ['super_admin', 'engineer'] },
   { to: '/finance', label: '財務收支', icon: 'finance', roles: ['super_admin'] },
   { to: '/search', label: '全局語意檢索', icon: 'search', roles: ['super_admin', 'engineer'] }
 ];
