@@ -1,0 +1,341 @@
+/**
+ * @file ProjectCreateModal.css
+ * @description 一鍵立案彈窗樣式 / Project Creation Modal Styles
+ * @description_en Styles for project charter dialog, tax switcher, summary card and stages table
+ * @description_zh 定義立案彈窗外觀、計稅模式切換、即時試算卡片與多階段付款表格樣式
+ */
+
+.project-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: fadeIn 0.15s ease;
+}
+
+.project-modal-dialog {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 820px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-color, #e2e8f0);
+  overflow: hidden;
+}
+
+.project-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-surface, #ffffff);
+}
+
+.project-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.project-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  margin: 0;
+}
+
+.project-modal-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  margin: 2px 0 0 0;
+}
+
+.project-modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.project-modal-close:hover {
+  background-color: var(--bg-muted, #f1f5f9);
+  color: var(--text-primary, #0f172a);
+}
+
+.project-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project-form-section {
+  padding: 16px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  background-color: #fafbfd;
+}
+
+.project-form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  margin-bottom: 14px;
+}
+
+.project-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.project-form-row:last-child {
+  margin-bottom: 0;
+}
+
+.project-form-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-input-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #0f172a);
+  margin-bottom: 6px;
+}
+
+.custom-native-input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: var(--text-primary, #0f172a);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.custom-native-input:focus {
+  border-color: var(--primary-600, #2563eb);
+}
+
+.project-calc-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  color: #1e40af;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* 計稅模式切換器 */
+.tax-type-switcher {
+  display: flex;
+  gap: 8px;
+  background-color: #f1f5f9;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.tax-switch-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tax-switch-btn.active {
+  background-color: #ffffff;
+  color: var(--primary-600, #2563eb);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tax-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+}
+
+.tax-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* 計稅即時總結列 */
+.tax-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+}
+
+.tax-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tax-summary-label {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+}
+
+.tax-summary-val {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  font-family: var(--font-mono, monospace);
+}
+
+.tax-summary-val.highlight {
+  color: var(--primary-600, #2563eb);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 多階段表格 */
+.stages-table-wrapper {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stages-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stages-table th {
+  background-color: #f8fafc;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  text-align: left;
+}
+
+.stages-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+}
+
+.stage-input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.stage-input:focus {
+  border-color: var(--primary-600, #2563eb);
+}
+
+.percent-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.percent-input-wrapper input {
+  padding-right: 28px;
+}
+
+.percent-input-wrapper .unit-label {
+  position: absolute;
+  right: 10px;
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
+  pointer-events: none;
+}
+
+.stage-delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.stage-delete-btn:hover {
+  background-color: #fee2e2;
+}
+
+.stages-footer-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+}
+
+.field-error-text {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+.project-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: #ffffff;
+}

@@ -73,8 +73,6 @@ export interface Contract {
 }
 
 export type ProjectStage =
-  | 'proposal'
-  | 'spec'
   | 'development'
   | 'testing'
   | 'delivery'
@@ -82,6 +80,29 @@ export type ProjectStage =
   | 'closed';
 
 export type HealthStatus = 'healthy' | 'warning' | 'critical';
+
+export interface PaymentStage {
+  id: string;
+  name: string;
+  percentage: number;
+  amount: number;
+  status: 'pending' | 'invoiced' | 'received';
+  dueDate?: string;
+  invoiceNumber?: string;
+  receivedAt?: string;
+}
+
+export interface ChangeOrder {
+  id: string;
+  code: string;
+  title: string;
+  amountUntaxed: number;
+  taxAmount: number;
+  amountTotal: number;
+  addedDays: number;
+  status: 'draft' | 'pending_approval' | 'approved' | 'rejected';
+  createdAt: string;
+}
 
 export interface Project {
   id: string;
@@ -95,7 +116,17 @@ export interface Project {
   progressPercent: number;
   assignedEngineers: string[];
   startDate: string;
-  deliveryDate: string;
+  durationDays: number;
+  expectedDeliveryDate: string;
+  actualDeliveryDate?: string;
+  taxType: 'tax_inclusive' | 'tax_exclusive';
+  isTaxAdded: boolean;
+  amountUntaxed: number;
+  taxAmount: number;
+  amountTotal: number;
+  paymentStages?: PaymentStage[];
+  changeOrders?: ChangeOrder[];
+  description?: string;
 }
 
 export interface Receivable {

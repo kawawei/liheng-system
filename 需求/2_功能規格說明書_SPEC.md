@@ -130,16 +130,28 @@
 
 ---
 
-### 2.3 專案管理頁面 (WBS - `/projects/:id`)
+### 2.3 專案管理頁面 (WBS - `/projects/:id` & `/projects`)
 
-#### 2.3.1 專案詳情 Tab 頁籤規格 (URL 雙向綁定)
+#### 2.3.1 簽約立案與時程計算演算法
+* **立案日期與工期**:
+  * $\text{預計結案日期} = \text{開始日期} + \text{預估工期 (天)}$。
+  * 逾期判斷：當 $\text{當前日期} > \text{預計結案日}$ 且階段 $\neq \text{'closed'}$ 時，標示「延遲 $+N$ 天」。
+* **計稅計算規範**:
+  * **含稅模式**: $\text{amountTotal} = \text{輸入金額}$，$\text{amountUntaxed} = \text{Math.round}(\text{amountTotal} / 1.05)$，$\text{taxAmount} = \text{amountTotal} - \text{amountUntaxed}$。
+  * **未稅模式**: $\text{amountUntaxed} = \text{輸入金額}$。若勾選加稅：$\text{taxAmount} = \text{Math.round}(\text{amountUntaxed} \times 0.05)$，$\text{amountTotal} = \text{amountUntaxed} + \text{taxAmount}$；未勾選則稅額為 0。
+* **付款階段雙向試算**:
+  * 依據比例換算金額：$\text{階段金額} = \text{Math.round}(\text{專案總額} \times (\text{比例} / 100))$。
+  * 依據金額換算比例：$\text{比例} = \text{Number}((\text{階段金額} / \text{專案總額} \times 100).\text{toFixed}(1))$。
+
+#### 2.3.2 專案詳情 Tab 頁籤規格 (URL 雙向綁定)
 * 頁面 URL 範例：`/projects/PJ-20260814-0001?tab=milestones`
-* 包含 5 大 Tab 頁籤：
-  1. `milestones`: 里程碑與進度表（節點名稱、預計交付日、完成狀態、進度百分比 0-100%）。
+* 包含 6 大 Tab 頁籤：
+  1. `milestones`: 里程碑與進度表（節點名稱、完成狀態、進度百分比 0-100%）。
   2. `logs`: 工程師進度回報日誌（回報日期、完成工作、進行中項目、技術/時程阻礙）。
-  3. `qa`: 測試狀況與線上運行監控（Bug 清單、嚴重等級 Critical/Major/Minor、修復狀態、伺服器運行燈號）。
-  4. `line_sync`: LINE 專案群組動態串流與雙向發送面板。
-  5. `finance`: 專案專屬收支、多階段收款狀態與實際毛利損益。
+  3. `qa`: 測試狀況與線上運行監控（Bug 清單、嚴重等級、修復狀態、伺服器運行燈號）。
+  4. `change_orders`: 需求追加與變更單（單號 `CO-YYYYMMDD-XXXX`、追加未稅/含稅金額、追加工期、核准狀態）。
+  5. `finance`: 專案專屬收支、多階段收款清冊與毛利損益分析。
+  6. `line_sync`: LINE 專案群組動態串流與雙向發送面板。
 
 ---
 
