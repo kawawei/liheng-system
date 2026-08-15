@@ -70,3 +70,31 @@ YYYY-MM-DD HH:MM — [問題標題]
 - 前端 `npm run build` 打包編譯通過無錯誤。
 
 紀錄時間：22:58
+
+### 2026-08-16 00:04 — [客戶詳情頁 Tab 樣式失效、立案彈窗 5% 勾選框對齊與預設商業資料清理]
+
+**問題描述**
+- 場景 1：客戶詳情頁 (`ClientsDetailPage`) 的頁籤按鈕出現原生黑色外框且擠壓在一起。
+- 場景 2：資料庫初始化時自帶台元半導體、國泰證券等預設假資料。
+- 場景 3：專案立案彈窗 (`ProjectCreateModal`) 中，未稅金額輸入框與「外加 5% 營業稅」核取框未在同一水平線上、輸入框內有原生上下箭頭調節鈕，且新增階段按鈕出現 `+ + 新增階段` 重複圖示。
+
+**原因分析**
+- **Tab 樣式失效**：`ClientsDetailPage.tsx` 導航容器與按鈕使用的 class 命名為 `client-detail-tabs-bar` 與 `client-tab-btn`，而 `ClientsDetailPage.css` 內定義的是 `.client-tabs-nav` 與 `.tab-item-btn`，導致樣式未成功套用。
+- **預設假資料**：`backend/src/utils/seed.ts` 中植入了展示用的客戶、專案與 WBS 模擬數據。
+- **立案彈窗排版與箭頭**：金額輸入框外層包了 `TextField`（自帶 label 與內部 wrapper），與右側獨立的 `tax-checkbox-container` 容器使用 `align-items: flex-end` 對齊時，因高度與 margin 差異產生垂直落差；瀏覽器預設對 `input[type=number]` 渲染 spin buttons；按鈕既有 `<TextIcon name="plus" />` 圖示，文案中又硬寫了 `+ 新增階段`。
+
+**解決方案**
+- **Tab 類名統一**：將 `ClientsDetailPage.tsx` 類名修正為 `client-tabs-nav` 與 `tab-item-btn`，恢復藍色高亮底線與懸停樣式。
+- **種子資料純淨化與 TRUNCATE**：更新 `seed.ts` 徹底移除商業數據植入邏輯，僅保留管理員帳號 (`admin` / `admin123`)，並對資料庫執行 `TRUNCATE TABLE` 清空所有業務表。
+- **立案彈窗排版重構**：
+  - 將金額標籤獨立置頂，下方以 `display: flex; align-items: center; gap: 16px;` 容器同時包裹 `input` 與 `tax-checkbox-label`，統一為 `42px` 等高並加大勾選框為 `19px` 與字級 `14px`。
+  - 在 `index.css` 與組件 CSS 中全域加入 `::-webkit-outer-spin-button, ::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }` 與 `appearance: textfield;`。
+  - 將按鈕文案修正為純文字 `新增階段`。
+  - 多階段表格新增獨立「期數」欄位（`1`, `2`, `3`... 唯讀徽章），專案負責人改用 `@kawawei/frontend-modules` 之 `<Select multiple showCheckbox />`。
+
+**驗證結果**
+- 前端與後端編譯建構 100% 通過（`pnpm build`）。
+- 8 項前端單元測試全部通過（`pnpm test`）。
+- 實機檢視客戶列表、專案立案彈窗與客戶詳情頁，所有樣式與排版皆精確對齊。
+
+紀錄時間：00:04
