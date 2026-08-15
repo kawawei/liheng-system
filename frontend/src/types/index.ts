@@ -149,6 +149,7 @@ export interface WbsNode {
   id: string;
   projectId: string;
   parentId?: string;
+  wbsCode?: string;
   name: string;
   description?: string;
   status: WbsStatus;

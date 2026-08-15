@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height, wider duration/progress inputs, larger action buttons, generous toolbar button sizes (38px height, 14px font).
- * @description_zh 下拉選單與輸入框統一 30px 高度、加寬工期與進度、放大操作按鈕、頂部展開/收合/新增主里程碑按鈕放大至 38px (14px 字級)。
+ * @description_en Strictly uniform 30px height, WBS Code column on the far left, compact table headers, wider duration/progress, large action buttons.
+ * @description_zh WBS 編號獨立於最左側欄位、下拉與輸入框統一 30px 高度、緊湊表頭垂直高度、加寬工期與進度。
  */
 
 .wbs-wrapper {
@@ -35,7 +35,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  padding-bottom: 14px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 
@@ -103,7 +103,7 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1720px;
+  min-width: 1780px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
@@ -173,11 +173,24 @@
   border-top: 1px solid #e2e8f0;
 }
 
-/* 階層名稱單元格 */
-.wbs-name-cell {
+/* WBS 編號單元格 */
+.wbs-code-cell {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+}
+
+.wbs-code-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .wbs-expand-btn {
