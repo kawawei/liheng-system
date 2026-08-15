@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.tsx
  * @description WBS 里程碑即時編輯表格組件 / Milestone WBS Live Editable Table Component
- * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with row selection highlight, inserting checkpoints/tasks after the selected item, and automatic WBS re-indexing.
- * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，支援單元列選中高亮狀態，點擊新增檢查點/新增項目時自動於選中項目的下一個位置插入並自動依序編號。
+ * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), row selection highlight, predecessor dependency status validation with toast warnings, and auto WBS re-indexing.
+ * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，支援項目選中狀態、前置依賴狀態防呆驗證 (FS/SS/FF/SF 阻擋並跳出 Toast 警告提示)，及自動 WBS 序號重編。
  */
 
 import React, { useState, useMemo } from 'react';
@@ -18,6 +18,7 @@ import {
 import { Select, DatePicker } from '@kawawei/frontend-modules';
 import { WbsNode, WbsStatus, DependencyType } from '../../../types';
 import { Button } from '../../button';
+import { Toast, ToastType } from '../../toast';
 import './MilestoneWbsTable.css';
 
 const ENGINEER_SELECT_OPTIONS = [
@@ -91,6 +92,30 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 }) => {
   const [nodes, setNodes] = useState<WbsNode[]>(initialNodes);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+  // 提示彈出輔助函數
+  const showToast = (message: string, type: ToastType = 'warning') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 3800);
+  };
+
+  // ========================================
+  // 建立 WBS 編號與節點的快速查找 Map
+  // ========================================
+  const codeMap = useMemo(() => {
+    const map = new Map<string, WbsNode>();
+    const build = (list: WbsNode[]) => {
+      list.forEach((n) => {
+        if (n.wbsCode) map.set(n.wbsCode, n);
+        if (n.children && n.children.length > 0) build(n.children);
+      });
+    };
+    build(nodes);
+    return map;
+  }, [nodes]);
 
   // ========================================
   // 提取所有可用前置任務選項 (僅顯示 WBS 序號)
@@ -183,10 +208,10 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   // 排程連動推算 / Schedule Cascade Calculation
   // ========================================
   const cascadeScheduleUpdates = (allNodes: WbsNode[]): WbsNode[] => {
-    const codeMap = new Map<string, WbsNode>();
+    const map = new Map<string, WbsNode>();
     const buildMap = (list: WbsNode[]) => {
       list.forEach((n) => {
-        if (n.wbsCode) codeMap.set(n.wbsCode, n);
+        if (n.wbsCode) map.set(n.wbsCode, n);
         if (n.children && n.children.length > 0) buildMap(n.children);
       });
     };
@@ -196,8 +221,8 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       return list.map((node) => {
         let updatedNode = { ...node };
 
-        if (node.predecessorCode && codeMap.has(node.predecessorCode)) {
-          const pred = codeMap.get(node.predecessorCode)!;
+        if (node.predecessorCode && map.has(node.predecessorCode)) {
+          const pred = map.get(node.predecessorCode)!;
           const predPlannedEnd = pred.plannedEndDate || pred.plannedStartDate || '';
           const predPlannedStart = pred.plannedStartDate || '';
           const depType = node.dependencyType || 'FS';
@@ -343,21 +368,72 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     });
   };
 
+  // ========================================
+  // 前置依賴狀態防呆驗證邏輯 / Predecessor Status Validation
+  // ========================================
+  const validatePredecessorConstraint = (node: WbsNode, targetStatus: WbsStatus): boolean => {
+    if (targetStatus === 'NOT_STARTED') return true;
+    if (!node.predecessorCode || !codeMap.has(node.predecessorCode)) return true;
+
+    const pred = codeMap.get(node.predecessorCode)!;
+    const depType = node.dependencyType || 'FS';
+    const predStatus = pred.status || 'NOT_STARTED';
+
+    if (depType === 'FS') {
+      // FS: 前置必須為 COMPLETED，本工項方可切換為 IN_PROGRESS 或 COMPLETED
+      if (predStatus !== 'COMPLETED') {
+        const targetText = targetStatus === 'COMPLETED' ? '已完成' : '進行中';
+        showToast(`前置任務 (${pred.wbsCode} ${pred.name}) 尚未完成，無法切換為「${targetText}」`, 'warning');
+        return false;
+      }
+    } else if (depType === 'SS') {
+      // SS: 前置必須至少為 IN_PROGRESS 或 COMPLETED，本工項方可開始
+      if (predStatus === 'NOT_STARTED') {
+        const targetText = targetStatus === 'COMPLETED' ? '已完成' : '進行中';
+        showToast(`前置任務 (${pred.wbsCode} ${pred.name}) 尚未開始，無法切換為「${targetText}」`, 'warning');
+        return false;
+      }
+    } else if (depType === 'FF') {
+      // FF: 前置必須為 COMPLETED，本工項方可標記為 COMPLETED (可進行中)
+      if (targetStatus === 'COMPLETED' && predStatus !== 'COMPLETED') {
+        showToast(`前置任務 (${pred.wbsCode} ${pred.name}) 尚未完成，無法切換為「已完成」`, 'warning');
+        return false;
+      }
+    } else if (depType === 'SF') {
+      // SF: 前置必須至少為 IN_PROGRESS 或 COMPLETED，本工項方可標記為 COMPLETED
+      if (targetStatus === 'COMPLETED' && predStatus === 'NOT_STARTED') {
+        showToast(`前置任務 (${pred.wbsCode} ${pred.name}) 尚未開始，無法切換為「已完成」`, 'warning');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   // 進度百分比變更
   const handleProgressChange = (nodeId: string, newPct: number) => {
+    const targetNode = Array.from(codeMap.values()).find((n) => n.id === nodeId);
     const validPct = Math.min(100, Math.max(0, newPct || 0));
-    updateNode(nodeId, (node) => {
-      const newStatus: WbsStatus = validPct === 100 ? 'COMPLETED' : validPct > 0 ? 'IN_PROGRESS' : 'NOT_STARTED';
-      return {
-        ...node,
-        progress: validPct,
-        status: newStatus,
-      };
-    });
+    const nextStatus: WbsStatus = validPct === 100 ? 'COMPLETED' : validPct > 0 ? 'IN_PROGRESS' : 'NOT_STARTED';
+
+    if (targetNode && !validatePredecessorConstraint(targetNode, nextStatus)) {
+      return;
+    }
+
+    updateNode(nodeId, (node) => ({
+      ...node,
+      progress: validPct,
+      status: nextStatus,
+    }));
   };
 
   // 狀態下拉選單切換
   const handleStatusSelect = (nodeId: string, newStatus: WbsStatus) => {
+    const targetNode = Array.from(codeMap.values()).find((n) => n.id === nodeId);
+    if (targetNode && !validatePredecessorConstraint(targetNode, newStatus)) {
+      return;
+    }
+
     updateNode(nodeId, (node) => {
       const nextProgress = newStatus === 'COMPLETED' ? 100 : newStatus === 'NOT_STARTED' ? 0 : Math.max(node.progress, 50);
       let actStart = node.actualStartDate || '';
@@ -421,14 +497,12 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     };
 
     if (!selectedNodeId) {
-      // 未選中任何項目，直接加在最外層末尾
       const newNodes = reindexWbsNodes([...nodes, newNode]);
       setNodes(newNodes);
       setSelectedNodeId(newId);
       return;
     }
 
-    // 若有選中項目，在選中項目的同層後方插入
     const insertAfterInList = (list: WbsNode[]): { found: boolean; list: WbsNode[] } => {
       const idx = list.findIndex((n) => n.id === selectedNodeId);
       if (idx !== -1) {
@@ -819,6 +893,17 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 
   return (
     <div className="wbs-wrapper">
+      {/* Toast 提示容器 */}
+      {toast && (
+        <div className="toast-container">
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
+
       {/* 頂部工具列與完成度膠囊統計 */}
       <div className="wbs-header-bar">
         <div className="wbs-stats-group">
