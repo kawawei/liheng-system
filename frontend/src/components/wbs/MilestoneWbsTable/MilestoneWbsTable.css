@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
- * @description WBS 里程碑樹狀表格樣式 / Milestone WBS Tree Table Styles
- * @description_en Styles for hierarchical WBS table, badges, progress bars, and inline editing controls
- * @description_zh 定義 WBS 樹狀階層表格、狀態標籤、進度條與行內直接編輯樣式
+ * @description WBS 里程碑即時編輯表格樣式 / Milestone WBS Live Editable Table Styles
+ * @description_en Styles for fully interactive, live spreadsheet-style hierarchical WBS table without spinner arrows
+ * @description_zh 定義 WBS 樹狀階層直出即時編輯表格、移除數字上下箭頭、獨立分欄與響應式樣式
  */
 
 .wbs-wrapper {
@@ -10,6 +10,20 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
+}
+
+/* ========================================
+   移除全域 Number Input 的上下箭頭 (Spinners)
+   ======================================== */
+.wbs-table input[type=number]::-webkit-inner-spin-button,
+.wbs-table input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wbs-table input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* ========================================
@@ -76,6 +90,7 @@
 
 .wbs-table {
   width: 100%;
+  min-width: 1280px;
   border-collapse: collapse;
   font-size: 13px;
   text-align: left;
@@ -87,14 +102,15 @@
 }
 
 .wbs-table th {
-  padding: 12px 14px;
+  padding: 10px 8px;
   font-weight: 600;
   color: var(--text-secondary, #475569);
   white-space: nowrap;
+  font-size: 12px;
 }
 
 .wbs-table td {
-  padding: 10px 14px;
+  padding: 8px 6px;
   border-bottom: 1px solid var(--border-color, #f1f5f9);
   color: var(--text-primary, #1e293b);
   vertical-align: middle;
@@ -104,35 +120,24 @@
   background-color: #f8fafc;
 }
 
-.wbs-row.is-root {
-  background-color: #ffffff;
-}
-
 .wbs-row.is-root td {
-  font-weight: 600;
+  background-color: #ffffff;
   border-top: 1px solid #e2e8f0;
-}
-
-.wbs-row.is-editing td {
-  background-color: #f0fdf4 !important;
-  border-top: 1px solid #bbf7d0;
-  border-bottom: 1px solid #bbf7d0;
 }
 
 /* 階層名稱單元格 */
 .wbs-name-cell {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1;
+  gap: 4px;
 }
 
 .wbs-expand-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border: none;
   background: transparent;
   color: var(--text-secondary, #64748b);
@@ -149,90 +154,181 @@
 }
 
 .wbs-expand-placeholder {
-  width: 22px;
+  width: 20px;
   flex-shrink: 0;
   display: inline-block;
 }
 
-/* 工程師標籤 */
-.wbs-assignee-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
+/* ========================================
+   直出即時輸入框 / Direct Live Inputs
+   ======================================== */
+.wbs-direct-input {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 13px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background-color: transparent;
+  outline: none;
+  font-weight: 500;
+  color: var(--text-primary, #1e293b);
+  transition: all 0.15s ease;
+}
+
+.wbs-direct-input:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+
+.wbs-direct-input:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.wbs-direct-select {
+  padding: 4px 6px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background-color: transparent;
+  outline: none;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wbs-direct-select:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+
+.wbs-direct-select:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+}
+
+.wbs-direct-date {
+  padding: 4px 5px;
   font-size: 11px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: transparent;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+  width: 106px;
+  color: #1e293b;
+  transition: all 0.15s ease;
+}
+
+.wbs-direct-date:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+
+.wbs-direct-date:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.wbs-direct-days {
+  width: 42px;
+  padding: 4px 4px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: transparent;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+  text-align: center;
+  color: #1e293b;
+  transition: all 0.15s ease;
+}
+
+.wbs-direct-days:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+
+.wbs-direct-days:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.wbs-readonly-date {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
   color: #334155;
-  margin-right: 4px;
+  padding: 4px 2px;
   white-space: nowrap;
 }
 
-/* 時程區塊樣式 */
-.wbs-date-display-block {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  white-space: nowrap;
+.wbs-readonly-date.auto-calc {
+  color: #2563eb;
+  font-weight: 500;
 }
 
-.wbs-date-calc-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 6px;
-  background-color: #f1f5f9;
-  border: 1px solid #cbd5e1;
+.wbs-direct-money {
+  width: 78px;
+  padding: 4px 6px;
+  font-size: 12px;
+  border: 1px solid transparent;
   border-radius: 4px;
-  font-size: 11px;
-  color: #334155;
-  font-family: var(--font-mono, monospace);
-}
-
-/* 進度條 */
-.wbs-progress-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 100px;
-}
-
-.wbs-progress-track {
-  flex: 1;
-  height: 6px;
-  background-color: #e2e8f0;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.wbs-progress-fill {
-  height: 100%;
-  background-color: var(--primary-600, #2563eb);
-  border-radius: 9999px;
-  transition: width 0.3s ease;
-}
-
-.wbs-progress-fill.completed {
-  background-color: #10b981;
-}
-
-.wbs-progress-text {
-  font-size: 12px;
-  font-weight: 600;
-  font-family: var(--font-mono, monospace);
-  min-width: 35px;
+  background-color: transparent;
   text-align: right;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+  color: #1e293b;
+  transition: all 0.15s ease;
+}
+
+.wbs-direct-money:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+
+.wbs-direct-money:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.wbs-direct-pct {
+  width: 40px;
+  padding: 4px 4px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: transparent;
+  text-align: right;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+  color: #1e293b;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.wbs-direct-pct:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+
+.wbs-direct-pct:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
 }
 
 /* 狀態切換按鈕 */
 .wbs-status-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   border-radius: 9999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   border: 1px solid transparent;
   cursor: pointer;
@@ -268,15 +364,16 @@
 .wbs-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  justify-content: center;
 }
 
 .wbs-action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 4px;
   border: 1px solid transparent;
   background-color: transparent;
@@ -296,114 +393,7 @@
   color: #2563eb;
 }
 
-.wbs-action-btn.save {
-  color: #16a34a;
-  background-color: #dcfce7;
-  border-color: #86efac;
-}
-
-.wbs-action-btn.save:hover {
-  background-color: #bbf7d0;
-}
-
-.wbs-action-btn.cancel {
-  color: #64748b;
-  background-color: #f1f5f9;
-}
-
-.wbs-action-btn.cancel:hover {
-  background-color: #e2e8f0;
-}
-
 .wbs-action-btn.delete:hover {
   background-color: #fef2f2;
   color: #ef4444;
-}
-
-/* ========================================
-   行內編輯輸入控制項 / Inline Edit Controls
-   ======================================== */
-.wbs-inline-text-input {
-  width: 100%;
-  padding: 6px 10px;
-  font-size: 13px;
-  border: 1.5px solid #2563eb;
-  border-radius: 6px;
-  background-color: #ffffff;
-  outline: none;
-  font-weight: 500;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-}
-
-.wbs-inline-select {
-  padding: 5px 8px;
-  font-size: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background-color: #ffffff;
-  outline: none;
-  color: #1e293b;
-}
-
-.wbs-inline-select:focus {
-  border-color: #2563eb;
-}
-
-.wbs-inline-date-block {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.wbs-inline-date-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.wbs-inline-date-input {
-  padding: 4px 6px;
-  font-size: 11px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background-color: #ffffff;
-  outline: none;
-  font-family: var(--font-mono, monospace);
-  width: 118px;
-}
-
-.wbs-inline-date-input:focus {
-  border-color: #2563eb;
-}
-
-.wbs-inline-days-input {
-  width: 48px;
-  padding: 4px 6px;
-  font-size: 11px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background-color: #ffffff;
-  outline: none;
-  font-family: var(--font-mono, monospace);
-  text-align: center;
-}
-
-.wbs-inline-days-input:focus {
-  border-color: #2563eb;
-}
-
-.wbs-inline-num-input {
-  width: 85px;
-  padding: 5px 8px;
-  font-size: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background-color: #ffffff;
-  text-align: right;
-  outline: none;
-  font-family: var(--font-mono, monospace);
-}
-
-.wbs-inline-num-input:focus {
-  border-color: #2563eb;
 }
