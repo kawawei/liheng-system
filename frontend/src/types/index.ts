@@ -79,6 +79,8 @@ export type ProjectStage =
   | 'maintenance'
   | 'closed';
 
+export type TaxType = 'tax_inclusive' | 'tax_exclusive';
+
 export type HealthStatus = 'healthy' | 'warning' | 'critical';
 
 export interface PaymentStage {

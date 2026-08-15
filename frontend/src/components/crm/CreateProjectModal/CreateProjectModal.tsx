@@ -1,14 +1,15 @@
 /**
  * @file CreateProjectModal.tsx
  * @description 客戶轉正式專案立案彈窗組件 / Project Initiation Modal Component
- * @description_en Modal for converting a CRM client to an official project, auto-populating client metadata and initializing WBS
- * @description_zh 為 CRM 客戶進行正式立案之彈窗，自動帶入客戶基本資料，設定案號、合約金額、時程並初始化 WBS 專案
+ * @description_en Modal for converting a CRM client to an official project, auto-populating client metadata, sequential project code generation, and tax options
+ * @description_zh 為 CRM 客戶進行正式立案之彈窗，自動依當日序號生成案號、提供未稅/含稅 5% 計稅選擇與時程推算並初始化 WBS 專案
  */
 
 import React, { useState, useEffect } from 'react';
 import { X, FolderPlus, Rocket } from 'lucide-react';
-import { Client, Project, ProjectStage } from '../../../types';
+import { Client, Project, ProjectStage, TaxType } from '../../../types';
 import { Button } from '../../button';
+import { MOCK_PROJECTS } from '../../../mock/projects.mock';
 import './CreateProjectModal.css';
 
 interface CreateProjectModalProps {
@@ -35,21 +36,43 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
   const [projectName, setProjectName] = useState('');
   const [projectCode, setProjectCode] = useState('');
-  const [amountUntaxed, setAmountUntaxed] = useState('1000000');
+  const [taxType, setTaxType] = useState<TaxType>('tax_exclusive');
+  const [amountInput, setAmountInput] = useState('1000000');
   const [startDate, setStartDate] = useState(todayStr);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState(defaultDeliveryDate);
   const [assignedEngineers, setAssignedEngineers] = useState<string[]>(['張工程師', '李工程師']);
   const [stage, setStage] = useState<ProjectStage>('development');
   const [applyWbsTemplate, setApplyWbsTemplate] = useState(true);
 
+  // 依當日年月日與既有專案數量依序生成案號 (例如：PJ-20260815-0001)
   useEffect(() => {
     if (client) {
-      const randomCode = Math.floor(1000 + Math.random() * 9000);
       const todayCode = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      setProjectCode(`PJ-${todayCode}-${randomCode}`);
+      const prefix = `PJ-${todayCode}-`;
+      const existingToday = MOCK_PROJECTS.filter((p) => p.projectCode?.startsWith(prefix));
+      const seq = existingToday.length + 1;
+      const seqStr = String(seq).padStart(4, '0');
+      setProjectCode(`${prefix}${seqStr}`);
       setProjectName(`${client.name} ${client.systemType || '軟體系統'}開發專案`);
     }
   }, [client]);
+
+  // 金額與營業稅 (5%) 即時動態推算
+  const parsedInput = Math.max(0, Number(amountInput) || 0);
+
+  const { amountUntaxed, taxAmount, amountTotal } = (() => {
+    if (taxType === 'tax_exclusive') {
+      const untaxed = parsedInput;
+      const tax = Math.round(untaxed * 0.05);
+      const total = untaxed + tax;
+      return { amountUntaxed: untaxed, taxAmount: tax, amountTotal: total };
+    } else {
+      const total = parsedInput;
+      const untaxed = Math.round(total / 1.05);
+      const tax = total - untaxed;
+      return { amountUntaxed: untaxed, taxAmount: tax, amountTotal: total };
+    }
+  })();
 
   // 計算總工期天數
   const calculatedDurationDays = (() => {
@@ -64,10 +87,6 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     e.preventDefault();
     if (!projectName.trim() || !projectCode.trim()) return;
 
-    const untaxed = Number(amountUntaxed) || 0;
-    const tax = Math.round(untaxed * 0.05);
-    const total = untaxed + tax;
-
     const newProject: Project = {
       id: `pj_${Date.now()}`,
       projectCode: projectCode.trim(),
@@ -81,15 +100,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       startDate,
       durationDays: calculatedDurationDays,
       expectedDeliveryDate,
-      taxType: 'tax_exclusive',
-      isTaxAdded: true,
-      amountUntaxed: untaxed,
-      taxAmount: tax,
-      amountTotal: total,
+      taxType,
+      isTaxAdded: taxType === 'tax_exclusive',
+      amountUntaxed,
+      taxAmount,
+      amountTotal,
       paymentStages: [
-        { id: `stg_${Date.now()}_1`, name: '第 1 期 簽約訂金', percentage: 40, amount: Math.round(total * 0.4), status: 'pending', dueDate: startDate },
-        { id: `stg_${Date.now()}_2`, name: '第 2 期 系統交付款', percentage: 40, amount: Math.round(total * 0.4), status: 'pending', dueDate: expectedDeliveryDate },
-        { id: `stg_${Date.now()}_3`, name: '第 3 期 驗收尾款', percentage: 20, amount: Math.round(total * 0.2), status: 'pending', dueDate: expectedDeliveryDate },
+        { id: `stg_${Date.now()}_1`, name: '第 1 期 簽約訂金', percentage: 40, amount: Math.round(amountTotal * 0.4), status: 'pending', dueDate: startDate },
+        { id: `stg_${Date.now()}_2`, name: '第 2 期 系統交付款', percentage: 40, amount: Math.round(amountTotal * 0.4), status: 'pending', dueDate: expectedDeliveryDate },
+        { id: `stg_${Date.now()}_3`, name: '第 3 期 驗收尾款', percentage: 20, amount: Math.round(amountTotal * 0.2), status: 'pending', dueDate: expectedDeliveryDate },
       ],
       changeOrders: [],
     };
@@ -119,7 +138,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
           <div className="create-project-modal-body">
-            {/* 客戶名稱 & 專案名稱 */}
+            {/* 客戶名稱 & 窗口 */}
             <div className="create-project-grid-2">
               <div className="create-project-field-group">
                 <label className="create-project-field-label">主約客戶名稱</label>
@@ -141,6 +160,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
             </div>
 
+            {/* 專案名稱 */}
             <div className="create-project-field-group">
               <label className="create-project-field-label">正式專案名稱 *</label>
               <input
@@ -153,31 +173,61 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               />
             </div>
 
-            {/* 案號與金額 */}
+            {/* 案號 (系統自動生成，不可自行輸入) & 營業稅計稅方式 */}
             <div className="create-project-grid-2">
               <div className="create-project-field-group">
-                <label className="create-project-field-label">專案案號 *</label>
+                <label className="create-project-field-label">專案案號 (系統依序號自動生成)</label>
                 <input
                   type="text"
                   className="create-project-field-input"
                   value={projectCode}
-                  onChange={(e) => setProjectCode(e.target.value)}
-                  placeholder="PJ-YYYYMMDD-XXXX"
-                  required
+                  disabled
+                  title="案號由系統依照年月日與序號自動生成，不可修改"
                 />
               </div>
               <div className="create-project-field-group">
-                <label className="create-project-field-label">合約總金額 (未稅 NT$) *</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1000"
+                <label className="create-project-field-label">計稅方式 *</label>
+                <select
                   className="create-project-field-input"
-                  value={amountUntaxed}
-                  onChange={(e) => setAmountUntaxed(e.target.value)}
-                  placeholder="1000000"
-                  required
-                />
+                  value={taxType}
+                  onChange={(e) => setTaxType(e.target.value as TaxType)}
+                >
+                  <option value="tax_exclusive">未稅 (外加 5% 營業稅)</option>
+                  <option value="tax_inclusive">含稅 (已內含 5% 營業稅)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* 合約金額輸入 (無上下調節箭頭) 與即時試算 */}
+            <div className="create-project-field-group">
+              <label className="create-project-field-label">
+                {taxType === 'tax_exclusive' ? '輸入未稅金額 (NT$) *' : '輸入含稅合約總金額 (NT$) *'}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                className="create-project-field-input"
+                value={amountInput}
+                onChange={(e) => setAmountInput(e.target.value)}
+                placeholder="1000000"
+                required
+              />
+
+              {/* 稅額即時試算摘要條 */}
+              <div className="create-project-tax-summary">
+                <div className="create-project-tax-item">
+                  <span>未稅金額:</span>
+                  <strong>NT$ {amountUntaxed.toLocaleString()}</strong>
+                </div>
+                <div className="create-project-tax-item">
+                  <span>營業稅 (5%):</span>
+                  <strong>NT$ {taxAmount.toLocaleString()}</strong>
+                </div>
+                <div className="create-project-tax-item" style={{ color: '#2563eb' }}>
+                  <span>合約總計 (含稅):</span>
+                  <strong style={{ fontSize: '14px', color: '#1d4ed8' }}>NT$ {amountTotal.toLocaleString()}</strong>
+                </div>
               </div>
             </div>
 
