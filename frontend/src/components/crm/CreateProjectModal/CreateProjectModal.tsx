@@ -321,10 +321,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
           {/* Footer */}
           <div className="create-project-modal-footer">
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" size="md" type="button" onClick={onClose}>
               取消
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="primary" size="md" type="submit">
               <FolderPlus size={16} />
               <span>確認立案並前往專案工作台</span>
             </Button>

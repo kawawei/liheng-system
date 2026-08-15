@@ -5,89 +5,105 @@
  * @description_zh 為 caas-button Web Component 提供高質感主題色彩 (Primary 藍、Secondary 白底灰框、Danger 紅)
  */
 
-caas-button.custom-button {
+caas-button.custom-button,
+button.custom-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 8px 18px;
   font-size: 14px;
   font-weight: 500;
   border-radius: var(--radius-md, 8px);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease-in-out;
   box-sizing: border-box;
   text-decoration: none;
   line-height: 1.4;
+  height: 38px;
+  outline: none;
 }
 
 /* Primary 主要按鈕 (高亮主題藍) */
 caas-button.custom-button[variant="primary"],
-caas-button.custom-button:not([variant]) {
-  background-color: var(--primary-600, #2563eb);
-  color: #ffffff;
-  border-color: var(--primary-600, #2563eb);
+caas-button.custom-button:not([variant]),
+button.custom-button.primary {
+  background-color: var(--primary-600, #2563eb) !important;
+  color: #ffffff !important;
+  border-color: var(--primary-600, #2563eb) !important;
   box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
 }
 
-caas-button.custom-button[variant="primary"]:hover {
-  background-color: var(--primary-700, #1d4ed8);
-  border-color: var(--primary-700, #1d4ed8);
+caas-button.custom-button[variant="primary"]:hover,
+button.custom-button.primary:hover {
+  background-color: var(--primary-700, #1d4ed8) !important;
+  border-color: var(--primary-700, #1d4ed8) !important;
   box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
 }
 
 /* Secondary 次要按鈕 (白底微灰框) */
-caas-button.custom-button[variant="secondary"] {
-  background-color: #ffffff;
-  color: var(--text-primary, #0f172a);
-  border-color: var(--border-color, #cbd5e1);
+caas-button.custom-button[variant="secondary"],
+button.custom-button.secondary {
+  background-color: #ffffff !important;
+  color: var(--text-primary, #1e293b) !important;
+  border: 1px solid #cbd5e1 !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-caas-button.custom-button[variant="secondary"]:hover {
-  background-color: var(--bg-muted, #f8fafc);
-  border-color: #94a3b8;
-  color: var(--primary-600, #2563eb);
+caas-button.custom-button[variant="secondary"]:hover,
+button.custom-button.secondary:hover {
+  background-color: var(--bg-muted, #f8fafc) !important;
+  border-color: #94a3b8 !important;
+  color: var(--primary-600, #2563eb) !important;
 }
 
 /* Danger 紅色警示按鈕 */
-caas-button.custom-button[variant="danger"] {
-  background-color: #ef4444;
-  color: #ffffff;
-  border-color: #ef4444;
+caas-button.custom-button[variant="danger"],
+button.custom-button.danger {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
 }
 
-caas-button.custom-button[variant="danger"]:hover {
-  background-color: #dc2626;
-  border-color: #dc2626;
+caas-button.custom-button[variant="danger"]:hover,
+button.custom-button.danger:hover {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
 }
 
 /* Outline 邊框按鈕 */
-caas-button.custom-button[variant="outline"] {
-  background-color: transparent;
-  color: var(--primary-600, #2563eb);
-  border-color: var(--primary-600, #2563eb);
+caas-button.custom-button[variant="outline"],
+button.custom-button.outline {
+  background-color: #ffffff !important;
+  color: var(--primary-600, #2563eb) !important;
+  border: 1px solid var(--primary-600, #2563eb) !important;
 }
 
-caas-button.custom-button[variant="outline"]:hover {
-  background-color: rgba(37, 99, 235, 0.08);
+caas-button.custom-button[variant="outline"]:hover,
+button.custom-button.outline:hover {
+  background-color: rgba(37, 99, 235, 0.08) !important;
 }
 
 /* 尺寸規格 */
-caas-button.custom-button[size="sm"] {
+caas-button.custom-button[size="sm"],
+button.custom-button.sm {
   padding: 5px 12px;
-  font-size: 12px;
+  font-size: 13px;
+  height: 32px;
   border-radius: 6px;
 }
 
-caas-button.custom-button[size="lg"] {
-  padding: 10px 20px;
-  font-size: 16px;
+caas-button.custom-button[size="lg"],
+button.custom-button.lg {
+  padding: 10px 24px;
+  font-size: 15px;
+  height: 44px;
   border-radius: 10px;
 }
 
-caas-button.custom-button[disabled] {
+caas-button.custom-button[disabled],
+button.custom-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;

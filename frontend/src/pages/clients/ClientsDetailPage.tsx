@@ -231,11 +231,11 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
       </div>
 
       {/* 頁籤切換導航 / Tab Navigation */}
-      <div className="client-detail-tabs-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="client-detail-tabs">
+      <div className="client-tabs-nav">
+        <div style={{ display: 'flex', gap: '8px' }}>
           <button
             type="button"
-            className={`client-tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+            className={`tab-item-btn ${activeTab === 'info' ? 'active' : ''}`}
             onClick={() => setActiveTab('info')}
           >
             <TextIcon name="building" size="sm" />
@@ -243,7 +243,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </button>
           <button
             type="button"
-            className={`client-tab-btn ${activeTab === 'timeline' ? 'active' : ''}`}
+            className={`tab-item-btn ${activeTab === 'timeline' ? 'active' : ''}`}
             onClick={() => setActiveTab('timeline')}
           >
             <TextIcon name="clock" size="sm" />
@@ -251,7 +251,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </button>
           <button
             type="button"
-            className={`client-tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
+            className={`tab-item-btn ${activeTab === 'projects' ? 'active' : ''}`}
             onClick={() => setActiveTab('projects')}
           >
             <TextIcon name="projects" size="sm" />
