@@ -378,20 +378,22 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               </button>
             </div>
 
-            <div className="project-form-row" style={{ alignItems: 'flex-end', marginTop: '12px', gap: '16px' }}>
-              <div className="project-form-col" style={{ flex: taxType === 'tax_exclusive' ? 1.4 : 1 }}>
-                <TextField
-                  label={taxType === 'tax_inclusive' ? '合約含稅總金額 (NT$) *' : '合約未稅金額 (NT$) *'}
+            {/* 金額輸入與 5% 營業稅勾選框水平並排 */}
+            <div className="project-form-col" style={{ marginTop: '14px' }}>
+              <label className="custom-input-label">
+                {taxType === 'tax_inclusive' ? '合約含稅總金額 (NT$) *' : '合約未稅金額 (NT$) *'}
+              </label>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <input
                   type="number"
                   placeholder="500000"
+                  className={`custom-native-input ${errors.rawAmount ? 'is-invalid' : ''}`}
                   value={rawAmount}
                   onChange={(e) => setRawAmount(e.target.value)}
-                  error={errors.rawAmount}
+                  style={{ flex: 1, height: '42px', fontSize: '15px' }}
                 />
-              </div>
 
-              {taxType === 'tax_exclusive' && (
-                <div className="tax-checkbox-container" style={{ paddingBottom: errors.rawAmount ? '22px' : '0' }}>
+                {taxType === 'tax_exclusive' && (
                   <label className={`tax-checkbox-label ${isTaxAdded ? 'checked' : ''}`}>
                     <input
                       type="checkbox"
@@ -400,8 +402,9 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
                     />
                     <span>外加 5% 營業稅</span>
                   </label>
-                </div>
-              )}
+                )}
+              </div>
+              {errors.rawAmount && <div className="field-error-text" style={{ marginTop: '4px' }}>{errors.rawAmount}</div>}
             </div>
 
             {/* 即時試算金額匯總卡 */}
@@ -432,7 +435,7 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               </div>
               <Button type="button" variant="secondary" size="sm" onClick={handleAddStage}>
                 <TextIcon name="plus" size="sm" />
-                <span>+ 新增階段</span>
+                <span>新增階段</span>
               </Button>
             </div>
 

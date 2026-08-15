@@ -192,6 +192,19 @@ input:-webkit-autofill:active {
   box-shadow: 0 0 0 3.5px rgba(239, 68, 68, 0.12);
 }
 
+/* 全域移除 number input 上下調節箭頭 (No Spinners) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
 .form-error-msg {
   color: var(--color-danger-text);
   font-size: 12px;
