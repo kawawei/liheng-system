@@ -4,7 +4,9 @@ import { TextIcon } from '../../icon/TextIcon';
 import { Button } from '../../button/Button';
 import { TextField } from '../../input/TextField';
 import { SelectField, SelectOption } from '../../input/SelectField';
+import { Select } from '@kawawei/frontend-modules';
 import { clientService } from '../../../services/client.service';
+import { userService } from '../../../services/user.service';
 import './ProjectCreateModal.css';
 
 /**
@@ -45,6 +47,28 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
     }
   }, [propClients, isOpen]);
 
+  // 負責人選項清單
+  const [engineerOptions, setEngineerOptions] = useState<{ value: string; label: string }[]>([
+    { value: '系統管理員', label: '系統管理員' },
+    { value: '研發工程師', label: '研發工程師' },
+    { value: '張工程師', label: '張工程師' },
+    { value: '李工程師', label: '李工程師' },
+    { value: '王工程師', label: '王工程師' },
+    { value: '陳工程師', label: '陳工程師' }
+  ]);
+
+  useEffect(() => {
+    userService.getUsers().then((users) => {
+      if (users && users.length > 0) {
+        const opts = users.map((u) => ({
+          value: u.name || u.account,
+          label: `${u.name || u.account} (${u.role === 'super_admin' ? '管理員' : '工程師'})`
+        }));
+        setEngineerOptions(opts);
+      }
+    }).catch(() => {});
+  }, []);
+
   // 基本資訊 State
   const [projectCode, setProjectCode] = useState(`PJ-${todayStr.replace(/-/g, '')}-0001`);
   const [clientId, setClientId] = useState('');
@@ -52,18 +76,18 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
   const [startDate, setStartDate] = useState(todayStr);
   const [durationDays, setDurationDays] = useState<number | string>(60);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
-  const [assignedEngineers, setAssignedEngineers] = useState('張工程師, 李工程師');
+  const [assignedEngineers, setAssignedEngineers] = useState<string[]>(['張工程師', '李工程師']);
 
   // 計稅與金額 State
   const [taxType, setTaxType] = useState<'tax_inclusive' | 'tax_exclusive'>('tax_inclusive');
   const [rawAmount, setRawAmount] = useState<string>('500000');
   const [isTaxAdded, setIsTaxAdded] = useState(true);
 
-  // 付款階段 State
+  // 付款階段 State (期數與名稱分開，名稱不再強制串接第 N 期前綴)
   const [paymentStages, setPaymentStages] = useState<FormPaymentStage[]>([
-    { id: 'stg_1', name: '第 1 期 訂金 (簽約)', percentage: '40', amount: '200000' },
-    { id: 'stg_2', name: '第 2 期 系統交付款', percentage: '40', amount: '200000' },
-    { id: 'stg_3', name: '第 3 期 驗收尾款', percentage: '20', amount: '100000' }
+    { id: 'stg_1', name: '訂金 (簽約)', percentage: '40', amount: '200000' },
+    { id: 'stg_2', name: '系統交付款', percentage: '40', amount: '200000' },
+    { id: 'stg_3', name: '驗收尾款', percentage: '20', amount: '100000' }
   ]);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -114,12 +138,11 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
 
   // 4. 動態新增階段
   const handleAddStage = () => {
-    const nextIdx = paymentStages.length + 1;
     setPaymentStages((prev) => [
       ...prev,
       {
         id: `stg_${Date.now()}`,
-        name: `第 ${nextIdx} 期 款項`,
+        name: '階段款項',
         percentage: '0',
         amount: '0'
       }
@@ -222,7 +245,7 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
       stage: 'development',
       healthStatus: 'healthy',
       progressPercent: 0,
-      assignedEngineers: assignedEngineers.split(',').map((e) => e.trim()).filter(Boolean),
+      assignedEngineers: assignedEngineers,
       startDate,
       durationDays: Number(durationDays),
       expectedDeliveryDate,
@@ -293,8 +316,8 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               </div>
             </div>
 
-            <div className="project-form-row">
-              <div className="project-form-col" style={{ flex: 2 }}>
+            <div className="project-form-row" style={{ alignItems: 'flex-start' }}>
+              <div className="project-form-col" style={{ flex: 1.3 }}>
                 <TextField
                   label="專案名稱 *"
                   placeholder="例如：智慧物流雲端管理系統"
@@ -304,11 +327,15 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
                 />
               </div>
               <div className="project-form-col" style={{ flex: 1 }}>
-                <TextField
-                  label="專案負責人"
-                  placeholder="負責人姓名 (以逗點分隔)"
+                <label className="custom-input-label">專案負責人 (下拉核取多選)</label>
+                <Select
+                  options={engineerOptions}
                   value={assignedEngineers}
-                  onChange={(e) => setAssignedEngineers(e.target.value)}
+                  multiple
+                  showCheckbox
+                  placeholder="請勾選專案負責人..."
+                  onChange={(v) => setAssignedEngineers(v as string[])}
+                  width="100%"
                 />
               </div>
             </div>
@@ -443,19 +470,24 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               <table className="stages-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '45%' }}>階段名稱</th>
+                    <th style={{ width: '10%', textAlign: 'center' }}>期數</th>
+                    <th style={{ width: '38%' }}>階段名稱</th>
                     <th style={{ width: '22%' }}>比例 (%)</th>
-                    <th style={{ width: '25%' }}>階段應收金額 (NT$)</th>
+                    <th style={{ width: '22%' }}>階段應收金額 (NT$)</th>
                     <th style={{ width: '8%', textAlign: 'center' }}>刪除</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paymentStages.map((stage) => (
+                  {paymentStages.map((stage, index) => (
                     <tr key={stage.id}>
+                      <td style={{ textAlign: 'center' }}>
+                        <span className="stage-index-badge">{index + 1}</span>
+                      </td>
                       <td>
                         <input
                           type="text"
                           className="stage-input"
+                          placeholder="例如：訂金 (簽約)"
                           value={stage.name}
                           onChange={(e) => handleStageNameChange(stage.id, e.target.value)}
                         />
