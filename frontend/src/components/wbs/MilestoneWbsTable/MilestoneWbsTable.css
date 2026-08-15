@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height, WBS Code column on the far left, milestone rows without duration/end date/progress, predecessor WBS code selector + enlarged pull-forward checkbox.
- * @description_zh WBS 編號獨立於最左側欄位、里程碑檢查點不顯示工期/結束日/進度、前置任務僅顯示 WBS 序號、放大「提前」核取框尺寸與字級。
+ * @description_en Strictly uniform 30px height, generous Select trigger padding preventing text overlap, WBS Code column on the far left, milestone rows without duration/end date/progress, predecessor WBS code selector + enlarged pull-forward checkbox.
+ * @description_zh WBS 編號獨立於最左側欄位、下拉選單寬度與 Padding 加大防止文字與箭頭遮擋、里程碑檢查點不顯示工期/結束日/進度、放大「提前」核取框。
  */
 
 .wbs-wrapper {
@@ -103,7 +103,7 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1980px;
+  min-width: 2020px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
@@ -332,14 +332,26 @@
   line-height: 28px !important;
 }
 
-/* 針對 Select 組件內層 Trigger 容器的精準高度與樣式覆寫 */
+/* 針對 Select 組件內層 Trigger 容器的精準高度、文字與箭頭間距覆寫 */
 .wbs-select-field > div > div {
-  padding: 0 8px !important;
+  padding: 0 6px !important;
   border: 1px solid #cbd5e1 !important;
   background-color: #ffffff !important;
   border-radius: 6px !important;
   display: flex !important;
   align-items: center !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  overflow: hidden !important;
+}
+
+/* 防止 Select 內部文字溢出或遮住箭頭 */
+.wbs-select-field > div > div span,
+.wbs-select-field > div > div div {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 13px !important;
 }
 
 .wbs-datepicker-field .caas-date-picker-wrapper {

@@ -548,12 +548,13 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
             </td>
 
             {/* 3. 前置依賴組合欄位 (前置工項 Select + 依賴類型 Select + 允許提前 Checkbox) */}
-            <td style={{ width: '235px', minWidth: '235px' }}>
+            <td style={{ width: '255px', minWidth: '255px' }}>
               <div className="wbs-dependency-composite-cell">
                 {/* 前置工項 Select (只顯示 WBS 序號) */}
-                <div style={{ width: '85px', flexShrink: 0 }}>
+                <div style={{ width: '95px', flexShrink: 0 }}>
                   <Select
                     className="wbs-select-field"
+                    placeholder="無"
                     options={predecessorSelectOptions}
                     value={node.predecessorCode || ''}
                     onChange={(val: string | number | (string | number)[]) =>
@@ -806,7 +807,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
             <tr className="wbs-th-row-1">
               <th rowSpan={2} style={{ width: '5%', minWidth: '90px', textAlign: 'center' }}>WBS 編號</th>
               <th rowSpan={2} style={{ width: '16%', minWidth: '260px', textAlign: 'center' }}>工作項目名稱</th>
-              <th rowSpan={2} style={{ width: '13%', minWidth: '250px', textAlign: 'center' }}>前置依賴 (項目 / 關係 / 提前)</th>
+              <th rowSpan={2} style={{ width: '13%', minWidth: '255px', textAlign: 'center' }}>前置依賴 (項目 / 關係 / 提前)</th>
               <th rowSpan={2} style={{ width: '7%', minWidth: '135px', textAlign: 'center' }}>負責人</th>
               <th colSpan={3} className="wbs-th-group planned" style={{ textAlign: 'center' }}>預計時程</th>
               <th colSpan={3} className="wbs-th-group actual" style={{ textAlign: 'center' }}>實際時程</th>
