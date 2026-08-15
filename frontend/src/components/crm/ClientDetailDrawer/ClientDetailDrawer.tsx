@@ -184,9 +184,9 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
             </form>
           </div>
 
-          {/* 聯繫歷史時間軸 */}
+          {/* 聯繫歷史 */}
           <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', marginBottom: '8px' }}>
-            聯繫歷史時間軸 ({(client.logs || []).length})
+            聯繫歷史
           </div>
 
           {(!client.logs || client.logs.length === 0) ? (

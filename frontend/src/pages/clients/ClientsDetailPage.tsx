@@ -230,18 +230,20 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             onClick={() => setActiveTab('timeline')}
           >
             <TextIcon name="clock" size="sm" />
-            <span>聯繫歷史時間軸 ({logs.length})</span>
+            <span>聯繫歷史</span>
           </button>
         </div>
 
-        {/* 移動到頁籤同一排右側的 [+ 新增紀錄] 按鈕 (與返回客戶列表按鈕尺寸相同) */}
-        <Button
-          variant="primary"
-          onClick={() => setIsAddLogModalOpen(true)}
-        >
-          <TextIcon name="plus" size="sm" />
-          <span>新增紀錄</span>
-        </Button>
+        {/* 僅在「聯繫歷史」頁籤顯示 [+ 新增紀錄] 按鈕 */}
+        {activeTab === 'timeline' && (
+          <Button
+            variant="primary"
+            onClick={() => setIsAddLogModalOpen(true)}
+          >
+            <TextIcon name="plus" size="sm" />
+            <span>新增紀錄</span>
+          </Button>
+        )}
       </div>
 
       {/* Tab 1: 客戶基本資料與需求編輯 */}
