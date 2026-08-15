@@ -11,8 +11,8 @@ import './ClientsDetailPage.css';
 /**
  * @file ClientsDetailPage.tsx
  * @description 客戶詳情與編輯獨立頁面 / CRM Client Detail Page
- * @description_en Full-width client detail view with top-right navigation actions (Status, Delete, Back)
- * @description_zh 獨立客戶詳情頁面，頂欄右側整合狀態選單、刪除與返回列表按鈕，移除系統類型下方晶片標籤
+ * @description_en Full-width client detail view with pure icon action buttons (Save & Delete) in header toolbar
+ * @description_zh 獨立客戶詳情頁面，頂欄右側工具列整合狀態選單、純 Icon 儲存按鈕、純 Icon 刪除按鈕與返回按鈕
  */
 
 interface ClientsDetailPageProps {
@@ -142,7 +142,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
 
   return (
     <div style={{ width: '100%' }}>
-      {/* 標頭區域 (整合狀態切換、刪除與右側返回按鈕) / Header Section */}
+      {/* 標頭區域 (整合狀態切換、純 Icon 儲存與刪除按鈕、返回按鈕) / Header Section */}
       <div className="client-detail-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -190,9 +190,20 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             />
           </div>
 
-          {/* 2. 刪除客戶按鈕 */}
+          {/* 2. 純 Icon 儲存修改按鈕 (放置於刪除按鈕左側) */}
+          <Button
+            type="submit"
+            form="client-edit-form"
+            variant="primary"
+            title="儲存修改"
+          >
+            <TextIcon name="file-check" size="sm" />
+          </Button>
+
+          {/* 3. 純 Icon 刪除客戶按鈕 */}
           <Button
             variant="danger"
+            title="刪除客戶"
             onClick={() => {
               if (window.confirm(`確定要刪除「${client.name}」的客戶資料嗎？此操作無法撤銷。`)) {
                 onDeleteClient(client.id);
@@ -201,10 +212,9 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             }}
           >
             <TextIcon name="trash" size="sm" />
-            <span>刪除客戶</span>
           </Button>
 
-          {/* 3. 返回客戶列表按鈕 (移動至刪除按鈕右側) */}
+          {/* 4. 返回客戶列表按鈕 */}
           <Button variant="secondary" onClick={onBack}>
             <TextIcon name="arrow-left" size="sm" />
             <span>返回客戶列表</span>
@@ -236,7 +246,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
       {/* Tab 1: 客戶基本資料與需求編輯 */}
       {activeTab === 'info' && (
         <div style={{ width: '100%', background: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
-          <form onSubmit={handleSaveInfo} noValidate>
+          <form id="client-edit-form" onSubmit={handleSaveInfo} noValidate>
             <TextField
               id="client-name-edit"
               label="客戶 / 單位名稱"
@@ -316,7 +326,6 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
               onChange={(e) => setAddress(e.target.value)}
             />
 
-            {/* 預計開發系統類型 (單純純文字輸入，下方不留選單 chips) */}
             <TextField
               id="system-type-edit"
               label="預計開發系統類型 (選填)"
@@ -336,13 +345,6 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
                 onChange={(e) => setRequirementSummary(e.target.value)}
                 style={{ resize: 'vertical' }}
               />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
-              <Button type="submit" variant="primary">
-                <TextIcon name="file-check" size="sm" />
-                <span>儲存修改</span>
-              </Button>
             </div>
           </form>
         </div>
