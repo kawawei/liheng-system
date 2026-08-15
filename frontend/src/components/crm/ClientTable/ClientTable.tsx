@@ -2,12 +2,13 @@ import React from 'react';
 import { Client } from '../../../types';
 import { TextIcon } from '../../icon/TextIcon';
 import { StatusBadge } from '../../status-badge/StatusBadge';
+import { Button } from '../../button/Button';
 
 /**
  * @file ClientTable.tsx
  * @description 客戶資料表格組件 / Client Data Table Component
- * @description_en Renders the main client table list with status badges and action buttons
- * @description_zh 負責渲染 CRM 客戶數據列表與操作按鈕
+ * @description_en Renders the main client table list using specified CaaS components
+ * @description_zh 負責渲染 CRM 客戶數據列表，採用指定組件庫之 Button 與 StatusBadge 組件
  */
 
 interface ClientTableProps {
@@ -77,9 +78,9 @@ export const ClientTable: React.FC<ClientTableProps> = ({
               </td>
               <td style={{ fontFamily: 'var(--font-mono)' }}>{c.createdAt}</td>
               <td>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
+                <Button
+                  variant="secondary"
+                  size="sm"
                   style={{ padding: '4px 10px', fontSize: '12px' }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -88,7 +89,7 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                 >
                   <TextIcon name="clock" size="sm" />
                   <span>聯繫紀錄 ({c.logs?.length || 0})</span>
-                </button>
+                </Button>
               </td>
             </tr>
           ))}

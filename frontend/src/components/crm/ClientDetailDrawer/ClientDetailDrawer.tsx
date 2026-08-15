@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Client, InteractionLog } from '../../../types';
 import { TextIcon } from '../../icon/TextIcon';
 import { StatusBadge } from '../../status-badge/StatusBadge';
+import { Button } from '../../button/Button';
 import './ClientDetailDrawer.css';
 
 /**
  * @file ClientDetailDrawer.tsx
  * @description 客戶詳情與聯繫時間軸 Drawer 組件 / Client Detail Drawer Component
- * @description_en Displays client metadata, requirement summary, and vertical interaction timeline
- * @description_zh 展示客戶詳細資訊、系統需求概要，並提供垂直時間軸與即時紀錄新增表單
+ * @description_en Displays client metadata, requirement summary, and vertical interaction timeline using specified CaaS components
+ * @description_zh 展示客戶詳細資訊與系統需求，並使用指定組件庫 Button 處理聯繫歷史時間軸互動
  */
 
 interface ClientDetailDrawerProps {
@@ -167,14 +168,14 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
                 />
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
+                <Button
                   type="submit"
-                  className="btn btn-primary"
-                  style={{ padding: '4px 12px', fontSize: '12px' }}
+                  variant="primary"
+                  size="sm"
                   disabled={!logSummary.trim()}
                 >
                   新增紀錄
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -214,13 +215,12 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
         </div>
 
         <div className="drawer-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
+          <Button
+            variant="secondary"
             onClick={onClose}
           >
             關閉
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Client } from '../../../types';
+import { Button } from '../../button/Button';
+import { TextField } from '../../input/TextField';
 import './ClientFormModal.css';
 
 /**
  * @file ClientFormModal.tsx
  * @description 新增客戶資料彈窗組件 / Client Form Modal Component
- * @description_en Handles creation form with optional company/tax ID/address fields and system type tags
- * @description_zh 處理新增客戶表單，支援名稱首位、公司與統編地址選填以及預計開發系統標籤
+ * @description_en Uses specified CaaS component library (Button, TextField) for clean form controls
+ * @description_zh 使用指定組件庫之 Button 與 TextField 控制項，處理新增客戶表單
  */
 
 interface ClientFormModalProps {
@@ -122,115 +124,87 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
 
         <form onSubmit={handleSubmit} noValidate>
           {/* 1. 客戶名稱 (放在最首位) */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="client-name">客戶 / 單位名稱 *</label>
-            <input
-              id="client-name"
-              type="text"
-              className={`form-input ${errors.name ? 'is-invalid' : ''}`}
-              value={name}
-              placeholder="例如：張先生、台元半導體、某某團隊"
-              onChange={(e) => setName(e.target.value)}
-            />
-            {errors.name && <div className="form-error-msg">{errors.name}</div>}
-          </div>
+          <TextField
+            id="client-name"
+            label="客戶 / 單位名稱"
+            required
+            value={name}
+            error={errors.name}
+            placeholder="例如：張先生、台元半導體、某某團隊"
+            onChange={(e) => setName(e.target.value)}
+          />
 
           {/* 2. 聯絡人雙欄 (必填) */}
           <div className="form-grid-2">
-            <div className="form-group">
-              <label className="form-label" htmlFor="contact-person">聯絡人姓名 *</label>
-              <input
-                id="contact-person"
-                type="text"
-                className={`form-input ${errors.contactPerson ? 'is-invalid' : ''}`}
-                value={contactPerson}
-                placeholder="請輸入主要聯絡人"
-                onChange={(e) => setContactPerson(e.target.value)}
-              />
-              {errors.contactPerson && <div className="form-error-msg">{errors.contactPerson}</div>}
-            </div>
+            <TextField
+              id="contact-person"
+              label="聯絡人姓名"
+              required
+              value={contactPerson}
+              error={errors.contactPerson}
+              placeholder="請輸入主要聯絡人"
+              onChange={(e) => setContactPerson(e.target.value)}
+            />
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="contact-phone">聯絡人電話 *</label>
-              <input
-                id="contact-phone"
-                type="text"
-                className={`form-input ${errors.contactPhone ? 'is-invalid' : ''}`}
-                value={contactPhone}
-                placeholder="如 0912-345-678"
-                onChange={(e) => setContactPhone(e.target.value)}
-              />
-              {errors.contactPhone && <div className="form-error-msg">{errors.contactPhone}</div>}
-            </div>
+            <TextField
+              id="contact-phone"
+              label="聯絡人電話"
+              required
+              value={contactPhone}
+              error={errors.contactPhone}
+              placeholder="如 0912-345-678"
+              onChange={(e) => setContactPhone(e.target.value)}
+            />
           </div>
 
           {/* 3. 公司名稱與統編 (選填) */}
           <div className="form-grid-2">
-            <div className="form-group">
-              <label className="form-label" htmlFor="company-name">公司名稱 (選填)</label>
-              <input
-                id="company-name"
-                type="text"
-                className="form-input"
-                value={companyName}
-                placeholder="若無公司可留空"
-                onChange={(e) => setCompanyName(e.target.value)}
-              />
-            </div>
+            <TextField
+              id="company-name"
+              label="公司名稱 (選填)"
+              value={companyName}
+              placeholder="若無公司可留空"
+              onChange={(e) => setCompanyName(e.target.value)}
+            />
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="tax-id">統一編號 (選填，8碼)</label>
-              <input
-                id="tax-id"
-                type="text"
-                maxLength={8}
-                className={`form-input ${errors.taxId ? 'is-invalid' : ''}`}
-                value={taxId}
-                placeholder="如 12345678 (選填)"
-                onChange={(e) => setTaxId(e.target.value)}
-              />
-              {errors.taxId && <div className="form-error-msg">{errors.taxId}</div>}
-            </div>
+            <TextField
+              id="tax-id"
+              label="統一編號 (選填，8碼)"
+              maxLength={8}
+              value={taxId}
+              error={errors.taxId}
+              placeholder="如 12345678 (選填)"
+              onChange={(e) => setTaxId(e.target.value)}
+            />
           </div>
 
           {/* 4. 公司電話、Email、地址 (選填) */}
           <div className="form-grid-2">
-            <div className="form-group">
-              <label className="form-label" htmlFor="company-phone">公司電話 (選填)</label>
-              <input
-                id="company-phone"
-                type="text"
-                className="form-input"
-                value={companyPhone}
-                placeholder="如 02-27891234 (選填)"
-                onChange={(e) => setCompanyPhone(e.target.value)}
-              />
-            </div>
+            <TextField
+              id="company-phone"
+              label="公司電話 (選填)"
+              value={companyPhone}
+              placeholder="如 02-27891234 (選填)"
+              onChange={(e) => setCompanyPhone(e.target.value)}
+            />
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="email-input">電子郵件 Email (選填)</label>
-              <input
-                id="email-input"
-                type="email"
-                className="form-input"
-                value={email}
-                placeholder="example@domain.com (選填)"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="address-input">地址 (選填)</label>
-            <input
-              id="address-input"
-              type="text"
-              className="form-input"
-              value={address}
-              placeholder="如：台北市信義區松仁路 7 號 12 樓 (選填)"
-              onChange={(e) => setAddress(e.target.value)}
+            <TextField
+              id="email-input"
+              type="email"
+              label="電子郵件 Email (選填)"
+              value={email}
+              placeholder="example@domain.com (選填)"
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
+          <TextField
+            id="address-input"
+            label="地址 (選填)"
+            value={address}
+            placeholder="如：台北市信義區松仁路 7 號 12 樓 (選填)"
+            onChange={(e) => setAddress(e.target.value)}
+          />
 
           {/* 5. 需求系統類型與概要 */}
           <div className="form-group">
@@ -271,16 +245,15 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}>
-            <button
-              type="button"
-              className="btn btn-secondary"
+            <Button
+              variant="secondary"
               onClick={onClose}
             >
               取消
-            </button>
-            <button type="submit" className="btn btn-primary">
+            </Button>
+            <Button type="submit" variant="primary">
               確認建立
-            </button>
+            </Button>
           </div>
         </form>
       </div>

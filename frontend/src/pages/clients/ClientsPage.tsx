@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TextIcon } from '../../components/icon/TextIcon';
+import { Button } from '../../components/button';
 import { Client, InteractionLog } from '../../types';
 import { INITIAL_CLIENTS_MOCK } from '../../mock/clients.mock';
 import { ClientTable, ClientFormModal, ClientDetailDrawer } from '../../components/crm';
@@ -8,8 +9,8 @@ import './ClientsPage.css';
 /**
  * @file ClientsPage.tsx
  * @description CRM 客戶關係管理頁面 / CRM Clients Management Page
- * @description_en Page level container coordinating ClientTable, ClientFormModal, and ClientDetailDrawer sub-components
- * @description_zh 頁面級容器，負責協調客戶清冊、新增彈窗與聯繫時間軸 Drawer 組件
+ * @description_en Page level container leveraging @kawawei/frontend-modules component library
+ * @description_zh 頁面級容器，使用規範指定之 @kawawei/frontend-modules 組件庫並協調 CRM 子組件
  */
 
 export const ClientsPage: React.FC = () => {
@@ -54,14 +55,13 @@ export const ClientsPage: React.FC = () => {
           <p className="page-subtitle">管理客戶聯絡資訊、系統開發需求概要與拜訪聯繫時間軸</p>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          variant="primary"
           onClick={() => setShowModal(true)}
         >
           <TextIcon name="plus" size="sm" />
           <span>新增客戶</span>
-        </button>
+        </Button>
       </div>
 
       {/* 客戶數據表格組件 / Client Table Sub-component */}
