@@ -49,3 +49,24 @@ YYYY-MM-DD HH:MM — [問題標題]
 - 重新整理瀏覽器控制台錯誤徹底消失。
 
 紀錄時間：20:08
+
+### 2026-08-15 22:58 — [立案彈窗組件庫 Select 下拉滾動受阻與 DatePicker 日曆邊界遮擋修復]
+
+**問題描述**
+- 場景：CRM 客戶轉正式專案立案彈窗中，主責工程師團隊下拉多選核取選單無法在視窗內完整滾動；立案開工日期的日曆面板（DatePicker）展開時在底部被彈窗按鈕遮擋，且向上展開時左側週日數字貼邊裁切。
+- 錯誤現象：`<Select>` 選單超出瀏覽器 Viewport 下緣導致截斷；`<DatePicker>` 面板向下展開被彈窗底欄覆蓋，向上展開時最左側週日紅字（26, 2, 9...）與翻月箭頭缺乏左側內距。
+
+**原因分析**
+- `@kawawei/frontend-modules` 的 `<Select>` 組件採用 `createPortal(..., document.body)` 搭配 `position: fixed`，其 `top` 座標取自宿主元素 `getBoundingClientRect().bottom`。當 Select 被放置於彈窗底部時，展開的 260px 下拉面板直接超出瀏覽器視窗下邊界。
+- `<DatePicker>` 內部 `.caas-calendar-popover` 預設向下展開 (`top: 100%`)，在彈窗下半部會被 Modal Footer 遮擋；改為向上展開時，因彈窗網格列左側緊鄰 Modal 邊界，內部日曆格未預留充足左側內距導致貼邊。
+
+**解決方案**
+- **Select 欄位佈局優化**：將「主責工程師團隊」與「初始專案階段」移至彈窗正中上半段，為展開的下拉視窗提供超過 450px 的充足可視空間，工程師核取清單可自由上下滾動。
+- **DatePicker 向上展開與邊界修復**：透過 CSS 覆蓋 `.create-project-modal .caas-calendar-popover`，強制 `bottom: calc(100% + 8px) !important; top: auto !important; z-index: 99999 !important; min-width: 320px !important; padding: 14px 18px !important;`，使其向彈窗上方空間展開並擁有 18px 的左側安全內距。
+
+**驗證結果**
+- 工程師下拉選單 5 位名單完整呈現，Checkbox 勾選與多選 Tag 標籤流暢正常。
+- 日曆選擇器點擊時向上方充裕空間展開，最左側週日欄位具備舒適留白，無任何遮擋或裁切。
+- 前端 `npm run build` 打包編譯通過無錯誤。
+
+紀錄時間：22:58
