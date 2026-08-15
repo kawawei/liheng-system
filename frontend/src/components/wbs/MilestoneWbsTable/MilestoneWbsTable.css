@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height for all dropdowns and inputs, generous column widths with ample spacing and smooth horizontal scrolling.
- * @description_zh 下拉選單與所有輸入框嚴格統一 30px 垂直高度、放寬各欄位寬度與留白間距、表頭文字全部置中。
+ * @description_en Strictly uniform 30px height, wider duration/progress inputs, larger action buttons, generous column widths.
+ * @description_zh 下拉選單與輸入框統一 30px 高度、加寬工期與進度欄位、放大操作按鈕尺寸。
  */
 
 .wbs-wrapper {
@@ -84,7 +84,7 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1680px;
+  min-width: 1720px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
@@ -133,7 +133,7 @@
   color: #065f46 !important;
 }
 
-/* 單元格留白間距加大，不再擁擠 */
+/* 單元格留白間距加大 */
 .wbs-table td {
   padding: 8px 12px !important;
   border-bottom: 1px solid var(--border-color, #f1f5f9);
@@ -185,7 +185,7 @@
 }
 
 /* ========================================
-   全面嚴格統一垂直高度為 30px (包含 Select 與 DatePicker)
+   全面嚴格統一垂直高度為 30px
    ======================================== */
 .wbs-select-field,
 .wbs-select-field > div,
@@ -253,9 +253,10 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12) !important;
 }
 
+/* 工期天數輸入框 (加大寬度為 64px) */
 .wbs-direct-days {
-  width: 52px;
-  padding: 0 4px;
+  width: 64px;
+  padding: 0 6px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   outline: none;
@@ -290,9 +291,10 @@
   font-weight: 600;
 }
 
+/* 進度輸入框 (加大寬度為 58px) */
 .wbs-direct-pct {
-  width: 50px;
-  padding: 0 4px;
+  width: 58px;
+  padding: 0 6px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   text-align: right;
@@ -312,11 +314,13 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
-/* 操作動作按鈕 */
+/* ========================================
+   操作按鈕 (放大為 34px，圖示清晰好點擊)
+   ======================================== */
 .wbs-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   justify-content: center;
 }
 
@@ -324,15 +328,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e1;
   background-color: #ffffff;
-  color: #64748b;
+  color: #475569;
   cursor: pointer;
   transition: all 0.15s ease;
   padding: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .wbs-action-btn:hover {
@@ -342,12 +347,12 @@
 
 .wbs-action-btn.add:hover {
   background-color: #eff6ff;
-  border-color: #bfdbfe;
+  border-color: #93c5fd;
   color: #2563eb;
 }
 
 .wbs-action-btn.delete:hover {
   background-color: #fef2f2;
-  border-color: #fecaca;
+  border-color: #fca5a5;
   color: #ef4444;
 }
