@@ -198,7 +198,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </div>
         </div>
 
-        {/* 右側按鈕群組 (狀態下拉選單 + 轉為正式專案立案 + 儲存 + 返回) */}
+        {/* 右側按鈕群組 (狀態下拉選單 + 儲存 + 返回) */}
         <div className="client-detail-header-right">
           {/* 1. 客戶狀態下拉選單 */}
           <div style={{ width: '130px' }}>
@@ -214,18 +214,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             />
           </div>
 
-          {/* 2. 為此客戶立案按鈕 */}
-          <Button
-            variant="primary"
-            title="為此客戶建立正式專案 (立案)"
-            onClick={() => setIsCreateProjectModalOpen(true)}
-            style={{ padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <TextIcon name="plus" size="sm" />
-            <span>為此客戶立案</span>
-          </Button>
-
-          {/* 3. 儲存修改按鈕 */}
+          {/* 2. 儲存修改按鈕 */}
           <Button
             type="submit"
             form="client-edit-form"
@@ -236,7 +225,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             <TextIcon name="file-check" size="md" />
           </Button>
 
-          {/* 4. 返回客戶列表按鈕 */}
+          {/* 3. 返回客戶列表按鈕 */}
           <Button variant="secondary" onClick={onBack}>
             <TextIcon name="arrow-left" size="sm" />
             <span>返回客戶列表</span>
@@ -275,7 +264,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </button>
         </div>
 
-        {/* 僅在「聯繫歷史」頁籤顯示 [+ 新增紀錄] 按鈕 */}
+        {/* 僅在「聯繫歷史」頁籤顯示 [新增紀錄] 按鈕 */}
         {activeTab === 'timeline' && (
           <Button
             variant="primary"
@@ -286,14 +275,14 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </Button>
         )}
 
-        {/* 僅在「關聯專案」頁籤顯示 [+ 新增專案] 按鈕 */}
+        {/* 僅在「關聯專案」頁籤顯示 [為此客戶新增專案] 按鈕 */}
         {activeTab === 'projects' && (
           <Button
             variant="primary"
             onClick={() => setIsCreateProjectModalOpen(true)}
           >
             <TextIcon name="plus" size="sm" />
-            <span>+ 為此客戶新增專案</span>
+            <span>為此客戶新增專案</span>
           </Button>
         )}
       </div>
