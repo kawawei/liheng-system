@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.tsx
  * @description WBS 里程碑樹狀表格組件 / Milestone WBS Tree Table Component
- * @description_en Hierarchical WBS tree table supporting infinite depth, inline in-place editing, status toggling, progress tracking, and budget monitoring.
- * @description_zh 實作多層級 WBS 樹狀階層表格，支援展開/摺疊、行內直接編輯 (零彈窗)、即時狀態流轉、工項進度與預算成本監控。
+ * @description_en Hierarchical WBS tree table supporting infinite depth, inline in-place editing, planned vs actual dual schedules with auto-calculated end dates, progress tracking, and budget monitoring.
+ * @description_zh 實作多層級 WBS 樹狀階層表格，支援展開/摺疊、行內直接編輯 (零彈窗)、預計與實際雙軌期程 (開始日+工期自動試算結束日)、工項進度與預算成本監控。
  */
 
 import React, { useState, useMemo } from 'react';
@@ -33,6 +33,18 @@ const STATUS_CONFIG: Record<WbsStatus, { label: string; icon: React.ComponentTyp
 };
 
 const ENGINEER_OPTIONS = ['張工程師', '李工程師', '王架構師', '林工程師'];
+
+// ========================================
+// 日期自動計算工具 / Date Calc Helper
+// ========================================
+const calculateEndDate = (startDateStr?: string, duration?: number): string => {
+  if (!startDateStr || !duration || duration <= 0) return '';
+  const start = new Date(startDateStr);
+  if (isNaN(start.getTime())) return '';
+  const end = new Date(start);
+  end.setDate(start.getDate() + Math.max(1, duration) - 1);
+  return end.toISOString().split('T')[0];
+};
 
 interface MilestoneWbsTableProps {
   projectId: string;
@@ -123,7 +135,27 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       return list.map((node) => {
         if (node.id === nodeId) {
           const nextProgress = nextStatus === 'COMPLETED' ? 100 : nextStatus === 'NOT_STARTED' ? 0 : Math.max(node.progress, 50);
-          return { ...node, status: nextStatus, progress: nextProgress };
+          
+          let actStart = node.actualStartDate || '';
+          let actDur = node.actualDurationDays || node.plannedDurationDays || node.durationDays || 14;
+          let actEnd = node.actualEndDate || '';
+
+          if (nextStatus === 'IN_PROGRESS' && !actStart) {
+            actStart = new Date().toISOString().split('T')[0];
+            actEnd = calculateEndDate(actStart, actDur);
+          } else if (nextStatus === 'COMPLETED') {
+            if (!actStart) actStart = node.plannedStartDate || new Date().toISOString().split('T')[0];
+            actEnd = new Date().toISOString().split('T')[0];
+          }
+
+          return {
+            ...node,
+            status: nextStatus,
+            progress: nextProgress,
+            actualStartDate: actStart,
+            actualDurationDays: actDur,
+            actualEndDate: actEnd,
+          };
         }
         if (node.children && node.children.length > 0) {
           return { ...node, children: updateStatus(node.children) };
@@ -158,12 +190,20 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   // ========================================
   const startInlineEdit = (node: WbsNode) => {
     setEditingNodeId(node.id);
+    const pStart = node.plannedStartDate || node.startDate || '2026-08-15';
+    const pDur = node.plannedDurationDays || node.durationDays || 14;
+    const aStart = node.actualStartDate || '';
+    const aDur = node.actualDurationDays || 0;
+
     setEditFormData({
       name: node.name,
       assignees: node.assignees || ['張工程師'],
-      startDate: node.startDate || '2026-08-15',
-      endDate: node.endDate || '2026-08-30',
-      durationDays: node.durationDays || 15,
+      plannedStartDate: pStart,
+      plannedDurationDays: pDur,
+      plannedEndDate: calculateEndDate(pStart, pDur),
+      actualStartDate: aStart,
+      actualDurationDays: aDur,
+      actualEndDate: aStart && aDur > 0 ? calculateEndDate(aStart, aDur) : '',
       budget: node.budget || 0,
       actualCost: node.actualCost || 0,
       progress: node.progress || 0,
@@ -179,15 +219,13 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   const saveInlineEdit = (nodeId: string) => {
     if (!editFormData.name?.trim()) return;
 
-    // 計算工期天數
-    let dur = editFormData.durationDays || 1;
-    if (editFormData.startDate && editFormData.endDate) {
-      const start = new Date(editFormData.startDate).getTime();
-      const end = new Date(editFormData.endDate).getTime();
-      if (end >= start) {
-        dur = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
-      }
-    }
+    const pStart = editFormData.plannedStartDate || '2026-08-15';
+    const pDur = Number(editFormData.plannedDurationDays) || 1;
+    const pEnd = calculateEndDate(pStart, pDur);
+
+    const aStart = editFormData.actualStartDate || '';
+    const aDur = Number(editFormData.actualDurationDays) || 0;
+    const aEnd = aStart && aDur > 0 ? calculateEndDate(aStart, aDur) : '';
 
     const updateNode = (list: WbsNode[]): WbsNode[] => {
       return list.map((n) => {
@@ -196,9 +234,16 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
             ...n,
             name: editFormData.name!.trim(),
             assignees: editFormData.assignees || ['張工程師'],
-            startDate: editFormData.startDate,
-            endDate: editFormData.endDate,
-            durationDays: dur,
+            plannedStartDate: pStart,
+            plannedDurationDays: pDur,
+            plannedEndDate: pEnd,
+            actualStartDate: aStart,
+            actualDurationDays: aDur,
+            actualEndDate: aEnd,
+            // 相容舊欄位
+            startDate: pStart,
+            endDate: pEnd,
+            durationDays: pDur,
             budget: Number(editFormData.budget) || 0,
             actualCost: Number(editFormData.actualCost) || 0,
             progress: Number(editFormData.progress) || 0,
@@ -222,14 +267,22 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   const handleAddRootMilestone = () => {
     const nextIndex = nodes.length + 1;
     const newId = `wbs_${Date.now()}`;
+    const pStart = '2026-08-15';
+    const pDur = 30;
     const newRoot: WbsNode = {
       id: newId,
       projectId,
       name: `M${nextIndex}: 新專案里程碑`,
       assignees: ['張工程師'],
-      startDate: '2026-08-15',
-      endDate: '2026-09-15',
-      durationDays: 31,
+      plannedStartDate: pStart,
+      plannedDurationDays: pDur,
+      plannedEndDate: calculateEndDate(pStart, pDur),
+      actualStartDate: '',
+      actualDurationDays: 0,
+      actualEndDate: '',
+      startDate: pStart,
+      endDate: calculateEndDate(pStart, pDur),
+      durationDays: pDur,
       budget: 100000,
       actualCost: 0,
       progress: 0,
@@ -244,15 +297,23 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 
   const handleAddChildTask = (parentNode: WbsNode) => {
     const newId = `wbs_${Date.now()}`;
+    const pStart = parentNode.plannedStartDate || parentNode.startDate || '2026-08-15';
+    const pDur = 14;
     const newChild: WbsNode = {
       id: newId,
       projectId,
       parentId: parentNode.id,
       name: '新工作任務項目',
       assignees: parentNode.assignees || ['張工程師'],
-      startDate: parentNode.startDate || '2026-08-15',
-      endDate: parentNode.endDate || '2026-08-30',
-      durationDays: 15,
+      plannedStartDate: pStart,
+      plannedDurationDays: pDur,
+      plannedEndDate: calculateEndDate(pStart, pDur),
+      actualStartDate: '',
+      actualDurationDays: 0,
+      actualEndDate: '',
+      startDate: pStart,
+      endDate: calculateEndDate(pStart, pDur),
+      durationDays: pDur,
       budget: 50000,
       actualCost: 0,
       progress: 0,
@@ -313,10 +374,29 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       const StatusIcon = statusObj.icon;
       const isOverBudget = (node.actualCost || 0) > (node.budget || 0);
 
+      // 預計期程與工期
+      const pStart = node.plannedStartDate || node.startDate || '';
+      const pDur = node.plannedDurationDays || node.durationDays || 0;
+      const pEnd = node.plannedEndDate || node.endDate || calculateEndDate(pStart, pDur);
+
+      // 實際期程與工期
+      const aStart = node.actualStartDate || '';
+      const aDur = node.actualDurationDays || 0;
+      const aEnd = node.actualEndDate || (aStart && aDur > 0 ? calculateEndDate(aStart, aDur) : '');
+
       if (isEditing) {
         // ========================================
         // 1. 行內編輯狀態視圖 (Inline Edit Row)
         // ========================================
+        const calculatedPlannedEnd = calculateEndDate(
+          editFormData.plannedStartDate,
+          editFormData.plannedDurationDays
+        );
+        const calculatedActualEnd = calculateEndDate(
+          editFormData.actualStartDate,
+          editFormData.actualDurationDays
+        );
+
         return (
           <tr key={node.id} className="wbs-row is-editing">
             {/* 1. 名稱編輯 */}
@@ -333,7 +413,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                     if (e.key === 'Enter') saveInlineEdit(node.id);
                     if (e.key === 'Escape') cancelInlineEdit();
                   }}
-                  placeholder="請輸入工作項目名稱..."
+                  placeholder="工作項目名稱..."
                 />
               </div>
             </td>
@@ -353,26 +433,75 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </select>
             </td>
 
-            {/* 3. 計畫期程 (開始/結束日) */}
+            {/* 3. 預計期程 (僅開始日與工期可編輯，結束日自動計算) */}
             <td>
-              <div className="wbs-inline-date-group">
-                <input
-                  type="date"
-                  className="wbs-inline-date-input"
-                  value={editFormData.startDate || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
-                />
-                <span style={{ color: 'var(--text-muted)' }}>→</span>
-                <input
-                  type="date"
-                  className="wbs-inline-date-input"
-                  value={editFormData.endDate || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
-                />
+              <div className="wbs-inline-date-block">
+                <div className="wbs-inline-date-row">
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>開始:</span>
+                  <input
+                    type="date"
+                    className="wbs-inline-date-input"
+                    value={editFormData.plannedStartDate || ''}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, plannedStartDate: e.target.value })
+                    }
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    className="wbs-inline-days-input"
+                    value={editFormData.plannedDurationDays ?? 1}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        plannedDurationDays: Math.max(1, Number(e.target.value)),
+                      })
+                    }
+                    title="輸入工期天數"
+                  />
+                  <span style={{ fontSize: '11px' }}>天</span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 500 }}>
+                  結束: {calculatedPlannedEnd || '—'} <span style={{ color: 'var(--text-muted)' }}>(自動試算)</span>
+                </div>
               </div>
             </td>
 
-            {/* 4. 分配預算 */}
+            {/* 4. 實際期程 (開始日與工期可編輯，結束日自動計算) */}
+            <td>
+              <div className="wbs-inline-date-block">
+                <div className="wbs-inline-date-row">
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>開始:</span>
+                  <input
+                    type="date"
+                    className="wbs-inline-date-input"
+                    value={editFormData.actualStartDate || ''}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, actualStartDate: e.target.value })
+                    }
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    className="wbs-inline-days-input"
+                    value={editFormData.actualDurationDays ?? 0}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        actualDurationDays: Math.max(0, Number(e.target.value)),
+                      })
+                    }
+                    title="輸入實際工期天數"
+                  />
+                  <span style={{ fontSize: '11px' }}>天</span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#059669', fontWeight: 500 }}>
+                  結束: {calculatedActualEnd || '—'}
+                </div>
+              </div>
+            </td>
+
+            {/* 5. 分配預算 */}
             <td style={{ textAlign: 'right' }}>
               <input
                 type="number"
@@ -383,7 +512,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               />
             </td>
 
-            {/* 5. 發生成本 */}
+            {/* 6. 發生成本 */}
             <td style={{ textAlign: 'right' }}>
               <input
                 type="number"
@@ -394,14 +523,14 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               />
             </td>
 
-            {/* 6. 工項進度 */}
+            {/* 7. 工項進度 */}
             <td>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <input
                   type="number"
                   min="0"
                   max="100"
-                  style={{ width: '55px', padding: '4px 6px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                  style={{ width: '50px', padding: '4px 6px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
                   value={editFormData.progress ?? 0}
                   onChange={(e) => setEditFormData({ ...editFormData, progress: Number(e.target.value) })}
                 />
@@ -409,7 +538,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 7. 狀態 */}
+            {/* 8. 狀態 */}
             <td>
               <button
                 type="button"
@@ -422,7 +551,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </button>
             </td>
 
-            {/* 8. 行內操作 (保存 / 取消) */}
+            {/* 9. 行內操作 (保存 / 取消) */}
             <td>
               <div className="wbs-actions">
                 <button
@@ -501,19 +630,35 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               )}
             </td>
 
-            {/* 3. 計畫期程 */}
-            <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
-              {node.startDate && node.endDate ? (
-                <span onClick={() => startInlineEdit(node)} style={{ cursor: 'pointer' }} title="點擊修改期程">
-                  {node.startDate} <span style={{ color: 'var(--text-muted)' }}>→</span> {node.endDate}
-                  {node.durationDays ? ` (${node.durationDays}天)` : ''}
-                </span>
-              ) : (
-                <span style={{ color: 'var(--text-muted)' }}>—</span>
-              )}
+            {/* 3. 預計期程 (工期) */}
+            <td>
+              <div className="wbs-date-display-block" onClick={() => startInlineEdit(node)} style={{ cursor: 'pointer' }} title="點擊修改預計期程">
+                {pStart ? (
+                  <span>
+                    {pStart} <span style={{ color: 'var(--text-muted)' }}>→</span> {pEnd}
+                    {pDur ? ` (${pDur}天)` : ''}
+                  </span>
+                ) : (
+                  <span style={{ color: 'var(--text-muted)' }}>—</span>
+                )}
+              </div>
             </td>
 
-            {/* 4. 分配預算 */}
+            {/* 4. 實際期程 (工期) */}
+            <td>
+              <div className="wbs-date-display-block" onClick={() => startInlineEdit(node)} style={{ cursor: 'pointer' }} title="點擊修改實際期程">
+                {aStart ? (
+                  <span style={{ color: '#047857' }}>
+                    {aStart} <span style={{ color: 'var(--text-muted)' }}>→</span> {aEnd}
+                    {aDur ? ` (${aDur}天)` : ''}
+                  </span>
+                ) : (
+                  <span style={{ color: 'var(--text-muted)' }}>—</span>
+                )}
+              </div>
+            </td>
+
+            {/* 5. 分配預算 */}
             <td
               style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', cursor: 'pointer' }}
               onClick={() => startInlineEdit(node)}
@@ -522,7 +667,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               NT$ {(node.budget || 0).toLocaleString()}
             </td>
 
-            {/* 5. 發生成本 */}
+            {/* 6. 發生成本 */}
             <td
               style={{
                 textAlign: 'right',
@@ -537,7 +682,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               NT$ {(node.actualCost || 0).toLocaleString()}
             </td>
 
-            {/* 6. 工項進度 */}
+            {/* 7. 工項進度 */}
             <td>
               <div
                 className="wbs-progress-box"
@@ -555,7 +700,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 7. 狀態切換 */}
+            {/* 8. 狀態切換 */}
             <td>
               <button
                 type="button"
@@ -568,7 +713,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </button>
             </td>
 
-            {/* 8. 操作 */}
+            {/* 9. 操作 */}
             <td>
               <div className="wbs-actions">
                 <button
@@ -646,14 +791,15 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         <table className="wbs-table">
           <thead>
             <tr>
-              <th style={{ width: '32%' }}>工作項目名稱</th>
-              <th style={{ width: '11%' }}>負責工程師</th>
-              <th style={{ width: '22%' }}>計畫期程 (工期)</th>
-              <th style={{ width: '10%', textAlign: 'right' }}>計畫預算</th>
-              <th style={{ width: '10%', textAlign: 'right' }}>已發生成本</th>
-              <th style={{ width: '10%' }}>工項進度</th>
-              <th style={{ width: '8%' }}>狀態</th>
-              <th style={{ width: '7%', textAlign: 'center' }}>操作</th>
+              <th style={{ width: '28%' }}>工作項目名稱</th>
+              <th style={{ width: '9%' }}>負責工程師</th>
+              <th style={{ width: '17%' }}>預計期程 (工期)</th>
+              <th style={{ width: '17%' }}>實際期程 (工期)</th>
+              <th style={{ width: '8%', textAlign: 'right' }}>計畫預算</th>
+              <th style={{ width: '8%', textAlign: 'right' }}>已發生成本</th>
+              <th style={{ width: '7%' }}>工項進度</th>
+              <th style={{ width: '7%' }}>狀態</th>
+              <th style={{ width: '6%', textAlign: 'center' }}>操作</th>
             </tr>
           </thead>
           <tbody>{renderRows(nodes)}</tbody>

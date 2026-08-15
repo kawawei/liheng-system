@@ -168,12 +168,34 @@
   white-space: nowrap;
 }
 
+/* 時程區塊樣式 */
+.wbs-date-display-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.wbs-date-calc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #334155;
+  font-family: var(--font-mono, monospace);
+}
+
 /* 進度條 */
 .wbs-progress-box {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 110px;
+  min-width: 100px;
 }
 
 .wbs-progress-track {
@@ -327,10 +349,16 @@
   border-color: #2563eb;
 }
 
-.wbs-inline-date-group {
+.wbs-inline-date-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wbs-inline-date-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .wbs-inline-date-input {
@@ -341,15 +369,31 @@
   background-color: #ffffff;
   outline: none;
   font-family: var(--font-mono, monospace);
-  width: 110px;
+  width: 118px;
 }
 
 .wbs-inline-date-input:focus {
   border-color: #2563eb;
 }
 
+.wbs-inline-days-input {
+  width: 48px;
+  padding: 4px 6px;
+  font-size: 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: #ffffff;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+  text-align: center;
+}
+
+.wbs-inline-days-input:focus {
+  border-color: #2563eb;
+}
+
 .wbs-inline-num-input {
-  width: 90px;
+  width: 85px;
   padding: 5px 8px;
   font-size: 12px;
   border: 1px solid #cbd5e1;

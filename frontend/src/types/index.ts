@@ -151,8 +151,16 @@ export interface WbsNode {
   parentId?: string;
   name: string;
   description?: string;
-  category?: 'requirement' | 'architecture' | 'development' | 'testing' | 'deployment';
   status: WbsStatus;
+  // 預計期程與工期 / Planned dates & duration
+  plannedStartDate?: string;
+  plannedEndDate?: string;
+  plannedDurationDays?: number;
+  // 實際期程與工期 / Actual dates & duration
+  actualStartDate?: string;
+  actualEndDate?: string;
+  actualDurationDays?: number;
+  // 相容通用欄位
   startDate?: string;
   endDate?: string;
   durationDays?: number;
