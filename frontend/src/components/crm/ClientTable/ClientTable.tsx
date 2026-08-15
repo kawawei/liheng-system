@@ -24,15 +24,19 @@ export const ClientTable: React.FC<ClientTableProps> = ({
 }) => {
   const getStatusInfo = (status: Client['status']) => {
     switch (status) {
-      case 'signed':
-        return { label: '已簽約', variant: 'success' as const };
-      case 'following':
-        return { label: '積極跟進', variant: 'warning' as const };
-      case 'churned':
-        return { label: '流失/結束', variant: 'neutral' as const };
-      case 'potential':
+      case 'pending':
+        return { label: '待洽談', variant: 'info' as const };
+      case 'negotiating':
+        return { label: '洽談中', variant: 'warning' as const };
+      case 'pending_signature':
+        return { label: '待簽約', variant: 'info' as const };
+      case 'in_cooperation':
+        return { label: '合作中', variant: 'success' as const };
+      case 'delivered':
+        return { label: '已交付', variant: 'success' as const };
+      case 'lost':
       default:
-        return { label: '潛在洽談', variant: 'info' as const };
+        return { label: '未成交', variant: 'neutral' as const };
     }
   };
 

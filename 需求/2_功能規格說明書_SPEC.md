@@ -82,24 +82,31 @@
 
 ## 2. 詳細頁面與元件規格 (Detailed Specifications)
 
-### 2.1 客戶關係管理頁面 (CRM - `/clients`)
+### 2.1 客戶關係管理頁面 (CRM - `/clients` & `/clients/:id`)
 
 #### 2.1.1 新增/編輯客戶表單欄位與驗證
 
 | 欄位名稱 | 元件類型 | 必填 | 驗證規則 (Regex / Rule) | 預設值 | 說明 |
 | :--- | :--- | :---: | :--- | :--- | :--- |
-| `name` | Text Input | 是 | 字數 2-50 字 | 空白 | 公司名稱 / 客戶名稱 |
-| `tax_id` | Text Input | 否 | 台灣統編 8 碼數字 (`^\d{8}$`) | 空白 | 統一編號 |
-| `category` | Select | 是 | `lead` (潛在) / `client` (正式) / `archived` (結案) | `lead` | 客戶分類 |
-| `status` | Select | 是 | `pending` / `in_progress` / `quoted` / `signed` / `delivered` / `lost` | `pending` | 追蹤狀態 |
-| `contact_name` | Text Input | 是 | 字數 2-20 字 | 空白 | 主要聯絡人姓名 |
-| `contact_title`| Text Input | 否 | 字數 1-30 字 | 空白 | 聯絡人職稱 |
-| `phone` | Text Input | 是 | 電話/手機格式 (`^09\d{8}$` 或市話格式) | 空白 | 聯絡電話 |
-| `email` | Text Input | 否 | Email 格式 (`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`) | 空白 | 電子郵件 |
-| `line_id` | Text Input | 否 | 字數 1-50 字 | 空白 | LINE ID / WeChat ID |
-| `tags` | Multi-Select | 否 | 標籤選擇/輸入 (如：老客戶/官網/介紹) | 空陣列 | 來源與特徵標籤 |
-| `address` | Text Input | 否 | 字數 1-100 字 | 空白 | 公司地址 |
-| `notes` | Textarea | 否 | 最大 500 字 | 空白 | 客戶備註說明 |
+| `name` | Text Input | 是 | 字數 1-100 字 | 空白 | 客戶 / 單位名稱 (置於最首位) |
+| `contact_person` | Text Input | 是 | 字數 1-50 字 | 空白 | 主要聯絡人姓名 |
+| `contact_phone` | Text Input | 是 | 手機或電話格式 | 空白 | 聯絡人電話 |
+| `company_name` | Text Input | 否 | 字數 1-100 字 | 空白 | 公司名稱 (無公司可留空) |
+| `tax_id` | Text Input | 否 | 台灣統編 8 碼數字 (`^\d{8}$`) | 空白 | 統一編號 (選填) |
+| `company_phone` | Text Input | 否 | 市話格式 | 空白 | 公司電話 (選填) |
+| `email` | Text Input | 否 | Email 格式 | 空白 | 電子郵件 (選填) |
+| `address` | Text Input | 否 | 字數 1-200 字 | 空白 | 公司/通訊地址 (選填) |
+| `system_type` | Input / Chips | 否 | Web系統/App/POS/電商/IoT等 | 空白 | 預計開發系統類型 |
+| `requirement_summary`| Textarea | 否 | 最大 1000 字 | 空白 | 客戶需求概要與專案構想描述 |
+| `status` | Select | 是 | `pending` / `negotiating` / `pending_signature` / `in_cooperation` / `delivered` / `lost` | `pending` | 客戶生命週期狀態 (待洽談 -> 洽談中 -> 待簽約 -> 合作中 -> 已交付 -> 未成交) |
+
+#### 2.1.2 聯繫歷史時間軸管道規範 (`contact_type`)
+聯繫紀錄僅限使用以下 5 種標準溝通管道：
+1. `line`: LINE 訊息
+2. `phone`: 電話溝通
+3. `fb`: FB 私訊 (Facebook)
+4. `ig`: IG 訊息 (Instagram)
+5. `threads`: Threads 互動紀錄
 
 ---
 

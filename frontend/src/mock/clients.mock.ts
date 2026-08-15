@@ -3,8 +3,8 @@ import { Client } from '../types';
 /**
  * @file clients.mock.ts
  * @description CRM 客戶模擬資料檔 / CRM Client Mock Data
- * @description_en Pre-populated clients and contact interaction logs for demonstration
- * @description_zh 提供 CRM 頁面展示用之預設客戶資料與聯繫歷史時間軸紀錄 (管道支援 LINE, 電話, FB, IG, Threads)
+ * @description_en Pre-populated clients and contact interaction logs aligned with 5 lifecycle stages
+ * @description_zh 提供 CRM 頁面展示用之預設客戶資料與聯繫歷史 (狀態: 待洽談, 洽談中, 待簽約, 合作中, 已交付)
  */
 
 export const INITIAL_CLIENTS_MOCK: Client[] = [
@@ -20,7 +20,7 @@ export const INITIAL_CLIENTS_MOCK: Client[] = [
     address: '新竹縣竹北市台元街 26 號 5 樓',
     systemType: 'IoT 物聯網監控',
     requirementSummary: '需求晶圓機台即時監控系統，需整合 PLC 數據傳送與看板大螢幕展示。',
-    status: 'signed',
+    status: 'in_cooperation',
     createdAt: '2026-08-10',
     logs: [
       {
@@ -53,7 +53,7 @@ export const INITIAL_CLIENTS_MOCK: Client[] = [
     address: '台北市信義區松仁路 7 號 12 樓',
     systemType: 'Web 管理系統',
     requirementSummary: '內部交易對帳與自動報表產生系統，希望改善原本 Excel 人工作業。',
-    status: 'signed',
+    status: 'delivered',
     createdAt: '2026-08-12',
     logs: [
       {
@@ -75,7 +75,7 @@ export const INITIAL_CLIENTS_MOCK: Client[] = [
     address: '台中市西區台灣大道二段 100 號',
     systemType: 'POS 軟硬體整合',
     requirementSummary: '想開一家獨立咖啡店，需要小型 iPad POS 點餐系統與藍芽出單機連動。',
-    status: 'potential',
+    status: 'negotiating',
     createdAt: '2026-08-14',
     logs: [
       {

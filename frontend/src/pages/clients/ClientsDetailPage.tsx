@@ -30,10 +30,12 @@ const LOG_TYPE_OPTIONS: SelectOption[] = [
 ];
 
 const STATUS_OPTIONS: SelectOption[] = [
-  { value: 'potential', label: '潛在洽談' },
-  { value: 'following', label: '積極跟進' },
-  { value: 'signed', label: '已簽約' },
-  { value: 'churned', label: '流失/結束' }
+  { value: 'pending', label: '待洽談' },
+  { value: 'negotiating', label: '洽談中' },
+  { value: 'pending_signature', label: '待簽約' },
+  { value: 'in_cooperation', label: '合作中' },
+  { value: 'delivered', label: '已交付' },
+  { value: 'lost', label: '未成交' }
 ];
 
 const PRESET_SYSTEM_TYPES = [
@@ -178,22 +180,26 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>{name}</h1>
             <StatusBadge
               label={
-                status === 'signed'
-                  ? '已簽約'
-                  : status === 'following'
-                  ? '積極跟進'
-                  : status === 'churned'
-                  ? '流失/結束'
-                  : '潛在洽談'
+                status === 'delivered'
+                  ? '已交付'
+                  : status === 'in_cooperation'
+                  ? '合作中'
+                  : status === 'pending_signature'
+                  ? '待簽約'
+                  : status === 'negotiating'
+                  ? '洽談中'
+                  : status === 'pending'
+                  ? '待洽談'
+                  : '未成交'
               }
               variant={
-                status === 'signed'
+                status === 'delivered' || status === 'in_cooperation'
                   ? 'success'
-                  : status === 'following'
+                  : status === 'negotiating'
                   ? 'warning'
-                  : status === 'churned'
-                  ? 'neutral'
-                  : 'info'
+                  : status === 'pending_signature' || status === 'pending'
+                  ? 'info'
+                  : 'neutral'
               }
             />
           </div>

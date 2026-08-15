@@ -20,7 +20,13 @@ export interface AuthState {
   expiresAt: number | null;
 }
 
-export type ClientStatus = 'potential' | 'following' | 'signed' | 'churned';
+export type ClientStatus =
+  | 'pending'
+  | 'negotiating'
+  | 'pending_signature'
+  | 'in_cooperation'
+  | 'delivered'
+  | 'lost';
 
 export interface InteractionLog {
   id: string;

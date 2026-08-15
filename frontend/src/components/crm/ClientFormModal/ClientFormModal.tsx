@@ -73,7 +73,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
       address: address.trim() || undefined,
       systemType: systemType.trim() || undefined,
       requirementSummary: requirementSummary.trim() || undefined,
-      status: 'potential',
+      status: 'pending',
       createdAt: new Date().toISOString().split('T')[0],
       logs: requirementSummary.trim()
         ? [

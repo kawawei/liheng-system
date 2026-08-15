@@ -96,8 +96,8 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 600, fontSize: '14px' }}>客戶基本資料與需求</span>
               <StatusBadge
-                label={client.status === 'signed' ? '已簽約' : '潛在洽談'}
-                variant={client.status === 'signed' ? 'success' : 'info'}
+                label={client.status === 'delivered' || client.status === 'in_cooperation' ? '合作中/已交付' : '洽談跟進'}
+                variant={client.status === 'delivered' || client.status === 'in_cooperation' ? 'success' : 'info'}
               />
             </div>
 

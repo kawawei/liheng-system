@@ -151,21 +151,20 @@ graph TD
 | 欄位名稱 (Field) | 資料型別 (Type) | PK/FK | 允許空 (Null) | 預設值 (Default) | 說明與約束 (Description & Constraints) |
 | :--- | :--- | :---: | :---: | :--- | :--- |
 | `id` | UUID | PK | 否 | `uuid_generate_v4()` | 客戶唯一識別碼 |
-| `name` | VARCHAR(100) | - | 否 | - | 公司名稱 / 客戶名稱 |
-| `tax_id` | VARCHAR(8) | - | 是 | `NULL` | 統一編號 (8 碼數字，建立條件索引) |
-| `category` | VARCHAR(20) | - | 否 | `'lead'` | 分類: `lead` (潛在), `client` (正式), `archived` (結案) |
-| `status` | VARCHAR(20) | - | 否 | `'pending'` | 追蹤狀態: `pending`, `in_progress`, `quoted`, `signed`, `delivered`, `lost` |
-| `contact_name` | VARCHAR(50) | - | 否 | - | 主要聯絡人姓名 |
-| `contact_title`| VARCHAR(50) | - | 是 | `NULL` | 聯絡人職稱 |
-| `phone` | VARCHAR(30) | - | 否 | - | 聯絡電話 / 手機 |
-| `email` | VARCHAR(100) | - | 是 | `NULL` | 電子郵件 |
-| `line_id` | VARCHAR(50) | - | 是 | `NULL` | LINE ID / WeChat ID |
-| `tags` | TEXT[] | - | 否 | `'{}'` | 標籤陣列 (如: `['老客戶', 'AI專案']`) |
-| `address` | VARCHAR(200) | - | 是 | `NULL` | 公司地址 |
-| `notes` | TEXT | - | 是 | `NULL` | 客戶備註說明 |
+| `name` | VARCHAR(100) | - | 否 | - | 客戶 / 單位名稱 (首位必填) |
+| `company_name` | VARCHAR(100) | - | 是 | `NULL` | 公司名稱 (選填) |
+| `tax_id` | VARCHAR(8) | - | 是 | `NULL` | 統一編號 (8 碼數字，選填，建立條件索引) |
+| `contact_person` | VARCHAR(50) | - | 否 | - | 主要聯絡人姓名 |
+| `contact_phone` | VARCHAR(30) | - | 否 | - | 聯絡人電話 |
+| `company_phone` | VARCHAR(30) | - | 是 | `NULL` | 公司電話 (選填) |
+| `email` | VARCHAR(100) | - | 是 | `NULL` | 電子郵件 (選填) |
+| `address` | VARCHAR(200) | - | 是 | `NULL` | 地址 (選填) |
+| `system_type` | VARCHAR(50) | - | 是 | `NULL` | 預估開發系統類型 (如 Web系統, POS, App) |
+| `requirement_summary`| TEXT | - | 是 | `NULL` | 客戶需求概要與專案構想描述 |
+| `status` | VARCHAR(20) | - | 否 | `'pending'` | 狀態: `pending` (待洽談), `negotiating` (洽談中), `pending_signature` (待簽約), `in_cooperation` (合作中), `delivered` (已交付), `lost` (未成交) |
 | `created_at` | TIMESTAMPTZ | - | 否 | `CURRENT_TIMESTAMP` | 建立時間 |
 | `updated_at` | TIMESTAMPTZ | - | 否 | `CURRENT_TIMESTAMP` | 更新時間 |
-| `deleted_at` | TIMESTAMPTZ | - | 是 | `NULL` | 軟刪除時間 |
+| `deleted_at` | TIMESTAMPTZ | - | 是 | `NULL` | 軟刪除時間戳 |
 
 ---
 
@@ -173,6 +172,13 @@ graph TD
 
 | 欄位名稱 (Field) | 資料型別 (Type) | PK/FK | 允許空 (Null) | 預設值 (Default) | 說明與約束 |
 | :--- | :--- | :---: | :---: | :--- | :--- |
+| `id` | UUID | PK | 否 | `uuid_generate_v4()` | 跟進紀錄 ID |
+| `client_id` | UUID | FK | 否 | - | 關聯客戶 ID (外鍵 `clients.id`) |
+| `user_id` | UUID | FK | 否 | - | 記錄操作者 ID |
+| `activity_date` | TIMESTAMPTZ | - | 否 | `CURRENT_TIMESTAMP` | 聯繫時間戳 |
+| `contact_type` | VARCHAR(20) | - | 否 | - | 聯繫管道: `line`, `phone`, `fb`, `ig`, `threads` |
+| `summary` | TEXT | - | 否 | - | 溝通紀要內容重點 |
+| `created_at` | TIMESTAMPTZ | - | 否 | `CURRENT_TIMESTAMP` | 紀錄建立時間 |
 | `id` | UUID | PK | 否 | `uuid_generate_v4()` | 跟進紀錄唯一識別碼 |
 | `client_id` | UUID | FK | 否 | - | 關聯客戶 ID (外鍵 `clients.id`) |
 | `user_id` | UUID | FK | 否 | - | 填寫業務/人員 ID (外鍵 `users.id`) |
@@ -411,17 +417,16 @@ CREATE TABLE users (
 CREATE TABLE clients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL,
+    company_name VARCHAR(100),
     tax_id VARCHAR(8),
-    category VARCHAR(20) NOT NULL DEFAULT 'lead',
-    status VARCHAR(20) NOT NULL DEFAULT 'pending',
-    contact_name VARCHAR(50) NOT NULL,
-    contact_title VARCHAR(50),
-    phone VARCHAR(30) NOT NULL,
+    contact_person VARCHAR(50) NOT NULL,
+    contact_phone VARCHAR(30) NOT NULL,
+    company_phone VARCHAR(30),
     email VARCHAR(100),
-    line_id VARCHAR(50),
-    tags TEXT[] DEFAULT '{}',
     address VARCHAR(200),
-    notes TEXT,
+    system_type VARCHAR(50),
+    requirement_summary TEXT,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ
@@ -434,11 +439,9 @@ CREATE TABLE client_activity_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     client_id UUID NOT NULL REFERENCES clients(id),
     user_id UUID NOT NULL REFERENCES users(id),
-    activity_date DATE NOT NULL,
-    contact_type VARCHAR(30) NOT NULL,
-    content TEXT NOT NULL,
-    next_action TEXT,
-    next_remind_date DATE,
+    activity_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    contact_type VARCHAR(20) NOT NULL,
+    summary TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ
