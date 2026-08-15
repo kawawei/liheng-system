@@ -90,8 +90,8 @@ export const ProjectsPage: React.FC = () => {
           { key: 'development', label: `開發中 (${projects.filter((p) => p.stage === 'development').length})` },
           { key: 'testing', label: `測試驗證 (${projects.filter((p) => p.stage === 'testing').length})` },
           { key: 'delivery', label: `交付驗收 (${projects.filter((p) => p.stage === 'delivery').length})` },
-          { key: 'maintenance', label: `保固維護 (${projects.filter((p) => p.stage === 'maintenance').length})` },
-          { key: 'closed', label: `正式結案 (${projects.filter((p) => p.stage === 'closed').length})` }
+          { key: 'closed', label: `正式結案 (${projects.filter((p) => p.stage === 'closed').length})` },
+          { key: 'maintenance', label: `保固維護 (${projects.filter((p) => p.stage === 'maintenance').length})` }
         ].map((tab) => (
           <button
             key={tab.key}

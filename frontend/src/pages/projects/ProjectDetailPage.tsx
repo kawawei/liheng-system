@@ -32,11 +32,11 @@ export const ProjectDetailPage: React.FC = () => {
 
 
   const STAGE_OPTIONS: SelectOption[] = [
-    { value: 'development', label: '1. 開發中', iconName: 'layers' },
-    { value: 'testing', label: '2. 測試驗證', iconName: 'layers' },
-    { value: 'delivery', label: '3. 交付驗收', iconName: 'layers' },
-    { value: 'maintenance', label: '4. 保固維護', iconName: 'layers' },
-    { value: 'closed', label: '5. 正式結案', iconName: 'layers' }
+    { value: 'development', label: '開發中', iconName: 'layers' },
+    { value: 'testing', label: '測試驗證', iconName: 'layers' },
+    { value: 'delivery', label: '交付驗收', iconName: 'layers' },
+    { value: 'closed', label: '正式結案', iconName: 'layers' },
+    { value: 'maintenance', label: '保固維護', iconName: 'layers' }
   ];
 
   // 追加需求變更單 State
