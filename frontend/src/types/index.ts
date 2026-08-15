@@ -22,16 +22,31 @@ export interface AuthState {
 
 export type ClientStatus = 'potential' | 'following' | 'signed' | 'churned';
 
+export interface InteractionLog {
+  id: string;
+  clientId: string;
+  date: string;
+  type: 'phone' | 'meeting' | 'line' | 'email' | 'note';
+  summary: string;
+  createdByName: string;
+}
+
 export interface Client {
   id: string;
-  companyName: string;
+  name: string;
+  companyName?: string;
   taxId?: string;
   contactPerson: string;
-  phone: string;
+  contactPhone: string;
+  companyPhone?: string;
   email?: string;
+  address?: string;
+  systemType?: string;
+  requirementSummary?: string;
   status: ClientStatus;
   notes?: string;
   createdAt: string;
+  logs?: InteractionLog[];
 }
 
 export type ContractStatus = 'negotiating' | 'pending_signature' | 'signed' | 'terminated';
