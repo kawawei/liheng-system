@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
- * @description WBS 里程碑即時編輯表格樣式 / Milestone WBS Live Editable Table Styles
- * @description_en Styles for fully interactive, live spreadsheet-style hierarchical WBS table without spinner arrows
- * @description_zh 定義 WBS 樹狀階層直出即時編輯表格、移除數字上下箭頭、獨立分欄與響應式樣式
+ * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table 2-Tier Header Styles
+ * @description_en Styles for hierarchical WBS table with 2-tier header (Planned / Actual), direct inputs, and no spinner arrows
+ * @description_zh 定義 WBS 樹狀階層雙層表頭 (預計/實際時程)、直出即時編輯、移除數字箭頭樣式
  */
 
 .wbs-wrapper {
@@ -65,12 +65,6 @@
   color: #065f46;
 }
 
-.wbs-stat-pill.info {
-  background-color: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1e40af;
-}
-
 .wbs-btn-group {
   display: flex;
   align-items: center;
@@ -78,7 +72,7 @@
 }
 
 /* ========================================
-   表格主體 / Table Styles
+   表格主體與雙層表頭 / Table Styles & 2-Tier Header
    ======================================== */
 .wbs-table-container {
   background-color: #ffffff;
@@ -90,27 +84,52 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1280px;
+  min-width: 1100px;
   border-collapse: collapse;
   font-size: 13px;
   text-align: left;
 }
 
-.wbs-table thead tr {
+.wbs-table thead tr.wbs-th-row-1 th {
   background-color: #f8fafc;
-  border-bottom: 2px solid var(--border-color, #e2e8f0);
-}
-
-.wbs-table th {
-  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  padding: 8px 10px;
   font-weight: 600;
   color: var(--text-secondary, #475569);
   white-space: nowrap;
   font-size: 12px;
 }
 
+.wbs-table thead tr.wbs-th-row-2 th {
+  background-color: #f1f5f9;
+  border-bottom: 2px solid var(--border-color, #cbd5e1);
+  padding: 6px 8px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.wbs-th-group {
+  text-align: center;
+  font-weight: 700 !important;
+  color: var(--text-primary, #0f172a) !important;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+}
+
+.wbs-th-group.planned {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+.wbs-th-group.actual {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+}
+
 .wbs-table td {
-  padding: 8px 6px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border-color, #f1f5f9);
   color: var(--text-primary, #1e293b);
   vertical-align: middle;
@@ -186,54 +205,8 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
-.wbs-direct-select {
-  padding: 4px 6px;
-  font-size: 12px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background-color: transparent;
-  outline: none;
-  color: #1e293b;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.wbs-direct-select:hover {
-  border-color: #cbd5e1;
-  background-color: #ffffff;
-}
-
-.wbs-direct-select:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-}
-
-.wbs-direct-date {
-  padding: 4px 5px;
-  font-size: 11px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background-color: transparent;
-  outline: none;
-  font-family: var(--font-mono, monospace);
-  width: 106px;
-  color: #1e293b;
-  transition: all 0.15s ease;
-}
-
-.wbs-direct-date:hover {
-  border-color: #cbd5e1;
-  background-color: #ffffff;
-}
-
-.wbs-direct-date:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
-}
-
 .wbs-direct-days {
-  width: 42px;
+  width: 44px;
   padding: 4px 4px;
   font-size: 12px;
   border: 1px solid transparent;
@@ -269,31 +242,6 @@
 .wbs-readonly-date.auto-calc {
   color: #2563eb;
   font-weight: 500;
-}
-
-.wbs-direct-money {
-  width: 78px;
-  padding: 4px 6px;
-  font-size: 12px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background-color: transparent;
-  text-align: right;
-  outline: none;
-  font-family: var(--font-mono, monospace);
-  color: #1e293b;
-  transition: all 0.15s ease;
-}
-
-.wbs-direct-money:hover {
-  border-color: #cbd5e1;
-  background-color: #ffffff;
-}
-
-.wbs-direct-money:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
 .wbs-direct-pct {

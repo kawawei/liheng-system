@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.tsx
- * @description WBS 里程碑即時直出編輯表格組件 / Milestone WBS Live Editable Table Component
- * @description_en Direct spreadsheet-style hierarchical WBS table where inputs are directly visible and editable without extra edit clicks, no number spinner arrows, and independent schedule columns with auto-calculated end dates.
- * @description_zh 直出即時編輯多層 WBS 表格，輸入框直出無需點擊切換、移除上下數字箭頭、預計與實際獨立分欄並由開始日+工期自動試算結束日。
+ * @description WBS 里程碑即時編輯表格組件 / Milestone WBS Live Editable Table Component
+ * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with 2-tier header (Planned / Actual with Start, End, Duration), no number spinner arrows, and auto-calculated end dates.
+ * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，採用雙層表頭分拆預計與實際時程 (開始/結束/工期)，移除預算成本與上下箭頭。
  */
 
 import React, { useState, useMemo } from 'react';
@@ -16,6 +16,7 @@ import {
   Circle,
   ChevronUp,
 } from 'lucide-react';
+import { Select, DatePicker } from '@kawawei/frontend-modules';
 import { WbsNode, WbsStatus } from '../../../types';
 import { Button } from '../../button';
 import './MilestoneWbsTable.css';
@@ -29,7 +30,12 @@ const STATUS_CONFIG: Record<WbsStatus, { label: string; icon: React.ComponentTyp
   COMPLETED: { label: '已完成', icon: CheckCircle2, className: 'completed' },
 };
 
-const ENGINEER_OPTIONS = ['張工程師', '李工程師', '王架構師', '林工程師'];
+const ENGINEER_SELECT_OPTIONS = [
+  { label: '張工程師', value: '張工程師' },
+  { label: '李工程師', value: '李工程師' },
+  { label: '王架構師', value: '王架構師' },
+  { label: '林工程師', value: '林工程師' },
+];
 
 // ========================================
 // 日期自動計算工具 / Date Calc Helper
@@ -62,8 +68,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   const stats = useMemo(() => {
     let totalTasks = 0;
     let completedTasks = 0;
-    let totalBudget = 0;
-    let totalActualCost = 0;
 
     const traverse = (list: WbsNode[]) => {
       list.forEach((node) => {
@@ -72,8 +76,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
           if (node.status === 'COMPLETED') {
             completedTasks += 1;
           }
-          totalBudget += node.budget || 0;
-          totalActualCost += node.actualCost || 0;
         } else {
           traverse(node.children);
         }
@@ -82,7 +84,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 
     traverse(nodes);
     const overallPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-    return { totalTasks, completedTasks, overallPercent, totalBudget, totalActualCost };
+    return { totalTasks, completedTasks, overallPercent };
   }, [nodes]);
 
   // ========================================
@@ -122,8 +124,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     const updateList = (list: WbsNode[]): WbsNode[] => {
       return list.map((node) => {
         if (node.id === nodeId) {
-          const updated = updater(node);
-          return updated;
+          return updater(node);
         }
         if (node.children && node.children.length > 0) {
           return { ...node, children: updateList(node.children) };
@@ -280,8 +281,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       startDate: pStart,
       endDate: calculateEndDate(pStart, pDur),
       durationDays: pDur,
-      budget: 100000,
-      actualCost: 0,
       progress: 0,
       status: 'NOT_STARTED',
       isExpanded: true,
@@ -310,8 +309,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       startDate: pStart,
       endDate: calculateEndDate(pStart, pDur),
       durationDays: pDur,
-      budget: 50000,
-      actualCost: 0,
       progress: 0,
       status: 'NOT_STARTED',
     };
@@ -376,7 +373,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         <React.Fragment key={node.id}>
           <tr className={`wbs-row ${isRoot ? 'is-root' : ''}`}>
             {/* 1. 工作項目名稱 (階層縮排，直出輸入框) */}
-            <td style={{ minWidth: '220px' }}>
+            <td style={{ minWidth: '240px' }}>
               <div className="wbs-name-cell" style={{ paddingLeft: `${depth * 22}px` }}>
                 {hasChildren ? (
                   <button
@@ -404,35 +401,34 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 2. 負責工程師 (直出下拉選單) */}
-            <td style={{ width: '100px' }}>
-              <select
-                className="wbs-direct-select"
-                value={node.assignees?.[0] || '張工程師'}
-                onChange={(e) =>
-                  updateNode(node.id, (n) => ({ ...n, assignees: [e.target.value] }))
-                }
-              >
-                {ENGINEER_OPTIONS.map((eng) => (
-                  <option key={eng} value={eng}>
-                    {eng}
-                  </option>
-                ))}
-              </select>
-            </td>
-
-            {/* 3. 預計開始 (直出日期選擇) */}
+            {/* 2. 負責人 (使用 @kawawei/frontend-modules Select) */}
             <td style={{ width: '120px' }}>
-              <input
-                type="date"
-                className="wbs-direct-date"
-                value={pStart}
-                onChange={(e) => handlePlannedStartChange(node.id, e.target.value)}
+              <Select
+                options={ENGINEER_SELECT_OPTIONS}
+                value={node.assignees?.[0] || '張工程師'}
+                onChange={(val: string | number | (string | number)[]) =>
+                  updateNode(node.id, (n) => ({ ...n, assignees: [String(val)] }))
+                }
+                width="115px"
               />
             </td>
 
-            {/* 4. 預計工期 (直出天數，無上下箭頭) */}
-            <td style={{ width: '60px' }}>
+            {/* 3. 預計開始 (使用 @kawawei/frontend-modules DatePicker) */}
+            <td style={{ width: '135px' }}>
+              <DatePicker
+                value={pStart}
+                onChange={(val: string) => handlePlannedStartChange(node.id, val)}
+                width="130px"
+              />
+            </td>
+
+            {/* 4. 預計結束 (自動計算，純文字顯示) */}
+            <td style={{ width: '100px' }}>
+              <span className="wbs-readonly-date auto-calc">{pEnd || '—'}</span>
+            </td>
+
+            {/* 5. 預計工期 (直出天數，無上下箭頭) */}
+            <td style={{ width: '65px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 <input
                   type="number"
@@ -445,23 +441,24 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 5. 預計結束 (自動計算，純文字顯示) */}
-            <td style={{ width: '95px' }}>
-              <span className="wbs-readonly-date auto-calc">{pEnd || '—'}</span>
-            </td>
-
-            {/* 6. 實際開始 (直出日期選擇) */}
-            <td style={{ width: '120px' }}>
-              <input
-                type="date"
-                className="wbs-direct-date"
+            {/* 6. 實際開始 (使用 @kawawei/frontend-modules DatePicker) */}
+            <td style={{ width: '135px' }}>
+              <DatePicker
                 value={aStart}
-                onChange={(e) => handleActualStartChange(node.id, e.target.value)}
+                onChange={(val: string) => handleActualStartChange(node.id, val)}
+                width="130px"
               />
             </td>
 
-            {/* 7. 實際工期 (直出天數，無上下箭頭) */}
-            <td style={{ width: '60px' }}>
+            {/* 7. 實際結束 (自動計算，純文字顯示) */}
+            <td style={{ width: '100px' }}>
+              <span className="wbs-readonly-date" style={{ color: aEnd ? '#059669' : 'inherit' }}>
+                {aEnd || '—'}
+              </span>
+            </td>
+
+            {/* 8. 實際工期 (直出天數，無上下箭頭) */}
+            <td style={{ width: '65px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 <input
                   type="number"
@@ -474,42 +471,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 8. 實際結束 (自動計算，純文字顯示) */}
-            <td style={{ width: '95px' }}>
-              <span className="wbs-readonly-date" style={{ color: aEnd ? '#059669' : 'inherit' }}>
-                {aEnd || '—'}
-              </span>
-            </td>
-
-            {/* 9. 計畫預算 (直出數字，無上下箭頭) */}
-            <td style={{ width: '90px', textAlign: 'right' }}>
-              <input
-                type="number"
-                className="wbs-direct-money"
-                value={node.budget || 0}
-                onChange={(e) =>
-                  updateNode(node.id, (n) => ({ ...n, budget: Number(e.target.value) }))
-                }
-              />
-            </td>
-
-            {/* 10. 已發生成本 (直出數字，無上下箭頭) */}
-            <td style={{ width: '90px', textAlign: 'right' }}>
-              <input
-                type="number"
-                className="wbs-direct-money"
-                style={{
-                  color: (node.actualCost || 0) > (node.budget || 0) ? '#ef4444' : 'inherit',
-                  fontWeight: (node.actualCost || 0) > (node.budget || 0) ? 700 : 'normal',
-                }}
-                value={node.actualCost || 0}
-                onChange={(e) =>
-                  updateNode(node.id, (n) => ({ ...n, actualCost: Number(e.target.value) }))
-                }
-              />
-            </td>
-
-            {/* 11. 工項進度 (直出數字，無上下箭頭) */}
+            {/* 9. 工項進度 (直出數字，無上下箭頭) */}
             <td style={{ width: '65px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
                 <input
@@ -524,8 +486,8 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 12. 狀態 (點擊快速流轉) */}
-            <td style={{ width: '80px' }}>
+            {/* 10. 狀態 (點擊快速流轉) */}
+            <td style={{ width: '85px' }}>
               <button
                 type="button"
                 className={`wbs-status-btn ${statusObj.className}`}
@@ -537,7 +499,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </button>
             </td>
 
-            {/* 13. 操作 (新增子工項 / 刪除) */}
+            {/* 11. 操作 (新增子工項 / 刪除) */}
             <td style={{ width: '60px' }}>
               <div className="wbs-actions">
                 <button
@@ -578,12 +540,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               已完成 {stats.completedTasks} / {stats.totalTasks} 個工項任務 ({stats.overallPercent}%)
             </span>
           </span>
-
-          <span className="wbs-stat-pill info">
-            <span>
-              預算達成：NT$ {stats.totalActualCost.toLocaleString()} / NT$ {stats.totalBudget.toLocaleString()}
-            </span>
-          </span>
         </div>
 
         <div className="wbs-btn-group">
@@ -602,24 +558,26 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         </div>
       </div>
 
-      {/* 樹狀階層 WBS 直出即時編輯表格 */}
+      {/* 樹狀階層 WBS 雙層表頭即時編輯表格 */}
       <div className="wbs-table-container">
         <table className="wbs-table">
           <thead>
-            <tr>
-              <th style={{ width: '22%' }}>工作項目名稱</th>
-              <th style={{ width: '8%' }}>負責人</th>
-              <th style={{ width: '9%' }}>預計開始</th>
-              <th style={{ width: '6%' }}>預計工期</th>
-              <th style={{ width: '8%' }}>預計結束</th>
-              <th style={{ width: '9%' }}>實際開始</th>
-              <th style={{ width: '6%' }}>實際工期</th>
-              <th style={{ width: '8%' }}>實際結束</th>
-              <th style={{ width: '7%', textAlign: 'right' }}>計畫預算</th>
-              <th style={{ width: '7%', textAlign: 'right' }}>已發生成本</th>
-              <th style={{ width: '6%' }}>進度</th>
-              <th style={{ width: '6%' }}>狀態</th>
-              <th style={{ width: '5%', textAlign: 'center' }}>操作</th>
+            <tr className="wbs-th-row-1">
+              <th rowSpan={2} style={{ width: '24%' }}>工作項目名稱</th>
+              <th rowSpan={2} style={{ width: '10%' }}>負責人</th>
+              <th colSpan={3} className="wbs-th-group planned">預計時程</th>
+              <th colSpan={3} className="wbs-th-group actual">實際時程</th>
+              <th rowSpan={2} style={{ width: '6%' }}>進度</th>
+              <th rowSpan={2} style={{ width: '8%' }}>狀態</th>
+              <th rowSpan={2} style={{ width: '6%', textAlign: 'center' }}>操作</th>
+            </tr>
+            <tr className="wbs-th-row-2">
+              <th style={{ width: '11%' }}>開始日期</th>
+              <th style={{ width: '8%' }}>結束日期</th>
+              <th style={{ width: '5%' }}>工期</th>
+              <th style={{ width: '11%' }}>開始日期</th>
+              <th style={{ width: '8%' }}>結束日期</th>
+              <th style={{ width: '5%' }}>工期</th>
             </tr>
           </thead>
           <tbody>{renderRows(nodes)}</tbody>
