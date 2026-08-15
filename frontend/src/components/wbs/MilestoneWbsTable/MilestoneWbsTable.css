@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height, wider duration/progress inputs, larger action buttons, generous column widths.
- * @description_zh 下拉選單與輸入框統一 30px 高度、加寬工期與進度欄位、放大操作按鈕尺寸。
+ * @description_en Strictly uniform 30px height, wider duration/progress inputs, larger action buttons, generous toolbar button sizes (38px height, 14px font).
+ * @description_zh 下拉選單與輸入框統一 30px 高度、加寬工期與進度、放大操作按鈕、頂部展開/收合/新增主里程碑按鈕放大至 38px (14px 字級)。
  */
 
 .wbs-wrapper {
@@ -34,28 +34,28 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  padding-bottom: 12px;
+  gap: 16px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 
 .wbs-stats-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .wbs-stat-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   background-color: var(--bg-app, #f8fafc);
   border: 1px solid var(--border-color, #e2e8f0);
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 9999px;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-primary, #0f172a);
 }
 
@@ -65,10 +65,29 @@
   color: #065f46;
 }
 
+/* 放大頂部按鈕組 (展開全部 / 收合全部 / 新增主里程碑) */
 .wbs-btn-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.wbs-btn-group button {
+  height: 38px !important;
+  padding: 0 16px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease !important;
+}
+
+.wbs-btn-group button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* ========================================

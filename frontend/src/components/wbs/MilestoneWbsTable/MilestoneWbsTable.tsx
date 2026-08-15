@@ -534,16 +534,16 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         </div>
 
         <div className="wbs-btn-group">
-          <Button variant="secondary" size="sm" onClick={() => handleToggleAll(true)}>
-            <ChevronDown size={14} />
+          <Button variant="secondary" size="md" onClick={() => handleToggleAll(true)}>
+            <ChevronDown size={16} />
             <span>展開全部</span>
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => handleToggleAll(false)}>
-            <ChevronUp size={14} />
+          <Button variant="secondary" size="md" onClick={() => handleToggleAll(false)}>
+            <ChevronUp size={16} />
             <span>收合全部</span>
           </Button>
-          <Button variant="primary" size="sm" onClick={handleAddRootMilestone}>
-            <Plus size={14} />
+          <Button variant="primary" size="md" onClick={handleAddRootMilestone}>
+            <Plus size={16} />
             <span>新增主里程碑</span>
           </Button>
         </div>
