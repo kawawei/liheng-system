@@ -114,15 +114,8 @@ export const ProjectDetailPage: React.FC = () => {
 
   return (
     <div>
-      {/* 麵包屑導航 / Breadcrumbs */}
-      <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-        <Link to="/projects" style={{ color: 'var(--primary-600)' }}>專案管理</Link>
-        <span style={{ margin: '0 8px' }}>/</span>
-        <span>{project.projectCode} ({project.name})</span>
-      </div>
-
-      {/* 專案主標題與狀態 Header */}
-      <div className="page-header" style={{ marginBottom: '16px' }}>
+      {/* 專案主標題與狀態 Header (含返回列表按鈕) */}
+      <div className="page-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">
             <TextIcon name="projects" size="lg" />
@@ -133,7 +126,7 @@ export const ProjectDetailPage: React.FC = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <StatusBadge
             label={lifecycleStages.find((s) => s.key === currentStage)?.label || '開發中'}
             variant="info"
@@ -144,6 +137,12 @@ export const ProjectDetailPage: React.FC = () => {
             variant={project.progressPercent >= 90 ? 'success' : 'info'}
             icon="success"
           />
+          <Link to="/projects" style={{ textDecoration: 'none' }}>
+            <Button variant="secondary" size="md">
+              <TextIcon name="arrow-left" size="sm" />
+              <span>返回專案列表</span>
+            </Button>
+          </Link>
         </div>
       </div>
 
