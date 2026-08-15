@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.tsx
  * @description WBS 里程碑即時編輯表格組件 / Milestone WBS Live Editable Table Component
- * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with independent WBS Code, Diamond Checkpoint action button, Predecessors Select, and Pull-Forward strategy checkbox.
- * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，里程碑檢查點不顯示工期/結束日/進度、操作欄提供菱形新增檢查點、前置任務依賴支援組件庫 Select 與允許提前 (Pull-Forward) 策略勾選。
+ * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with row selection highlight, inserting checkpoints/tasks after the selected item, and automatic WBS re-indexing.
+ * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，支援單元列選中高亮狀態，點擊新增檢查點/新增項目時自動於選中項目的下一個位置插入並自動依序編號。
  */
 
 import React, { useState, useMemo } from 'react';
@@ -62,6 +62,22 @@ const addDaysToDate = (dateStr: string, days: number): string => {
   return d.toISOString().split('T')[0];
 };
 
+// ========================================
+// WBS 序號自動遞迴重新編號工具 / Auto Reindex
+// ========================================
+const reindexWbsNodes = (list: WbsNode[], prefix = ''): WbsNode[] => {
+  return list.map((node, index) => {
+    const code = prefix ? `${prefix}.${index + 1}` : `${index + 1}`;
+    return {
+      ...node,
+      wbsCode: code,
+      children: node.children && node.children.length > 0
+        ? reindexWbsNodes(node.children, code)
+        : node.children,
+    };
+  });
+};
+
 interface MilestoneWbsTableProps {
   projectId: string;
   initialNodes: WbsNode[];
@@ -74,6 +90,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   onProgressUpdate,
 }) => {
   const [nodes, setNodes] = useState<WbsNode[]>(initialNodes);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // ========================================
   // 提取所有可用前置任務選項 (僅顯示 WBS 序號)
@@ -134,7 +151,8 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   // ========================================
   // 展開 / 收合節點 / Toggle Expand
   // ========================================
-  const handleToggleExpand = (nodeId: string) => {
+  const handleToggleExpand = (nodeId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const updateExpand = (list: WbsNode[]): WbsNode[] => {
       return list.map((node) => {
         if (node.id === nodeId) {
@@ -165,7 +183,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   // 排程連動推算 / Schedule Cascade Calculation
   // ========================================
   const cascadeScheduleUpdates = (allNodes: WbsNode[]): WbsNode[] => {
-    // 建立編號映射表
     const codeMap = new Map<string, WbsNode>();
     const buildMap = (list: WbsNode[]) => {
       list.forEach((n) => {
@@ -196,7 +213,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 
           if (calculatedStart) {
             if (node.allowPullForward) {
-              // 策略 A：積極提前啟動 (Pull-Forward) -> 自動對齊最早可開始日
               const newEnd = calculateEndDate(calculatedStart, dur);
               updatedNode = {
                 ...updatedNode,
@@ -206,10 +222,8 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                 endDate: newEnd,
               };
             } else {
-              // 策略 B：維持原計畫基準 (Keep Baseline) -> 若前置延誤才自動順延，提前則維持原預計
               const currentPlannedStart = node.plannedStartDate || calculatedStart;
               if (calculatedStart > currentPlannedStart) {
-                // 前置延誤，自動順延
                 const newEnd = calculateEndDate(calculatedStart, dur);
                 updatedNode = {
                   ...updatedNode,
@@ -269,7 +283,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     }
   };
 
-  // 預計開始日變更 (自動試算預計結束日)
+  // 預計開始日變更
   const handlePlannedStartChange = (nodeId: string, newStart: string) => {
     updateNode(nodeId, (node) => {
       const dur = node.isMilestone ? 0 : (node.plannedDurationDays || node.durationDays || 14);
@@ -284,7 +298,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     });
   };
 
-  // 預計工期變更 (自動試算預計結束日)
+  // 預計工期變更
   const handlePlannedDurationChange = (nodeId: string, newDur: number) => {
     updateNode(nodeId, (node) => {
       if (node.isMilestone) return node;
@@ -301,7 +315,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     });
   };
 
-  // 實際開始日變更 (自動試算實際結束日)
+  // 實際開始日變更
   const handleActualStartChange = (nodeId: string, newStart: string) => {
     updateNode(nodeId, (node) => {
       const dur = node.isMilestone ? 0 : (node.actualDurationDays ?? 0);
@@ -314,7 +328,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     });
   };
 
-  // 實際工期變更 (自動試算實際結束日)
+  // 實際工期變更
   const handleActualDurationChange = (nodeId: string, newDur: number) => {
     updateNode(nodeId, (node) => {
       if (node.isMilestone) return node;
@@ -378,18 +392,17 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   };
 
   // ========================================
-  // 直出新增工項 / Direct Add Actions
+  // 在選中項目後方 (或末尾) 插入新項目 / Insert After Selected
   // ========================================
-  const handleAddRootMilestone = (isMilestoneCheckpoint = false) => {
-    const nextIndex = nodes.length + 1;
+  const handleInsertItem = (isMilestoneCheckpoint: boolean) => {
     const newId = `wbs_${Date.now()}`;
     const pStart = '2026-08-15';
-    const pDur = isMilestoneCheckpoint ? 0 : 30;
-    const newRoot: WbsNode = {
+    const pDur = isMilestoneCheckpoint ? 0 : 14;
+
+    const newNode: WbsNode = {
       id: newId,
       projectId,
-      wbsCode: `${nextIndex}`,
-      name: isMilestoneCheckpoint ? '新里程碑檢查點' : '新專案階段',
+      name: isMilestoneCheckpoint ? '新里程碑檢查點' : '新工作項目',
       isMilestone: isMilestoneCheckpoint,
       assignees: ['張工程師'],
       plannedStartDate: pStart,
@@ -407,27 +420,64 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       children: [],
     };
 
-    setNodes([...nodes, newRoot]);
+    if (!selectedNodeId) {
+      // 未選中任何項目，直接加在最外層末尾
+      const newNodes = reindexWbsNodes([...nodes, newNode]);
+      setNodes(newNodes);
+      setSelectedNodeId(newId);
+      return;
+    }
+
+    // 若有選中項目，在選中項目的同層後方插入
+    const insertAfterInList = (list: WbsNode[]): { found: boolean; list: WbsNode[] } => {
+      const idx = list.findIndex((n) => n.id === selectedNodeId);
+      if (idx !== -1) {
+        const item = list[idx];
+        newNode.parentId = item.parentId;
+        newNode.predecessorCode = item.wbsCode;
+        newNode.dependencyType = 'FS';
+        const newList = [...list];
+        newList.splice(idx + 1, 0, newNode);
+        return { found: true, list: newList };
+      }
+
+      let found = false;
+      const newList = list.map((n) => {
+        if (!found && n.children && n.children.length > 0) {
+          const res = insertAfterInList(n.children);
+          if (res.found) {
+            found = true;
+            return { ...n, children: res.list };
+          }
+        }
+        return n;
+      });
+
+      return { found, list: newList };
+    };
+
+    const res = insertAfterInList(nodes);
+    const updatedList = res.found ? res.list : [...nodes, newNode];
+    const reindexed = reindexWbsNodes(updatedList);
+    setNodes(reindexed);
+    setSelectedNodeId(newId);
   };
 
-  // 新增子任務或里程碑檢查點 (透過操作按鈕)
-  const handleAddChildTask = (parentNode: WbsNode, isCheckpoint = false) => {
+  // 新增子工項或子檢查點 (透過操作列按鈕)
+  const handleAddChildTask = (parentNode: WbsNode, isCheckpoint = false, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const newId = `wbs_${Date.now()}`;
-    const childIndex = (parentNode.children?.length || 0) + 1;
-    const parentCode = parentNode.wbsCode || '1';
-    const newCode = `${parentCode}.${childIndex}`;
     const pStart = parentNode.plannedStartDate || parentNode.startDate || '2026-08-15';
     const pDur = isCheckpoint ? 0 : 14;
     const newChild: WbsNode = {
       id: newId,
       projectId,
       parentId: parentNode.id,
-      wbsCode: newCode,
       name: isCheckpoint ? '新里程碑檢查點' : '新工作任務項目',
       isMilestone: isCheckpoint,
       predecessorCode: parentNode.children && parentNode.children.length > 0
         ? parentNode.children[parentNode.children.length - 1].wbsCode
-        : parentCode,
+        : parentNode.wbsCode,
       dependencyType: 'FS',
       allowPullForward: false,
       assignees: parentNode.assignees || ['張工程師'],
@@ -460,11 +510,14 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       });
     };
 
-    setNodes(addChild(nodes));
+    const newNodes = reindexWbsNodes(addChild(nodes));
+    setNodes(newNodes);
+    setSelectedNodeId(newId);
   };
 
   // 直出刪除節點
-  const handleDeleteNode = (nodeId: string) => {
+  const handleDeleteNode = (nodeId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const removeNode = (list: WbsNode[]): WbsNode[] => {
       return list
         .filter((n) => n.id !== nodeId)
@@ -476,18 +529,20 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         });
     };
 
-    setNodes(removeNode(nodes));
+    const newNodes = reindexWbsNodes(removeNode(nodes));
+    setNodes(newNodes);
+    if (selectedNodeId === nodeId) setSelectedNodeId(null);
   };
 
   // ========================================
   // 遞迴渲染直出可編輯列 / Recursive Row Renderer
   // ========================================
-  const renderRows = (list: WbsNode[], depth = 0, prefix = ''): React.ReactNode => {
-    return list.map((node, index) => {
+  const renderRows = (list: WbsNode[], depth = 0): React.ReactNode => {
+    return list.map((node) => {
       const hasChildren = Boolean(node.children && node.children.length > 0);
       const isExpanded = node.isExpanded !== false;
       const isRoot = depth === 0;
-      const displayCode = node.wbsCode || (prefix ? `${prefix}.${index + 1}` : `${index + 1}`);
+      const isSelected = selectedNodeId === node.id;
 
       // 預計期程與工期
       const pStart = node.plannedStartDate || node.startDate || '';
@@ -501,7 +556,10 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 
       return (
         <React.Fragment key={node.id}>
-          <tr className={`wbs-row ${isRoot ? 'is-root' : ''} ${node.isMilestone ? 'is-milestone' : ''}`}>
+          <tr
+            className={`wbs-row ${isRoot ? 'is-root' : ''} ${node.isMilestone ? 'is-milestone' : ''} ${isSelected ? 'is-selected' : ''}`}
+            onClick={() => setSelectedNodeId(node.id)}
+          >
             {/* 1. WBS 編號 (最左側獨立欄位，含層級縮排與展開按鈕) */}
             <td style={{ width: '90px', minWidth: '90px' }}>
               <div className="wbs-code-cell" style={{ paddingLeft: `${depth * 16}px` }}>
@@ -509,7 +567,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                   <button
                     type="button"
                     className="wbs-expand-btn"
-                    onClick={() => handleToggleExpand(node.id)}
+                    onClick={(e) => handleToggleExpand(node.id, e)}
                     title={isExpanded ? '收合' : '展開'}
                   >
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -518,7 +576,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                   <span className="wbs-expand-placeholder" />
                 )}
 
-                <span className="wbs-code-badge">{displayCode}</span>
+                <span className="wbs-code-badge">{node.wbsCode}</span>
               </div>
             </td>
 
@@ -727,7 +785,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                 <button
                   type="button"
                   className="wbs-action-btn add"
-                  onClick={() => handleAddChildTask(node, false)}
+                  onClick={(e) => handleAddChildTask(node, false, e)}
                   title="新增子工項任務"
                 >
                   <Plus size={16} />
@@ -735,15 +793,15 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                 <button
                   type="button"
                   className="wbs-action-btn checkpoint"
-                  onClick={() => handleAddChildTask(node, true)}
-                  title="新增里程碑檢查點 (無工期/結束日/進度)"
+                  onClick={(e) => handleAddChildTask(node, true, e)}
+                  title="新增子里程碑檢查點 (無工期/結束日/進度)"
                 >
                   <Diamond size={15} fill="#f59e0b" color="#b45309" />
                 </button>
                 <button
                   type="button"
                   className="wbs-action-btn delete"
-                  onClick={() => handleDeleteNode(node.id)}
+                  onClick={(e) => handleDeleteNode(node.id, e)}
                   title="刪除"
                 >
                   <Trash2 size={15} />
@@ -753,7 +811,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
           </tr>
 
           {/* 遞迴子任務 */}
-          {hasChildren && isExpanded && renderRows(node.children || [], depth + 1, displayCode)}
+          {hasChildren && isExpanded && renderRows(node.children || [], depth + 1)}
         </React.Fragment>
       );
     });
@@ -789,13 +847,13 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
             <ChevronUp size={16} />
             <span>收合全部</span>
           </Button>
-          <Button variant="secondary" size="md" onClick={() => handleAddRootMilestone(true)}>
+          <Button variant="secondary" size="md" onClick={() => handleInsertItem(true)}>
             <Diamond size={15} fill="#f59e0b" />
-            <span>新增檢查點</span>
+            <span>{selectedNodeId ? '在選中項後新增檢查點' : '新增檢查點'}</span>
           </Button>
-          <Button variant="primary" size="md" onClick={() => handleAddRootMilestone(false)}>
+          <Button variant="primary" size="md" onClick={() => handleInsertItem(false)}>
             <Plus size={16} />
-            <span>新增主階段</span>
+            <span>{selectedNodeId ? '在選中項後新增項目' : '新增主項目'}</span>
           </Button>
         </div>
       </div>

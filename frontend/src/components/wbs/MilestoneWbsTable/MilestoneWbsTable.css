@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height, generous Select trigger padding preventing text overlap, WBS Code column on the far left, milestone rows without duration/end date/progress, predecessor WBS code selector + enlarged pull-forward checkbox.
- * @description_zh WBS 編號獨立於最左側欄位、下拉選單寬度與 Padding 加大防止文字與箭頭遮擋、里程碑檢查點不顯示工期/結束日/進度、放大「提前」核取框。
+ * @description_en Strictly uniform 30px height, row selection highlight with left blue indicator, insert after selected item, milestone rows without duration/end date/progress.
+ * @description_zh WBS 編號獨立於最左側欄位、支援項目選中狀態 (淡藍高亮與藍色側標)、在選中項目後方插入新項目、統一 30px 控制項高度。
  */
 
 .wbs-wrapper {
@@ -162,10 +162,15 @@
   border-bottom: 1px solid var(--border-color, #f1f5f9);
   color: var(--text-primary, #1e293b);
   vertical-align: middle;
+  transition: background-color 0.15s ease;
 }
 
 .wbs-table tr:hover td {
   background-color: #f8fafc;
+}
+
+.wbs-row {
+  cursor: pointer;
 }
 
 .wbs-row.is-root td {
@@ -179,6 +184,29 @@
 
 .wbs-row.is-milestone:hover td {
   background-color: #fefce8;
+}
+
+/* ========================================
+   選中行高亮樣式 (Selected Row Highlight)
+   ======================================== */
+.wbs-row.is-selected td {
+  background-color: #eff6ff !important;
+  border-top-color: #bfdbfe !important;
+  border-bottom-color: #bfdbfe !important;
+}
+
+.wbs-row.is-selected td:first-child {
+  border-left: 3px solid #2563eb !important;
+}
+
+.wbs-row.is-selected.is-milestone td {
+  background-color: #fef9c3 !important;
+  border-top-color: #fde047 !important;
+  border-bottom-color: #fde047 !important;
+}
+
+.wbs-row.is-selected.is-milestone td:first-child {
+  border-left: 3px solid #eab308 !important;
 }
 
 /* WBS 編號單元格 */
