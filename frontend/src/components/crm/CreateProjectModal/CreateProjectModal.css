@@ -162,6 +162,14 @@
   color: #0f172a;
 }
 
+/* 日期選擇器彈窗向上方展開 (Pop Upwards)，徹底解決被彈窗邊界與底部按鈕遮擋問題 */
+.create-project-modal .caas-calendar-popover {
+  bottom: calc(100% + 6px) !important;
+  top: auto !important;
+  z-index: 99999 !important;
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.2), 0 4px 12px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
 .create-project-template-box {
   display: flex;
   align-items: center;
