@@ -81,7 +81,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
               id: `log_${Date.now()}`,
               clientId: `cli_${Date.now()}`,
               date: new Date().toLocaleString('zh-TW', { hour12: false }).replace(/\//g, '-'),
-              type: 'note',
+              type: 'line',
               summary: `[建檔需求概要] ${requirementSummary.trim()}`,
               createdByName: '系統管理員'
             }

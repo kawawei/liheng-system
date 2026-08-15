@@ -1,0 +1,50 @@
+/**
+ * @file ClientsDetailPage.css
+ * @description 客戶詳情與編輯獨立頁面樣式 / Client Details Page Styles
+ * @description_en Styles for full-page client detail view, status switcher header, tab navigation, and timeline
+ * @description_zh 定義獨立客戶詳情頁面標頭、狀態動態切換器、Tab 分頁與時間軸樣式
+ */
+
+.client-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background-color: #ffffff;
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.client-tabs-nav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.tab-item-btn {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary, #64748b);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.tab-item-btn:hover {
+  color: var(--primary-600, #2563eb);
+}
+
+.tab-item-btn.active {
+  color: var(--primary-600, #2563eb);
+  border-bottom-color: var(--primary-600, #2563eb);
+  font-weight: 600;
+}

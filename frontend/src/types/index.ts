@@ -26,7 +26,7 @@ export interface InteractionLog {
   id: string;
   clientId: string;
   date: string;
-  type: 'phone' | 'meeting' | 'line' | 'email' | 'note';
+  type: 'line' | 'phone' | 'fb' | 'ig' | 'threads';
   summary: string;
   createdByName: string;
 }

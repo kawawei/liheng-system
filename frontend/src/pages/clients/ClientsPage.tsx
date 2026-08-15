@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { TextIcon } from '../../components/icon/TextIcon';
-import { Button } from '../../components/button';
-import { Client, InteractionLog } from '../../types';
+import { Button } from '../../components/button/Button';
+import { Client } from '../../types';
 import { INITIAL_CLIENTS_MOCK } from '../../mock/clients.mock';
-import { ClientTable, ClientFormModal, ClientDetailDrawer } from '../../components/crm';
+import { ClientTable, ClientFormModal } from '../../components/crm';
+import { ClientsDetailPage } from './ClientsDetailPage';
 import './ClientsPage.css';
 
 /**
  * @file ClientsPage.tsx
  * @description CRM 客戶關係管理頁面 / CRM Clients Management Page
- * @description_en Page level container leveraging @kawawei/frontend-modules component library
- * @description_zh 頁面級容器，使用規範指定之 @kawawei/frontend-modules 組件庫並協調 CRM 子組件
+ * @description_en Page level container handling client list, creation modal, deletion, and full-page client detail editing
+ * @description_zh 頁面級容器，負責客戶列表、新增彈窗、刪除操作與導頁進入 ClientsDetailPage 獨立詳情頁
  */
 
 export const ClientsPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [clients, setClients] = useState<Client[]>(INITIAL_CLIENTS_MOCK);
 
   // ========================================
@@ -26,22 +27,39 @@ export const ClientsPage: React.FC = () => {
   };
 
   // ========================================
-  // 新增聯繫紀錄處理 / Add Interaction Log Handler
+  // 刪除客戶處理 / Delete Client Handler
   // ========================================
-  const handleAddLog = (newLog: InteractionLog) => {
-    if (!selectedClient) return;
-    const updatedClients = clients.map((c) => {
-      if (c.id === selectedClient.id) {
-        const updatedLogs = [newLog, ...(c.logs || [])];
-        const updatedClient = { ...c, logs: updatedLogs };
-        setSelectedClient(updatedClient);
-        return updatedClient;
+  const handleDeleteClient = (clientId: string, clientName?: string) => {
+    const targetName = clientName || '此客戶';
+    if (window.confirm(`確定要刪除「${targetName}」嗎？此操作無法恢復。`)) {
+      setClients((prev) => prev.filter((c) => c.id !== clientId));
+      if (editingClient && editingClient.id === clientId) {
+        setEditingClient(null);
       }
-      return c;
-    });
-
-    setClients(updatedClients);
+    }
   };
+
+  // ========================================
+  // 更新客戶資料與狀態 / Update Client Handler
+  // ========================================
+  const handleUpdateClient = (updatedClient: Client) => {
+    setClients((prev) =>
+      prev.map((c) => (c.id === updatedClient.id ? updatedClient : c))
+    );
+    setEditingClient(updatedClient);
+  };
+
+  // 若處於編輯狀態，則完全以全頁面渲染 ClientsDetailPage (非抽屜非 Modal)
+  if (editingClient) {
+    return (
+      <ClientsDetailPage
+        client={editingClient}
+        onBack={() => setEditingClient(null)}
+        onUpdateClient={handleUpdateClient}
+        onDeleteClient={(id) => handleDeleteClient(id, editingClient.name)}
+      />
+    );
+  }
 
   return (
     <div>
@@ -64,24 +82,18 @@ export const ClientsPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* 客戶數據表格組件 / Client Table Sub-component */}
+      {/* 客戶數據表格組件 (含編輯與刪除按鈕) / Client Table Component */}
       <ClientTable
         clients={clients}
-        onSelectClient={(c) => setSelectedClient(c)}
+        onEditClient={(c) => setEditingClient(c)}
+        onDeleteClient={(id, name) => handleDeleteClient(id, name)}
       />
 
-      {/* 新增客戶彈窗組件 / Client Creation Form Modal Sub-component */}
+      {/* 新增客戶彈窗組件 / Client Creation Form Modal Component */}
       <ClientFormModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={handleCreateClient}
-      />
-
-      {/* 客戶詳情與時間軸 Drawer 組件 / Client Detail Drawer Sub-component */}
-      <ClientDetailDrawer
-        client={selectedClient}
-        onClose={() => setSelectedClient(null)}
-        onAddLog={handleAddLog}
       />
     </div>
   );

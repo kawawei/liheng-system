@@ -25,10 +25,15 @@ import {
   Mail,
   Lock,
   ArrowRight,
+  ArrowLeft,
   User,
   Menu,
   Phone,
   MapPin,
+  Share2,
+  Camera,
+  AtSign,
+  Trash2,
   LucideIcon
 } from 'lucide-react';
 
@@ -65,10 +70,15 @@ export type IconName =
   | 'mail'
   | 'lock'
   | 'arrow-right'
+  | 'arrow-left'
   | 'user'
   | 'menu'
   | 'phone'
-  | 'map-pin';
+  | 'map-pin'
+  | 'fb'
+  | 'ig'
+  | 'threads'
+  | 'trash';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -106,10 +116,15 @@ const iconMap: Record<IconName, LucideIcon> = {
   mail: Mail,
   lock: Lock,
   'arrow-right': ArrowRight,
+  'arrow-left': ArrowLeft,
   user: User,
   menu: Menu,
   phone: Phone,
-  'map-pin': MapPin
+  'map-pin': MapPin,
+  fb: Share2,
+  ig: Camera,
+  threads: AtSign,
+  trash: Trash2
 };
 
 const sizeMap: Record<IconSize, number> = {

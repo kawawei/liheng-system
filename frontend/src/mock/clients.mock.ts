@@ -4,7 +4,7 @@ import { Client } from '../types';
  * @file clients.mock.ts
  * @description CRM 客戶模擬資料檔 / CRM Client Mock Data
  * @description_en Pre-populated clients and contact interaction logs for demonstration
- * @description_zh 提供 CRM 頁面展示用之預設客戶資料與聯繫歷史時間軸紀錄
+ * @description_zh 提供 CRM 頁面展示用之預設客戶資料與聯繫歷史時間軸紀錄 (管道支援 LINE, 電話, FB, IG, Threads)
  */
 
 export const INITIAL_CLIENTS_MOCK: Client[] = [
@@ -27,16 +27,16 @@ export const INITIAL_CLIENTS_MOCK: Client[] = [
         id: 'log_1',
         clientId: 'cli_1',
         date: '2026-08-10 14:30',
-        type: 'meeting',
-        summary: '完成合約簽署與專案啟動會議，確認一期驗收目標與架構細節。',
+        type: 'phone',
+        summary: '電話聯繫討論專案啟動會議，確認一期驗收目標與架構細節。',
         createdByName: '陳專案經理'
       },
       {
         id: 'log_2',
         clientId: 'cli_1',
         date: '2026-08-05 10:00',
-        type: 'phone',
-        summary: '致電討論研發範疇，客戶提出需要支援手機端即時警示 Push Notification。',
+        type: 'line',
+        summary: 'LINE 訊息溝通研發範疇，客戶提出需要支援手機端即時警示 Push Notification。',
         createdByName: '林業務代表'
       }
     ]
@@ -60,8 +60,8 @@ export const INITIAL_CLIENTS_MOCK: Client[] = [
         id: 'log_3',
         clientId: 'cli_2',
         date: '2026-08-12 11:00',
-        type: 'meeting',
-        summary: '首次訪談簡報，展示既有金融對帳案例，客戶對數據可視化表達滿意。',
+        type: 'fb',
+        summary: 'FB 粉專私訊洽詢，展示既有金融對帳案例，客戶對數據可視化表達滿意。',
         createdByName: '王總經理'
       }
     ]
@@ -82,8 +82,8 @@ export const INITIAL_CLIENTS_MOCK: Client[] = [
         id: 'log_4',
         clientId: 'cli_3',
         date: '2026-08-14 16:20',
-        type: 'line',
-        summary: '加 LINE 諮詢出單機支援型號與菜單模組功能，已發送初步報價清單。',
+        type: 'ig',
+        summary: 'IG 商業帳號小盒子私訊諮詢出單機支援型號與菜單模組功能。',
         createdByName: '張專案專員'
       }
     ]

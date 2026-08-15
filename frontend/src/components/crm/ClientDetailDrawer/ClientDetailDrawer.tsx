@@ -9,8 +9,8 @@ import './ClientDetailDrawer.css';
 /**
  * @file ClientDetailDrawer.tsx
  * @description 客戶詳情與聯繫時間軸 Drawer 組件 / Client Detail Drawer Component
- * @description_en Displays client metadata, requirement summary, and vertical interaction timeline using specified CaaS components and SelectField
- * @description_zh 展示客戶詳細資訊與系統需求，使用指定 CaaS Button 與 SelectField 處理聯繫歷史時間軸互動
+ * @description_en Displays client metadata and interaction timeline using FB, IG, Threads, LINE, Phone
+ * @description_zh 展示客戶詳細資訊與系統需求，支援 FB, IG, Threads, LINE, 電話聯繫紀錄
  */
 
 interface ClientDetailDrawerProps {
@@ -20,11 +20,11 @@ interface ClientDetailDrawerProps {
 }
 
 const LOG_TYPE_OPTIONS: SelectOption[] = [
+  { value: 'line', label: 'LINE 訊息', iconName: 'message' },
   { value: 'phone', label: '電話溝通', iconName: 'phone' },
-  { value: 'meeting', label: '會議拜訪', iconName: 'users' },
-  { value: 'line', label: 'LINE / 訊息', iconName: 'message' },
-  { value: 'email', label: 'Email 往來', iconName: 'mail' },
-  { value: 'note', label: '需求備忘', iconName: 'file-check' }
+  { value: 'fb', label: 'FB 私訊', iconName: 'fb' },
+  { value: 'ig', label: 'IG 訊息', iconName: 'ig' },
+  { value: 'threads', label: 'Threads 互動', iconName: 'threads' }
 ];
 
 export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
@@ -32,7 +32,7 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
   onClose,
   onAddLog
 }) => {
-  const [logType, setLogType] = useState<'phone' | 'meeting' | 'line' | 'email' | 'note'>('phone');
+  const [logType, setLogType] = useState<'line' | 'phone' | 'fb' | 'ig' | 'threads'>('line');
   const [logSummary, setLogSummary] = useState('');
 
   if (!client) return null;
@@ -56,17 +56,17 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
 
   const getLogTypeTag = (type: InteractionLog['type']) => {
     switch (type) {
+      case 'fb':
+        return { label: 'FB 私訊', className: 'meeting', iconName: 'fb' as const };
+      case 'ig':
+        return { label: 'IG 訊息', className: 'email', iconName: 'ig' as const };
+      case 'threads':
+        return { label: 'Threads 互動', className: 'note', iconName: 'threads' as const };
       case 'phone':
         return { label: '電話溝通', className: 'phone', iconName: 'phone' as const };
-      case 'meeting':
-        return { label: '會議拜訪', className: 'meeting', iconName: 'users' as const };
       case 'line':
-        return { label: 'LINE / 訊息', className: 'line', iconName: 'message' as const };
-      case 'email':
-        return { label: 'Email 往來', className: 'email', iconName: 'mail' as const };
-      case 'note':
       default:
-        return { label: '需求備忘', className: 'note', iconName: 'file-check' as const };
+        return { label: 'LINE 訊息', className: 'line', iconName: 'message' as const };
     }
   };
 
@@ -147,7 +147,7 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
             )}
           </div>
 
-          {/* 新增聯繫紀錄表單 (全面採用 SelectField 與高亮彩色 Button) */}
+          {/* 新增聯繫紀錄表單 */}
           <div style={{ background: '#f1f5f9', padding: '16px', borderRadius: '10px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
             <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#0f172a' }}>
               <TextIcon name="plus" size="sm" />
