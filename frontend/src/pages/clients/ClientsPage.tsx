@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { Client, InteractionLog } from '../../types';
+import { INITIAL_CLIENTS_MOCK } from '../../mock/clients.mock';
 import './ClientsPage.css';
 
 /**
  * @file ClientsPage.tsx
  * @description CRM 客戶關係管理頁面 / CRM Clients Management Page
- * @description_en Flexible client management, optional company/tax ID/address fields, and interactive contact timeline
+ * @description_en Flexible client management, optional fields (company/tax ID/address), requirement summary, and interactive contact timeline
  * @description_zh 提供彈性客戶資料維護 (名稱在前、公司統編與地址選填)、潛在需求概要紀錄與聯繫歷史時間軸
  */
 
@@ -25,7 +26,7 @@ export const ClientsPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
-  // 新增客戶表單欄位 / New client form fields
+  // 新增客戶表單欄位 (初始無預設假資料) / Form fields initialized empty per Form Hygiene rules
   const [name, setName] = useState('');
   const [contactPerson, setContactPerson] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -38,96 +39,15 @@ export const ClientsPage: React.FC = () => {
   const [requirementSummary, setRequirementSummary] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // 新增聯繫紀錄欄位 / New log fields
+  // 新增聯繫紀錄欄位 / New interaction log form fields
   const [logType, setLogType] = useState<'phone' | 'meeting' | 'line' | 'email' | 'note'>('phone');
   const [logSummary, setLogSummary] = useState('');
 
-  // 初始客戶清單 (含示範潛在商機與歷史紀錄) / Pre-populated client data
-  const [clients, setClients] = useState<Client[]>([
-    {
-      id: 'cli_1',
-      name: '台元半導體',
-      companyName: '台元半導體股份有限公司',
-      taxId: '12345678',
-      contactPerson: '陳協理',
-      contactPhone: '0912-345-678',
-      companyPhone: '02-27891234',
-      email: 'chen@taiyuan.com',
-      address: '新竹縣竹北市台元街 26 號 5 樓',
-      systemType: 'IoT 物聯網監控',
-      requirementSummary: '需求晶圓機台即時監控系統，需整合 PLC 數據傳送與看板大螢幕展示。',
-      status: 'signed',
-      createdAt: '2026-08-10',
-      logs: [
-        {
-          id: 'log_1',
-          clientId: 'cli_1',
-          date: '2026-08-10 14:30',
-          type: 'meeting',
-          summary: '完成合約簽署與專案啟動會議，確認一期驗收目標與架構細節。',
-          createdByName: '陳專案經理'
-        },
-        {
-          id: 'log_2',
-          clientId: 'cli_1',
-          date: '2026-08-05 10:00',
-          type: 'phone',
-          summary: '致電討論研發範疇，客戶提出需要支援手機端即時警示 Push Notification。',
-          createdByName: '林業務代表'
-        }
-      ]
-    },
-    {
-      id: 'cli_2',
-      name: '國泰證券資訊處',
-      companyName: '國泰證券股份有限公司',
-      taxId: '87654321',
-      contactPerson: '林經理',
-      contactPhone: '0988-765-432',
-      companyPhone: '02-23456789',
-      email: 'lin@cathay.com',
-      address: '台北市信義區松仁路 7 號 12 樓',
-      systemType: 'Web 管理系統',
-      requirementSummary: '內部交易對帳與自動報表產生系統，希望改善原本 Excel 人工作業。',
-      status: 'signed',
-      createdAt: '2026-08-12',
-      logs: [
-        {
-          id: 'log_3',
-          clientId: 'cli_2',
-          date: '2026-08-12 11:00',
-          type: 'meeting',
-          summary: '首次訪談簡報，展示既有金融對帳案例，客戶對數據可視化表達滿意。',
-          createdByName: '王總經理'
-        }
-      ]
-    },
-    {
-      id: 'cli_3',
-      name: '張先生 (個人工作室)',
-      contactPerson: '張大明',
-      contactPhone: '0933-111-222',
-      email: 'chang@studio.io',
-      address: '台中市西區台灣大道二段 100 號',
-      systemType: 'POS 軟硬體整合',
-      requirementSummary: '想開一家獨立咖啡店，需要小型 iPad POS 點餐系統與藍芽出單機連動。',
-      status: 'potential',
-      createdAt: '2026-08-14',
-      logs: [
-        {
-          id: 'log_4',
-          clientId: 'cli_3',
-          date: '2026-08-14 16:20',
-          type: 'line',
-          summary: '加 LINE 諮詢出單機支援型號與菜單模組功能，已發送初步報價清單。',
-          createdByName: '張專案專員'
-        }
-      ]
-    }
-  ]);
+  // 初始客戶清單 (引用抽離之 Mock 數據) / Pre-populated client data from mock file
+  const [clients, setClients] = useState<Client[]>(INITIAL_CLIENTS_MOCK);
 
   // ========================================
-  // 表單驗證與建立處理 / Save Handler
+  // 表單驗證與建立處理 / Save Client Handler
   // ========================================
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,16 +145,16 @@ export const ClientsPage: React.FC = () => {
   const getLogTypeTag = (type: InteractionLog['type']) => {
     switch (type) {
       case 'phone':
-        return { label: '電話溝通', className: 'phone' };
+        return { label: '電話溝通', className: 'phone', iconName: 'phone' as const };
       case 'meeting':
-        return { label: '會議拜訪', className: 'meeting' };
+        return { label: '會議拜訪', className: 'meeting', iconName: 'users' as const };
       case 'line':
-        return { label: 'LINE / 訊息', className: 'line' };
+        return { label: 'LINE / 訊息', className: 'line', iconName: 'message' as const };
       case 'email':
-        return { label: 'Email 往來', className: 'email' };
+        return { label: 'Email 往來', className: 'email', iconName: 'mail' as const };
       case 'note':
       default:
-        return { label: '需求備忘', className: 'note' };
+        return { label: '需求備忘', className: 'note', iconName: 'file-check' as const };
     }
   };
 
@@ -287,8 +207,9 @@ export const ClientsPage: React.FC = () => {
                 <td>
                   <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</div>
                   {c.address && (
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                      📍 {c.address}
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <TextIcon name="map-pin" size="sm" />
+                      <span>{c.address}</span>
                     </div>
                   )}
                 </td>
@@ -301,8 +222,9 @@ export const ClientsPage: React.FC = () => {
                 </td>
                 <td>
                   <div>{c.contactPerson}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
-                    📞 {c.contactPhone}
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <TextIcon name="phone" size="sm" />
+                    <span>{c.contactPhone}</span>
                   </div>
                 </td>
                 <td>
@@ -365,7 +287,7 @@ export const ClientsPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSave} noValidate>
-              {/* 1. 客戶名稱（放在最前） */}
+              {/* 1. 客戶名稱 (放在最首位) */}
               <div className="form-group">
                 <label className="form-label" htmlFor="client-name">客戶 / 單位名稱 *</label>
                 <input
@@ -379,7 +301,7 @@ export const ClientsPage: React.FC = () => {
                 {errors.name && <div className="form-error-msg">{errors.name}</div>}
               </div>
 
-              {/* 2. 聯絡人雙欄 */}
+              {/* 2. 聯絡人雙欄 (必填) */}
               <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label" htmlFor="contact-person">聯絡人姓名 *</label>
@@ -408,7 +330,7 @@ export const ClientsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 3. 公司名稱與統編（選填） */}
+              {/* 3. 公司名稱與統編 (選填) */}
               <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label" htmlFor="company-name">公司名稱 (選填)</label>
@@ -437,7 +359,7 @@ export const ClientsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 4. 公司電話、Email、地址（選填） */}
+              {/* 4. 公司電話、Email、地址 (選填) */}
               <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label" htmlFor="company-phone">公司電話 (選填)</label>
@@ -531,7 +453,7 @@ export const ClientsPage: React.FC = () => {
         </div>
       )}
 
-      {/* 客戶詳情與聯繫歷史時間軸 Drawer / Client Detail Drawer */}
+      {/* 客戶詳情與聯繫歷史時間軸 Drawer Panel */}
       {selectedClient && (
         <div className="drawer-backdrop" onClick={() => setSelectedClient(null)}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
@@ -591,7 +513,10 @@ export const ClientsPage: React.FC = () => {
                   {selectedClient.address && (
                     <div className="client-detail-item" style={{ gridColumn: 'span 2' }}>
                       <span className="client-detail-label">地址</span>
-                      <span className="client-detail-value">📍 {selectedClient.address}</span>
+                      <span className="client-detail-value" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <TextIcon name="map-pin" size="sm" />
+                        <span>{selectedClient.address}</span>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -608,22 +533,23 @@ export const ClientsPage: React.FC = () => {
 
               {/* 新增聯繫紀錄表單 */}
               <div style={{ background: '#f1f5f9', padding: '14px', borderRadius: '8px', marginBottom: '20px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>
-                  + 新增聯繫 / 拜訪紀錄
+                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <TextIcon name="plus" size="sm" />
+                  <span>新增聯繫 / 拜訪紀錄</span>
                 </div>
                 <form onSubmit={handleAddLog}>
                   <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                     <select
                       className="form-input"
-                      style={{ width: '130px', fontSize: '13px' }}
+                      style={{ width: '140px', fontSize: '13px' }}
                       value={logType}
                       onChange={(e) => setLogType(e.target.value as any)}
                     >
-                      <option value="phone">📞 電話溝通</option>
-                      <option value="meeting">🤝 會議拜訪</option>
-                      <option value="line">💬 LINE / 訊息</option>
-                      <option value="email">✉️ Email 往來</option>
-                      <option value="note">📝 需求備忘</option>
+                      <option value="phone">電話溝通</option>
+                      <option value="meeting">會議拜訪</option>
+                      <option value="line">LINE / 訊息</option>
+                      <option value="email">Email 往來</option>
+                      <option value="note">需求備忘</option>
                     </select>
                     <input
                       type="text"
@@ -665,7 +591,10 @@ export const ClientsPage: React.FC = () => {
                         <div className={`timeline-dot ${tagInfo.className}`} />
                         <div className="timeline-content">
                           <div className="timeline-header">
-                            <span className="timeline-type-tag">{tagInfo.label}</span>
+                            <span className="timeline-type-tag">
+                              <TextIcon name={tagInfo.iconName} size="sm" />
+                              <span>{tagInfo.label}</span>
+                            </span>
                             <span className="timeline-date">{log.date}</span>
                           </div>
                           <div className="timeline-summary">{log.summary}</div>

@@ -27,6 +27,8 @@ import {
   ArrowRight,
   User,
   Menu,
+  Phone,
+  MapPin,
   LucideIcon
 } from 'lucide-react';
 
@@ -64,7 +66,9 @@ export type IconName =
   | 'lock'
   | 'arrow-right'
   | 'user'
-  | 'menu';
+  | 'menu'
+  | 'phone'
+  | 'map-pin';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -102,7 +106,9 @@ const iconMap: Record<IconName, LucideIcon> = {
   lock: Lock,
   'arrow-right': ArrowRight,
   user: User,
-  menu: Menu
+  menu: Menu,
+  phone: Phone,
+  'map-pin': MapPin
 };
 
 const sizeMap: Record<IconSize, number> = {
