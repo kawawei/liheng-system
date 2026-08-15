@@ -1,8 +1,8 @@
 /**
  * @file CreateProjectModal.tsx
  * @description 客戶轉正式專案立案彈窗組件 / Project Initiation Modal Component
- * @description_en Modal for converting a CRM client to an official project, integrating @kawawei/frontend-modules (Select, DatePicker), sequential code, duration auto-calc, and tax options
- * @description_zh 為 CRM 客戶進行正式立案之彈窗，全面採用 @kawawei/frontend-modules (Select 下拉核取, DatePicker 日期選擇器)，支援工期自動推算交付日、流水號案號與 5% 營業稅選擇
+ * @description_en Modal for converting a CRM client to an official project, integrating @kawawei/frontend-modules (Select, DatePicker), sequential code, duration auto-calc, and optional 5% tax checkbox on tax-exclusive mode
+ * @description_zh 為 CRM 客戶進行正式立案之彈窗，全面採用 @kawawei/frontend-modules (Select 下拉核取, DatePicker 日期選擇器)，支援未稅模式下自選是否外加 5% 營業稅核取框
  */
 
 import React, { useState, useEffect } from 'react';
@@ -37,7 +37,7 @@ const STAGE_OPTIONS = [
 ];
 
 const TAX_OPTIONS = [
-  { label: '未稅 (外加 5% 營業稅)', value: 'tax_exclusive' },
+  { label: '未稅', value: 'tax_exclusive' },
   { label: '含稅 (已內含 5% 營業稅)', value: 'tax_inclusive' },
 ];
 
@@ -54,6 +54,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const [projectName, setProjectName] = useState('');
   const [projectCode, setProjectCode] = useState('');
   const [taxType, setTaxType] = useState<TaxType>('tax_exclusive');
+  const [isTaxAdded, setIsTaxAdded] = useState(true); // 選未稅時是否外加 5% 營業稅
   const [amountInput, setAmountInput] = useState('1000000');
   const [startDate, setStartDate] = useState(todayStr);
   const [durationDays, setDurationDays] = useState<number>(90);
@@ -80,7 +81,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const { amountUntaxed, taxAmount, amountTotal } = (() => {
     if (taxType === 'tax_exclusive') {
       const untaxed = parsedInput;
-      const tax = Math.round(untaxed * 0.05);
+      const tax = isTaxAdded ? Math.round(untaxed * 0.05) : 0;
       const total = untaxed + tax;
       return { amountUntaxed: untaxed, taxAmount: tax, amountTotal: total };
     } else {
@@ -118,7 +119,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       durationDays: Number(durationDays) || 1,
       expectedDeliveryDate,
       taxType,
-      isTaxAdded: taxType === 'tax_exclusive',
+      isTaxAdded: taxType === 'tax_exclusive' ? isTaxAdded : false,
       amountUntaxed,
       taxAmount,
       amountTotal,
@@ -215,9 +216,23 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
             {/* 合約金額輸入 (無上下調節箭頭) 與即時試算 */}
             <div className="create-project-field-group">
-              <label className="create-project-field-label">
-                {taxType === 'tax_exclusive' ? '輸入未稅金額 (NT$) *' : '輸入含稅合約總金額 (NT$) *'}
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="create-project-field-label">
+                  {taxType === 'tax_exclusive' ? '輸入未稅金額 (NT$) *' : '輸入含稅合約總金額 (NT$) *'}
+                </label>
+                {/* 未稅模式下自選是否外加 5% 營業稅 */}
+                {taxType === 'tax_exclusive' && (
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#1e40af', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={isTaxAdded}
+                      onChange={(e) => setIsTaxAdded(e.target.checked)}
+                      style={{ width: '15px', height: '15px', accentColor: '#2563eb', cursor: 'pointer' }}
+                    />
+                    <span>外加 5% 營業稅</span>
+                  </label>
+                )}
+              </div>
               <input
                 type="number"
                 min="0"
