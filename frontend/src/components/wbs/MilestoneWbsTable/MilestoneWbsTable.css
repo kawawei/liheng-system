@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height, WBS Code column on the far left, milestone rows without duration/end date/progress, predecessor selector + dependency type + Pull-Forward checkbox.
- * @description_zh WBS 編號獨立於最左側欄位、里程碑檢查點不顯示工期/結束日/進度、前置依賴整合組件庫 Select 與允許提前 Pull-Forward 勾選框、統一 30px 控制項高度。
+ * @description_en Strictly uniform 30px height, WBS Code column on the far left, milestone rows without duration/end date/progress, predecessor WBS code selector + enlarged pull-forward checkbox.
+ * @description_zh WBS 編號獨立於最左側欄位、里程碑檢查點不顯示工期/結束日/進度、前置任務僅顯示 WBS 序號、放大「提前」核取框尺寸與字級。
  */
 
 .wbs-wrapper {
@@ -103,7 +103,7 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 2020px;
+  min-width: 1980px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
@@ -261,7 +261,7 @@
 }
 
 /* ========================================
-   前置依賴組合欄位 (前置工項 + 依賴類型 + 允許提前)
+   前置依賴組合欄位 (前置工項 + 依賴類型 + 放大核取框)
    ======================================== */
 .wbs-dependency-composite-cell {
   display: flex;
@@ -269,39 +269,45 @@
   gap: 6px;
 }
 
+/* 放大提前核取框與標籤 */
 .wbs-pull-forward-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #475569;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid transparent;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  height: 30px;
+  box-sizing: border-box;
   transition: all 0.15s ease;
 }
 
 .wbs-pull-forward-toggle:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
+  background-color: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
 }
 
 .wbs-pull-forward-toggle.active {
   background-color: #eff6ff;
-  border-color: #93c5fd;
+  border-color: #3b82f6;
   color: #1d4ed8;
-  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
 }
 
 .wbs-pull-forward-toggle input[type="checkbox"] {
   cursor: pointer;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   accent-color: #2563eb;
+  margin: 0;
 }
 
 /* ========================================

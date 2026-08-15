@@ -34,10 +34,10 @@ const STATUS_SELECT_OPTIONS = [
 ];
 
 const DEPENDENCY_TYPE_OPTIONS = [
-  { label: 'FS (完成至開始)', value: 'FS' },
-  { label: 'FF (完成至完成)', value: 'FF' },
-  { label: 'SS (開始至開始)', value: 'SS' },
-  { label: 'SF (開始至完成)', value: 'SF' },
+  { label: 'FS', value: 'FS' },
+  { label: 'FF', value: 'FF' },
+  { label: 'SS', value: 'SS' },
+  { label: 'SF', value: 'SF' },
 ];
 
 // ========================================
@@ -76,18 +76,18 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   const [nodes, setNodes] = useState<WbsNode[]>(initialNodes);
 
   // ========================================
-  // 提取所有可用前置任務選項 / Predecessor Options
+  // 提取所有可用前置任務選項 (僅顯示 WBS 序號)
   // ========================================
   const predecessorSelectOptions = useMemo(() => {
     const options: Array<{ label: string; value: string }> = [
-      { label: '無前置', value: '' },
+      { label: '無', value: '' },
     ];
     const collect = (list: WbsNode[]) => {
       list.forEach((n) => {
         const code = n.wbsCode || '';
         if (code) {
           options.push({
-            label: `${code} ${n.name.slice(0, 12)}${n.name.length > 12 ? '...' : ''}`,
+            label: code,
             value: code,
           });
         }
@@ -548,10 +548,10 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
             </td>
 
             {/* 3. 前置依賴組合欄位 (前置工項 Select + 依賴類型 Select + 允許提前 Checkbox) */}
-            <td style={{ width: '250px', minWidth: '250px' }}>
+            <td style={{ width: '235px', minWidth: '235px' }}>
               <div className="wbs-dependency-composite-cell">
-                {/* 前置工項 Select */}
-                <div style={{ width: '115px', flexShrink: 0 }}>
+                {/* 前置工項 Select (只顯示 WBS 序號) */}
+                <div style={{ width: '85px', flexShrink: 0 }}>
                   <Select
                     className="wbs-select-field"
                     options={predecessorSelectOptions}
@@ -565,7 +565,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                 </div>
 
                 {/* 依賴類型 Select */}
-                <div style={{ width: '70px', flexShrink: 0 }}>
+                <div style={{ width: '65px', flexShrink: 0 }}>
                   <Select
                     className="wbs-select-field"
                     options={DEPENDENCY_TYPE_OPTIONS}
@@ -578,7 +578,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                   />
                 </div>
 
-                {/* 允許提前 (Pull-Forward) 勾選框 */}
+                {/* 允許提前 (Pull-Forward) 放大勾選框 */}
                 <label
                   className={`wbs-pull-forward-toggle ${node.allowPullForward ? 'active' : ''}`}
                   title={
