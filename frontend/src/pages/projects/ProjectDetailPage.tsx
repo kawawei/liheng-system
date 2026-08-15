@@ -5,8 +5,10 @@ import { TextIcon } from '../../components/icon/TextIcon';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { Button } from '../../components/button/Button';
 import { SelectField, SelectOption } from '../../components/input/SelectField';
+import { MilestoneWbsTable } from '../../components/wbs';
 import { Project, ProjectStage, ChangeOrder } from '../../types';
 import { MOCK_PROJECTS } from '../../mock/projects.mock';
+import { MOCK_PROJECT_WBS } from '../../mock/wbs.mock';
 
 /**
  * @file ProjectDetailPage.tsx
@@ -25,7 +27,9 @@ export const ProjectDetailPage: React.FC = () => {
     MOCK_PROJECTS.find((p) => p.id === id || p.projectCode === id) || MOCK_PROJECTS[0];
 
   const [currentStage, setCurrentStage] = useState<ProjectStage>(project.stage);
+  const [progressPercent, setProgressPercent] = useState<number>(project.progressPercent);
   const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(project.changeOrders || []);
+
 
   const STAGE_OPTIONS: SelectOption[] = [
     { value: 'development', label: '1. 開發中', iconName: 'layers' },
@@ -139,8 +143,8 @@ export const ProjectDetailPage: React.FC = () => {
           </div>
 
           <StatusBadge
-            label={`進度 ${project.progressPercent}%`}
-            variant={project.progressPercent >= 90 ? 'success' : 'info'}
+            label={`進度 ${progressPercent}%`}
+            variant={progressPercent >= 90 ? 'success' : 'info'}
             icon="success"
           />
 
@@ -248,36 +252,13 @@ export const ProjectDetailPage: React.FC = () => {
 
       {/* Tab 內容切換區域 */}
       <div className="card">
-        {/* Tab 1: 里程碑進度 */}
+        {/* Tab 1: 里程碑進度 (WBS 樹狀表格) */}
         {currentTab === 'milestones' && (
-          <div>
-            <div className="card-header">
-              <h2 className="card-title">專案核心開發里程碑</h2>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ padding: '14px', border: '1px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: 600 }}>M1: 系統架構與資料庫設計 (SDD)</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>完成 12 張資料表與 Drizzle ORM 設定</div>
-                </div>
-                <StatusBadge label="已完成 (100%)" variant="success" icon="success" />
-              </div>
-              <div style={{ padding: '14px', border: '1px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: 600 }}>M2: 前後端核心模組開發</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>CRM、WBS 看板與 8h JWT 認證</div>
-                </div>
-                <StatusBadge label="進行中 (70%)" variant="info" icon="clock" />
-              </div>
-              <div style={{ padding: '14px', border: '1px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: 600 }}>M3: 系統整合測試與 UAT 驗收</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Docker 容器佈署與客戶驗收簽收</div>
-                </div>
-                <StatusBadge label="待啟動 (0%)" variant="neutral" icon="clock" />
-              </div>
-            </div>
-          </div>
+          <MilestoneWbsTable
+            projectId={project.id}
+            initialNodes={MOCK_PROJECT_WBS[project.id] || MOCK_PROJECT_WBS['pj_1']}
+            onProgressUpdate={(pct) => setProgressPercent(pct)}
+          />
         )}
 
         {/* Tab 2: 工程進度日誌 */}

@@ -1,0 +1,380 @@
+/**
+ * @file MilestoneWbsTable.css
+ * @description WBS 里程碑樹狀表格樣式 / Milestone WBS Tree Table Styles
+ * @description_en Styles for hierarchical WBS table, badges, progress bars, and modal controls
+ * @description_zh 定義 WBS 樹狀階層表格、狀態標籤、進度條與彈窗樣式
+ */
+
+.wbs-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* ========================================
+   工具列與統計膠囊 / Toolbar & Stats
+   ======================================== */
+.wbs-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.wbs-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wbs-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-app, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #0f172a);
+}
+
+.wbs-stat-pill.success {
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.wbs-stat-pill.info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+
+.wbs-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ========================================
+   表格主體 / Table Styles
+   ======================================== */
+.wbs-table-container {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.wbs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.wbs-table thead tr {
+  background-color: #f8fafc;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+}
+
+.wbs-table th {
+  padding: 12px 14px;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  white-space: nowrap;
+}
+
+.wbs-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  color: var(--text-primary, #1e293b);
+  vertical-align: middle;
+}
+
+.wbs-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+.wbs-row.is-root {
+  background-color: #ffffff;
+}
+
+.wbs-row.is-root td {
+  font-weight: 600;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* 階層名稱單元格 */
+.wbs-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wbs-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.wbs-expand-btn:hover {
+  background-color: #e2e8f0;
+  color: var(--text-primary, #0f172a);
+}
+
+.wbs-expand-placeholder {
+  width: 22px;
+  display: inline-block;
+}
+
+.wbs-cat-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.wbs-cat-req { background: #fef3c7; color: #92400e; }
+.wbs-cat-arch { background: #e0e7ff; color: #3730a3; }
+.wbs-cat-dev { background: #dbeafe; color: #1e40af; }
+.wbs-cat-test { background: #fce7f3; color: #9d174d; }
+.wbs-cat-deploy { background: #d1fae5; color: #065f46; }
+
+/* 工程師標籤 */
+.wbs-assignee-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #334155;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+/* 進度條 */
+.wbs-progress-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 110px;
+}
+
+.wbs-progress-track {
+  flex: 1;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.wbs-progress-fill {
+  height: 100%;
+  background-color: var(--primary-600, #2563eb);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.wbs-progress-fill.completed {
+  background-color: #10b981;
+}
+
+.wbs-progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono, monospace);
+  min-width: 35px;
+  text-align: right;
+}
+
+/* 狀態切換按鈕 */
+.wbs-status-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.wbs-status-btn.not-started {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+.wbs-status-btn.in-progress {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.wbs-status-btn.completed {
+  background-color: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.wbs-status-btn:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+/* 操作動作按鈕 */
+.wbs-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wbs-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.wbs-action-btn:hover {
+  background-color: #f1f5f9;
+  color: var(--text-primary, #0f172a);
+}
+
+.wbs-action-btn.add:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.wbs-action-btn.delete:hover {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+
+/* Modal 彈窗樣式 */
+.wbs-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.wbs-modal-content {
+  background: #ffffff;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 540px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.wbs-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wbs-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.wbs-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wbs-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.wbs-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.wbs-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wbs-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.wbs-form-input,
+.wbs-form-select {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  background-color: #ffffff;
+  transition: border-color 0.15s ease;
+}
+
+.wbs-form-input:focus,
+.wbs-form-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}

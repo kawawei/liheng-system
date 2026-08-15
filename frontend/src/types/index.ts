@@ -142,3 +142,25 @@ export interface Receivable {
   dueDate: string;
   receivedAt?: string;
 }
+
+export type WbsStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+
+export interface WbsNode {
+  id: string;
+  projectId: string;
+  parentId?: string;
+  name: string;
+  description?: string;
+  category?: 'requirement' | 'architecture' | 'development' | 'testing' | 'deployment';
+  status: WbsStatus;
+  startDate?: string;
+  endDate?: string;
+  durationDays?: number;
+  budget?: number;
+  actualCost?: number;
+  progress: number;
+  assignees?: string[];
+  children?: WbsNode[];
+  isExpanded?: boolean;
+}
+
