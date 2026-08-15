@@ -3,13 +3,14 @@ import { Client, InteractionLog } from '../../../types';
 import { TextIcon } from '../../icon/TextIcon';
 import { StatusBadge } from '../../status-badge/StatusBadge';
 import { Button } from '../../button/Button';
+import { SelectField, SelectOption } from '../../input/SelectField';
 import './ClientDetailDrawer.css';
 
 /**
  * @file ClientDetailDrawer.tsx
  * @description 客戶詳情與聯繫時間軸 Drawer 組件 / Client Detail Drawer Component
- * @description_en Displays client metadata, requirement summary, and vertical interaction timeline using specified CaaS components
- * @description_zh 展示客戶詳細資訊與系統需求，並使用指定組件庫 Button 處理聯繫歷史時間軸互動
+ * @description_en Displays client metadata, requirement summary, and vertical interaction timeline using specified CaaS components and SelectField
+ * @description_zh 展示客戶詳細資訊與系統需求，使用指定 CaaS Button 與 SelectField 處理聯繫歷史時間軸互動
  */
 
 interface ClientDetailDrawerProps {
@@ -17,6 +18,14 @@ interface ClientDetailDrawerProps {
   onClose: () => void;
   onAddLog: (log: InteractionLog) => void;
 }
+
+const LOG_TYPE_OPTIONS: SelectOption[] = [
+  { value: 'phone', label: '電話溝通', iconName: 'phone' },
+  { value: 'meeting', label: '會議拜訪', iconName: 'users' },
+  { value: 'line', label: 'LINE / 訊息', iconName: 'message' },
+  { value: 'email', label: 'Email 往來', iconName: 'mail' },
+  { value: 'note', label: '需求備忘', iconName: 'file-check' }
+];
 
 export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
   client,
@@ -138,26 +147,20 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
             )}
           </div>
 
-          {/* 新增聯繫紀錄表單 */}
-          <div style={{ background: '#f1f5f9', padding: '14px', borderRadius: '8px', marginBottom: '20px' }}>
-            <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {/* 新增聯繫紀錄表單 (全面採用 SelectField 與高亮彩色 Button) */}
+          <div style={{ background: '#f1f5f9', padding: '16px', borderRadius: '10px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
+            <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#0f172a' }}>
               <TextIcon name="plus" size="sm" />
               <span>新增聯繫 / 拜訪紀錄</span>
             </div>
             <form onSubmit={handleAddLogSubmit}>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                <select
-                  className="form-input"
-                  style={{ width: '140px', fontSize: '13px' }}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+                <SelectField
+                  options={LOG_TYPE_OPTIONS}
                   value={logType}
-                  onChange={(e) => setLogType(e.target.value as any)}
-                >
-                  <option value="phone">電話溝通</option>
-                  <option value="meeting">會議拜訪</option>
-                  <option value="line">LINE / 訊息</option>
-                  <option value="email">Email 往來</option>
-                  <option value="note">需求備忘</option>
-                </select>
+                  onChange={(v) => setLogType(v as any)}
+                  style={{ width: '150px' }}
+                />
                 <input
                   type="text"
                   className="form-input"
@@ -174,7 +177,8 @@ export const ClientDetailDrawer: React.FC<ClientDetailDrawerProps> = ({
                   size="sm"
                   disabled={!logSummary.trim()}
                 >
-                  新增紀錄
+                  <TextIcon name="plus" size="sm" />
+                  <span>新增紀錄</span>
                 </Button>
               </div>
             </form>

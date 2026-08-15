@@ -1,13 +1,94 @@
 /**
  * @file Button.css
- * @description 按鈕組件額外輔助樣式 / Button Component Auxiliary Styles
- * @description_en Custom alignment and cursor resets for caas-button Web Component wrapper
- * @description_zh 提供 caas-button 組件微調與對齊樣式
+ * @description 按鈕組件核心樣式 / Button Component Core Styles
+ * @description_en Styling for caas-button Web Component wrapper supporting primary, secondary, outline, danger variants
+ * @description_zh 為 caas-button Web Component 提供高質感主題色彩 (Primary 藍、Secondary 白底灰框、Danger 紅)
  */
 
 caas-button.custom-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid transparent;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+/* Primary 主要按鈕 (高亮主題藍) */
+caas-button.custom-button[variant="primary"],
+caas-button.custom-button:not([variant]) {
+  background-color: var(--primary-600, #2563eb);
+  color: #ffffff;
+  border-color: var(--primary-600, #2563eb);
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+caas-button.custom-button[variant="primary"]:hover {
+  background-color: var(--primary-700, #1d4ed8);
+  border-color: var(--primary-700, #1d4ed8);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+}
+
+/* Secondary 次要按鈕 (白底微灰框) */
+caas-button.custom-button[variant="secondary"] {
+  background-color: #ffffff;
+  color: var(--text-primary, #0f172a);
+  border-color: var(--border-color, #cbd5e1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+caas-button.custom-button[variant="secondary"]:hover {
+  background-color: var(--bg-muted, #f8fafc);
+  border-color: #94a3b8;
+  color: var(--primary-600, #2563eb);
+}
+
+/* Danger 紅色警示按鈕 */
+caas-button.custom-button[variant="danger"] {
+  background-color: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+caas-button.custom-button[variant="danger"]:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Outline 邊框按鈕 */
+caas-button.custom-button[variant="outline"] {
+  background-color: transparent;
+  color: var(--primary-600, #2563eb);
+  border-color: var(--primary-600, #2563eb);
+}
+
+caas-button.custom-button[variant="outline"]:hover {
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+/* 尺寸規格 */
+caas-button.custom-button[size="sm"] {
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+caas-button.custom-button[size="lg"] {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+
+caas-button.custom-button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }

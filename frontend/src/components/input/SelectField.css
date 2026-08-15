@@ -1,0 +1,87 @@
+/**
+ * @file SelectField.css
+ * @description 自訂下拉選單控制項樣式 / Custom Select Field Component Styles
+ * @description_en Styles for custom dropdown select control replacing native HTML select
+ * @description_zh 定義替代原生 select 之自訂選單控制項、標籤、選項面板與高亮樣式
+ */
+
+.select-field-container {
+  position: relative;
+  width: 100%;
+}
+
+.select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 13px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.select-trigger:hover {
+  border-color: #94a3b8;
+}
+
+.select-trigger.is-open {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.select-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 1050;
+  padding: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  animation: fadeInDown 0.15s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.select-option-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  color: #334155;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.select-option-item:hover {
+  background-color: #f1f5f9;
+  color: #2563eb;
+}
+
+.select-option-item.selected {
+  background-color: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  font-weight: 600;
+}

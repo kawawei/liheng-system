@@ -77,6 +77,7 @@ interface TextIconProps {
   size?: IconSize;
   className?: string;
   color?: string;
+  style?: React.CSSProperties;
 }
 
 const iconMap: Record<IconName, LucideIcon> = {
@@ -121,7 +122,8 @@ export const TextIcon: React.FC<TextIconProps> = ({
   name,
   size = 'md',
   className = '',
-  color
+  color,
+  style
 }) => {
   const IconComponent = iconMap[name] || Activity;
   const pixelSize = sizeMap[size];
@@ -131,7 +133,7 @@ export const TextIcon: React.FC<TextIconProps> = ({
       size={pixelSize}
       className={className}
       color={color}
-      style={{ verticalAlign: 'middle', flexShrink: 0 }}
+      style={{ verticalAlign: 'middle', flexShrink: 0, ...style }}
       aria-hidden="true"
     />
   );
