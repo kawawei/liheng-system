@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Compact 30px control height, centered header titles, Status dropdown, and wide scrollable container.
- * @description_zh 緊湊 30px 控制項高度、表頭文字全部置中、狀態下拉選單、支援橫向平滑滾動。
+ * @description_en Strictly uniform 30px height for all dropdowns and inputs, centered headers, and clean grid.
+ * @description_zh 下拉選單與所有輸入框嚴格統一 30px 垂直高度、表頭文字全部置中、清爽資料網格。
  */
 
 .wbs-wrapper {
@@ -184,14 +184,16 @@
 }
 
 /* ========================================
-   緊湊高度 (30px) 與字級 (13px)
+   嚴格統一高度 (30px) 與字級 (13px)
    ======================================== */
 .wbs-table .caas-select-box,
 .wbs-table .caas-field-input,
 .wbs-table .caas-date-display,
 .wbs-table .wbs-direct-input,
 .wbs-table .wbs-direct-days,
-.wbs-table .wbs-direct-pct {
+.wbs-table .wbs-direct-pct,
+.wbs-table div[class*="select-box"],
+.wbs-table button[class*="select-trigger"] {
   min-height: 30px !important;
   height: 30px !important;
   max-height: 30px !important;
@@ -202,12 +204,19 @@
 }
 
 .wbs-table .caas-select-group,
-.wbs-table .caas-date-picker-container {
+.wbs-table .caas-select-wrapper,
+.wbs-table .caas-date-picker-container,
+.wbs-table .caas-date-picker-wrapper {
+  min-height: 30px !important;
+  height: 30px !important;
+  max-height: 30px !important;
   gap: 0 !important;
   margin: 0 !important;
+  padding: 0 !important;
 }
 
-.wbs-table .caas-select-box {
+.wbs-table .caas-select-box,
+.wbs-table div[class*="select-box"] {
   padding: 0 8px !important;
   border: 1px solid #cbd5e1 !important;
   background-color: #ffffff !important;

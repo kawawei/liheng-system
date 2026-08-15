@@ -396,6 +396,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                   updateNode(node.id, (n) => ({ ...n, assignees: [String(val)] }))
                 }
                 width="100%"
+                height="30px"
               />
             </td>
 
@@ -481,6 +482,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                   handleStatusSelect(node.id, String(val) as WbsStatus)
                 }
                 width="100%"
+                height="30px"
               />
             </td>
 

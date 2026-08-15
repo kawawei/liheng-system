@@ -28,6 +28,7 @@ declare module '@kawawei/frontend-modules' {
     helperText?: string;
     required?: boolean;
     width?: string | number;
+    height?: string | number;
     className?: string;
   }
 
