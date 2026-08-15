@@ -227,33 +227,53 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
             {/* 5. 合約金額輸入 (無上下調節箭頭) 與即時試算 */}
             <div className="create-project-field-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className="create-project-field-label">
-                  {taxType === 'tax_exclusive' ? '輸入未稅金額 (NT$) *' : '輸入含稅合約總金額 (NT$) *'}
-                </label>
+              <label className="create-project-field-label">
+                {taxType === 'tax_exclusive' ? '輸入未稅金額 (NT$) *' : '輸入含稅合約總金額 (NT$) *'}
+              </label>
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  className="create-project-field-input"
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value)}
+                  placeholder="1000000"
+                  required
+                  style={{ flex: 1 }}
+                />
+
                 {/* 未稅模式下自選是否外加 5% 營業稅 */}
                 {taxType === 'tax_exclusive' && (
-                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#1e40af', cursor: 'pointer' }}>
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '0 16px',
+                      height: '38px',
+                      backgroundColor: isTaxAdded ? '#eff6ff' : '#f8fafc',
+                      border: isTaxAdded ? '1.5px solid #2563eb' : '1.5px solid #cbd5e1',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: isTaxAdded ? '#1d4ed8' : '#1e293b',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
                     <input
                       type="checkbox"
                       checked={isTaxAdded}
                       onChange={(e) => setIsTaxAdded(e.target.checked)}
-                      style={{ width: '15px', height: '15px', accentColor: '#2563eb', cursor: 'pointer' }}
+                      style={{ width: '18px', height: '18px', accentColor: '#2563eb', cursor: 'pointer', margin: 0 }}
                     />
                     <span>外加 5% 營業稅</span>
                   </label>
                 )}
               </div>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                className="create-project-field-input"
-                value={amountInput}
-                onChange={(e) => setAmountInput(e.target.value)}
-                placeholder="1000000"
-                required
-              />
 
               {/* 稅額即時試算摘要條 */}
               <div className="create-project-tax-summary">

@@ -378,8 +378,8 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               </button>
             </div>
 
-            <div className="project-form-row" style={{ alignItems: 'flex-end', marginTop: '12px' }}>
-              <div className="project-form-col" style={{ flex: 1.2 }}>
+            <div className="project-form-row" style={{ alignItems: 'flex-end', marginTop: '12px', gap: '16px' }}>
+              <div className="project-form-col" style={{ flex: taxType === 'tax_exclusive' ? 1.4 : 1 }}>
                 <TextField
                   label={taxType === 'tax_inclusive' ? '合約含稅總金額 (NT$) *' : '合約未稅金額 (NT$) *'}
                   type="number"
@@ -391,8 +391,8 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               </div>
 
               {taxType === 'tax_exclusive' && (
-                <div className="project-form-col" style={{ flex: 0.8, paddingBottom: '10px' }}>
-                  <label className="tax-checkbox-label">
+                <div className="tax-checkbox-container" style={{ paddingBottom: errors.rawAmount ? '22px' : '0' }}>
+                  <label className={`tax-checkbox-label ${isTaxAdded ? 'checked' : ''}`}>
                     <input
                       type="checkbox"
                       checked={isTaxAdded}
