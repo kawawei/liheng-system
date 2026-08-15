@@ -11,8 +11,8 @@ import './ClientsDetailPage.css';
 /**
  * @file ClientsDetailPage.tsx
  * @description 客戶詳情與編輯獨立頁面 / CRM Client Detail Page
- * @description_en Full-width client detail view with pure icon action buttons (Save & Delete) in header toolbar
- * @description_zh 獨立客戶詳情頁面，頂欄右側工具列整合狀態選單、純 Icon 儲存按鈕、純 Icon 刪除按鈕與返回按鈕
+ * @description_en Full-width client detail view with larger icon ratio (size md 20px) for save & delete toolbar buttons
+ * @description_zh 獨立客戶詳情頁面，放大頂欄純 Icon 儲存與刪除按鈕圖示比例 (size md 20px)，提高視覺辨識度
  */
 
 interface ClientsDetailPageProps {
@@ -142,7 +142,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
 
   return (
     <div style={{ width: '100%' }}>
-      {/* 標頭區域 (整合狀態切換、純 Icon 儲存與刪除按鈕、返回按鈕) / Header Section */}
+      {/* 標頭區域 (整合狀態切換、大比例 Icon 儲存與刪除按鈕、返回按鈕) / Header Section */}
       <div className="client-detail-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -190,20 +190,22 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             />
           </div>
 
-          {/* 2. 純 Icon 儲存修改按鈕 (放置於刪除按鈕左側) */}
+          {/* 2. 大比例 Icon 儲存修改按鈕 (size md 20px) */}
           <Button
             type="submit"
             form="client-edit-form"
             variant="primary"
             title="儲存修改"
+            style={{ padding: '8px 12px' }}
           >
-            <TextIcon name="file-check" size="sm" />
+            <TextIcon name="file-check" size="md" />
           </Button>
 
-          {/* 3. 純 Icon 刪除客戶按鈕 */}
+          {/* 3. 大比例 Icon 刪除客戶按鈕 (size md 20px) */}
           <Button
             variant="danger"
             title="刪除客戶"
+            style={{ padding: '8px 12px' }}
             onClick={() => {
               if (window.confirm(`確定要刪除「${client.name}」的客戶資料嗎？此操作無法撤銷。`)) {
                 onDeleteClient(client.id);
@@ -211,7 +213,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
               }
             }}
           >
-            <TextIcon name="trash" size="sm" />
+            <TextIcon name="trash" size="md" />
           </Button>
 
           {/* 4. 返回客戶列表按鈕 */}
