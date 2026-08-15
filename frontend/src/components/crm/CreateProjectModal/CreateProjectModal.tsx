@@ -1,12 +1,13 @@
 /**
  * @file CreateProjectModal.tsx
  * @description 客戶轉正式專案立案彈窗組件 / Project Initiation Modal Component
- * @description_en Modal for converting a CRM client to an official project, auto-populating client metadata, sequential project code generation, and tax options
- * @description_zh 為 CRM 客戶進行正式立案之彈窗，自動依當日序號生成案號、提供未稅/含稅 5% 計稅選擇與時程推算並初始化 WBS 專案
+ * @description_en Modal for converting a CRM client to an official project, integrating @kawawei/frontend-modules (Select, DatePicker), sequential code, duration auto-calc, and tax options
+ * @description_zh 為 CRM 客戶進行正式立案之彈窗，全面採用 @kawawei/frontend-modules (Select 下拉核取, DatePicker 日期選擇器)，支援工期自動推算交付日、流水號案號與 5% 營業稅選擇
  */
 
 import React, { useState, useEffect } from 'react';
 import { X, FolderPlus, Rocket } from 'lucide-react';
+import { Select, DatePicker } from '@kawawei/frontend-modules';
 import { Client, Project, ProjectStage, TaxType } from '../../../types';
 import { Button } from '../../button';
 import { MOCK_PROJECTS } from '../../../mock/projects.mock';
@@ -19,6 +20,27 @@ interface CreateProjectModalProps {
   onSubmit: (newProject: Project) => void;
 }
 
+const ENGINEER_OPTIONS = [
+  { label: '張工程師', value: '張工程師' },
+  { label: '李工程師', value: '李工程師' },
+  { label: '王架構師', value: '王架構師' },
+  { label: '陳工程師', value: '陳工程師' },
+  { label: '蔡工程師', value: '蔡工程師' },
+];
+
+const STAGE_OPTIONS = [
+  { label: '開發中', value: 'development' },
+  { label: '測試驗證', value: 'testing' },
+  { label: '交付驗收', value: 'delivery' },
+  { label: '正式結案', value: 'closed' },
+  { label: '保固維護', value: 'maintenance' },
+];
+
+const TAX_OPTIONS = [
+  { label: '未稅 (外加 5% 營業稅)', value: 'tax_exclusive' },
+  { label: '含稅 (已內含 5% 營業稅)', value: 'tax_inclusive' },
+];
+
 export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   isOpen,
   client,
@@ -28,18 +50,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   if (!isOpen || !client) return null;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const defaultDeliveryDate = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 90);
-    return d.toISOString().split('T')[0];
-  })();
 
   const [projectName, setProjectName] = useState('');
   const [projectCode, setProjectCode] = useState('');
   const [taxType, setTaxType] = useState<TaxType>('tax_exclusive');
   const [amountInput, setAmountInput] = useState('1000000');
   const [startDate, setStartDate] = useState(todayStr);
-  const [expectedDeliveryDate, setExpectedDeliveryDate] = useState(defaultDeliveryDate);
+  const [durationDays, setDurationDays] = useState<number>(90);
   const [assignedEngineers, setAssignedEngineers] = useState<string[]>(['張工程師', '李工程師']);
   const [stage, setStage] = useState<ProjectStage>('development');
   const [applyWbsTemplate, setApplyWbsTemplate] = useState(true);
@@ -74,13 +91,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   })();
 
-  // 計算總工期天數
-  const calculatedDurationDays = (() => {
+  // 根據「開工日期」+「預估工期天數」自動計算「預計交付結案日」
+  const expectedDeliveryDate = (() => {
     const start = new Date(startDate);
-    const end = new Date(expectedDeliveryDate);
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 90;
-    const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(1, diff);
+    if (isNaN(start.getTime())) return todayStr;
+    const target = new Date(start);
+    target.setDate(target.getDate() + (Number(durationDays) || 0));
+    return target.toISOString().split('T')[0];
   })();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -98,7 +115,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       progressPercent: 0,
       assignedEngineers,
       startDate,
-      durationDays: calculatedDurationDays,
+      durationDays: Number(durationDays) || 1,
       expectedDeliveryDate,
       taxType,
       isTaxAdded: taxType === 'tax_exclusive',
@@ -173,7 +190,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               />
             </div>
 
-            {/* 案號 (系統自動生成，不可自行輸入) & 營業稅計稅方式 */}
+            {/* 案號 (系統依序號自動生成) & 計稅方式 (使用 @kawawei/frontend-modules Select) */}
             <div className="create-project-grid-2">
               <div className="create-project-field-group">
                 <label className="create-project-field-label">專案案號 (系統依序號自動生成)</label>
@@ -187,14 +204,12 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
               <div className="create-project-field-group">
                 <label className="create-project-field-label">計稅方式 *</label>
-                <select
-                  className="create-project-field-input"
+                <Select
+                  options={TAX_OPTIONS}
                   value={taxType}
-                  onChange={(e) => setTaxType(e.target.value as TaxType)}
-                >
-                  <option value="tax_exclusive">未稅 (外加 5% 營業稅)</option>
-                  <option value="tax_inclusive">含稅 (已內含 5% 營業稅)</option>
-                </select>
+                  onChange={(v) => setTaxType(v as TaxType)}
+                  width="100%"
+                />
               </div>
             </div>
 
@@ -231,61 +246,64 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
             </div>
 
-            {/* 開工日期與預計交付日 */}
+            {/* 開工日期 (DatePicker) & 預估工期天數輸入 */}
             <div className="create-project-grid-2">
               <div className="create-project-field-group">
                 <label className="create-project-field-label">立案開工日期</label>
-                <input
-                  type="date"
-                  className="create-project-field-input"
+                <DatePicker
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
+                  onChange={(val: string) => setStartDate(val)}
+                  width="100%"
                 />
               </div>
               <div className="create-project-field-group">
-                <label className="create-project-field-label">
-                  預計交付結案日 (約 {calculatedDurationDays} 天工期)
-                </label>
+                <label className="create-project-field-label">預估工期 (天數) *</label>
                 <input
-                  type="date"
+                  type="number"
+                  min="1"
+                  step="1"
                   className="create-project-field-input"
-                  value={expectedDeliveryDate}
-                  onChange={(e) => setExpectedDeliveryDate(e.target.value)}
+                  value={durationDays}
+                  onChange={(e) => setDurationDays(Math.max(1, Number(e.target.value) || 1))}
+                  placeholder="90"
                   required
                 />
               </div>
             </div>
 
-            {/* 負責工程師與初始階段 */}
+            {/* 預計交付結案日 (根據工期自動計算) */}
+            <div className="create-project-field-group">
+              <label className="create-project-field-label">預計交付結案日 (根據開工日與工期自動推算)</label>
+              <input
+                type="text"
+                className="create-project-field-input"
+                value={`${expectedDeliveryDate} (共 ${durationDays} 天)`}
+                disabled
+              />
+            </div>
+
+            {/* 負責工程師 (Select 多選核取) 與 初始階段 (Select 單選) */}
             <div className="create-project-grid-2">
               <div className="create-project-field-group">
-                <label className="create-project-field-label">主責工程師團隊</label>
-                <input
-                  type="text"
-                  className="create-project-field-input"
-                  value={assignedEngineers.join(', ')}
-                  onChange={(e) =>
-                    setAssignedEngineers(
-                      e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
-                    )
-                  }
-                  placeholder="張工程師, 李工程師"
+                <label className="create-project-field-label">主責工程師團隊 (下拉核取多選)</label>
+                <Select
+                  options={ENGINEER_OPTIONS}
+                  value={assignedEngineers}
+                  multiple
+                  showCheckbox
+                  placeholder="請勾選主責工程師..."
+                  onChange={(v) => setAssignedEngineers(v as string[])}
+                  width="100%"
                 />
               </div>
               <div className="create-project-field-group">
                 <label className="create-project-field-label">初始專案階段</label>
-                <select
-                  className="create-project-field-input"
+                <Select
+                  options={STAGE_OPTIONS}
                   value={stage}
-                  onChange={(e) => setStage(e.target.value as ProjectStage)}
-                >
-                  <option value="development">開發中</option>
-                  <option value="testing">測試驗證</option>
-                  <option value="delivery">交付驗收</option>
-                  <option value="closed">正式結案</option>
-                  <option value="maintenance">保固維護</option>
-                </select>
+                  onChange={(v) => setStage(v as ProjectStage)}
+                  width="100%"
+                />
               </div>
             </div>
 
