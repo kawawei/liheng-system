@@ -5,7 +5,10 @@
   "description": "利恒軟體開發專案與營運管理系統 / Liheng System Monorepo",
   "scripts": {
     "dev:frontend": "pnpm --filter frontend dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev": "pnpm --parallel dev",
     "build:frontend": "pnpm --filter frontend build",
+    "build:backend": "pnpm --filter backend build",
     "test:frontend": "pnpm --filter frontend test"
   },
   "pnpm": {

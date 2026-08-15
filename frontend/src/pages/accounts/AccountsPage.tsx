@@ -1,20 +1,18 @@
 /**
  * @file AccountsPage.tsx
  * @description 帳號管理頁面 / Account Management Page
- * @description_en Page level container for user account list, filtering, creation/edit modal, and account deletion
- * @description_zh 帳號管理頁面，負責系統成員列表、搜尋篩選、新增與編輯帳號彈窗與帳號刪除管理
+ * @description_en Page level container for user account list, filtering, creation/edit modal, and account deletion via backend API
+ * @description_zh 帳號管理頁面，負責系統成員列表、搜尋篩選、新增與編輯帳號彈窗與帳號刪除管理 (串接後端 API)
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { Button } from '../../components/button/Button';
 import { UserAccount, UserRole } from '../../types';
-import { INITIAL_USERS_MOCK } from '../../mock/users.mock';
 import { AccountTable, AccountFormModal } from '../../components/account';
 import { useAuth } from '../../hooks/useAuth';
+import { userService } from '../../services/user.service';
 import './AccountsPage.css';
-
-const USERS_STORAGE_KEY = 'liheng_users_data';
 
 export const AccountsPage: React.FC = () => {
   const { user } = useAuth();
@@ -22,40 +20,57 @@ export const AccountsPage: React.FC = () => {
   const [editingAccount, setEditingAccount] = useState<UserAccount | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
+  const [accounts, setAccounts] = useState<UserAccount[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // ========================================
-  // 帳號資料狀態 (支援 LocalStorage 持久化) / Accounts State
+  // 載入帳號列表 (API) / Fetch Accounts List
   // ========================================
-  const [accounts, setAccounts] = useState<UserAccount[]>(() => {
-    const saved = localStorage.getItem(USERS_STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_USERS_MOCK;
-      }
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const data = await userService.getUsers();
+      setAccounts(data);
+    } catch (err: any) {
+      console.error('Failed to fetch users:', err);
+      setErrorMsg(err.response?.data?.message || '載入帳號資料失敗');
+    } finally {
+      setLoading(false);
     }
-    return INITIAL_USERS_MOCK;
-  });
+  }, []);
 
-  const saveAccounts = (newAccounts: UserAccount[]) => {
-    setAccounts(newAccounts);
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(newAccounts));
-  };
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
 
   // ========================================
-  // 儲存帳號處理 (新增或編輯) / Save Account Handler
+  // 儲存帳號處理 (新增或編輯 API) / Save Account Handler
   // ========================================
-  const handleSaveAccount = (accountData: UserAccount) => {
-    if (editingAccount) {
-      const updated = accounts.map((acc) =>
-        acc.id === accountData.id ? accountData : acc
-      );
-      saveAccounts(updated);
+  const handleSaveAccount = async (accountData: UserAccount) => {
+    try {
+      if (editingAccount) {
+        await userService.updateUser(accountData.id, {
+          name: accountData.name,
+          role: accountData.role,
+          password: accountData.password,
+          status: accountData.status
+        });
+      } else {
+        await userService.createUser({
+          name: accountData.name,
+          account: accountData.account,
+          password: accountData.password,
+          role: accountData.role,
+          status: accountData.status
+        });
+      }
+      setShowModal(false);
       setEditingAccount(null);
-    } else {
-      const updated = [accountData, ...accounts];
-      saveAccounts(updated);
+      await fetchAccounts();
+    } catch (err: any) {
+      alert(err.response?.data?.message || '儲存帳號失敗');
     }
   };
 
@@ -68,12 +83,16 @@ export const AccountsPage: React.FC = () => {
   };
 
   // ========================================
-  // 刪除帳號處理 / Delete Account Handler
+  // 刪除帳號處理 (軟刪除 API) / Delete Account Handler
   // ========================================
-  const handleDeleteAccount = (accountId: string, accountName: string) => {
+  const handleDeleteAccount = async (accountId: string, accountName: string) => {
     if (window.confirm(`確定要刪除「${accountName}」的系統帳號嗎？此操作無法恢復。`)) {
-      const updated = accounts.filter((acc) => acc.id !== accountId);
-      saveAccounts(updated);
+      try {
+        await userService.deleteUser(accountId);
+        await fetchAccounts();
+      } catch (err: any) {
+        alert(err.response?.data?.message || '刪除帳號失敗');
+      }
     }
   };
 
@@ -123,6 +142,27 @@ export const AccountsPage: React.FC = () => {
           <span>新增帳號</span>
         </Button>
       </div>
+
+      {/* 錯誤提示橫幅 */}
+      {errorMsg && (
+        <div
+          style={{
+            marginBottom: '16px',
+            padding: '12px 16px',
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
+            color: '#b91c1c',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <TextIcon name="danger" size="sm" color="#b91c1c" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
 
       {/* 角色過濾與搜尋工具列 / Role & Search Toolbar */}
       <div
@@ -181,12 +221,18 @@ export const AccountsPage: React.FC = () => {
       </div>
 
       {/* 帳號資料表格 / Accounts Table */}
-      <AccountTable
-        accounts={filteredAccounts}
-        currentUserAccount={user?.email || 'admin'}
-        onEditAccount={handleEditAccount}
-        onDeleteAccount={handleDeleteAccount}
-      />
+      {loading ? (
+        <div className="card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          載入帳號資料中...
+        </div>
+      ) : (
+        <AccountTable
+          accounts={filteredAccounts}
+          currentUserAccount={user?.email || 'admin'}
+          onEditAccount={handleEditAccount}
+          onDeleteAccount={handleDeleteAccount}
+        />
+      )}
 
       {/* 新增/編輯帳號彈窗 / Add or Edit Account Modal */}
       <AccountFormModal

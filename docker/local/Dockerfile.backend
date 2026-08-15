@@ -1,0 +1,27 @@
+# ========================================
+# 利恒系統 後端本地開發 Dockerfile
+# Liheng System Backend Local Dev Dockerfile
+# ========================================
+FROM node:20-alpine
+
+WORKDIR /app/backend
+
+# 安裝 pnpm 與 curl / wget
+RUN npm install -g pnpm@9 && apk add --no-cache curl wget
+
+# 複製後端配置與依賴檔
+COPY backend/package.json backend/tsconfig.json ./
+
+# 獨立安裝後端依賴
+RUN pnpm install
+
+# 複製後端原始碼
+COPY backend/ ./
+
+EXPOSE 3001
+
+# 健康檢查 (Healthcheck) 探針
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=5 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/v1/health || exit 1
+
+CMD ["pnpm", "dev"]

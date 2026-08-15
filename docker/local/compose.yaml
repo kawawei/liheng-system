@@ -2,7 +2,85 @@ name: liheng-system-local
 
 services:
   # ========================================
-  # 前端服務容器 (Vite + React 18 + PWA)
+  # 資料庫容器 (PostgreSQL 16 + pgvector)
+  # ========================================
+  postgres:
+    container_name: liheng-system-postgres
+    image: pgvector/pgvector:pg16
+    ports:
+      - "${DB_PORT:-5434}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-liheng_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-liheng_secure_password_2026}
+      POSTGRES_DB: ${DB_NAME:-liheng_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-liheng_admin} -d ${DB_NAME:-liheng_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  # ========================================
+  # 快取與發號器容器 (Redis 7.2 Alpine)
+  # ========================================
+  redis:
+    container_name: liheng-system-redis
+    image: redis:7.2-alpine
+    ports:
+      - "${REDIS_PORT:-6381}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+    restart: unless-stopped
+
+  # ========================================
+  # 後端服務容器 (Node.js 22 + Express + TypeScript)
+  # ========================================
+  backend:
+    container_name: liheng-system-backend
+    build:
+      context: ../../
+      dockerfile: docker/local/Dockerfile.backend
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-liheng_admin}
+      - DB_PASSWORD=${DB_PASSWORD:-liheng_secure_password_2026}
+      - DB_NAME=${DB_NAME:-liheng_db}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - JWT_SECRET=${JWT_SECRET:-liheng_dev_jwt_secret_key_8h_session_2026}
+    volumes:
+      - ../../backend:/app/backend
+      - /app/backend/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3001/api/v1/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ========================================
+  # 前端服務容器 (Vite + React 19)
   # ========================================
   frontend:
     container_name: liheng-system-frontend
@@ -17,6 +95,9 @@ services:
     volumes:
       - ../../frontend:/app/frontend
       - /app/frontend/node_modules
+    depends_on:
+      backend:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5173/ || exit 1"]
       interval: 5s
@@ -24,3 +105,7 @@ services:
       retries: 5
       start_period: 5s
     restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

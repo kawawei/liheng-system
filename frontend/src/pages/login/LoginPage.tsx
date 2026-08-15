@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { UserRole } from '../../types';
 import { TextIcon } from '../../components/icon/TextIcon';
 
 /**
  * @file LoginPage.tsx
  * @description 使用者登入頁面 / User Login Page
- * @description_en Clean form login without role selector or 8-hour text, with input validation
- * @description_zh 乾淨表單登入頁面，移除角色選擇選單，直接登入並進行必填格式防呆校驗
+ * @description_en Form login with real backend authentication, error display, and loading states
+ * @description_zh 乾淨表單登入頁面，串接後端真實認證 API，支援防呆校驗與錯誤提示
  */
 
 export const LoginPage: React.FC = () => {
@@ -15,10 +14,13 @@ export const LoginPage: React.FC = () => {
   const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ account?: string; password?: string }>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
     const newErrors: { account?: string; password?: string } = {};
 
     if (!account.trim()) {
@@ -36,10 +38,15 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    // 根據帳號由系統自動識別角色 (若為 admin 則為超級管理員，否則為工程師)
-    const role: UserRole = account.toLowerCase().includes('admin') ? 'super_admin' : 'engineer';
-    const userName = role === 'super_admin' ? '系統管理員' : '研發工程師';
-    login(role, account, userName);
+    setIsLoading(true);
+    try {
+      await login(account.trim(), password);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || '登入失敗，請確認帳號密碼';
+      setServerError(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -84,7 +91,7 @@ export const LoginPage: React.FC = () => {
         }}
       >
         {/* Header 區塊 (大氣標題) */}
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1
             style={{
               fontSize: '30px',
@@ -96,6 +103,28 @@ export const LoginPage: React.FC = () => {
             利恒系統
           </h1>
         </div>
+
+        {/* 伺服器錯誤提示橫幅 */}
+        {serverError && (
+          <div
+            style={{
+              marginBottom: '20px',
+              padding: '12px 16px',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#b91c1c',
+              fontSize: '14px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <TextIcon name="danger" size="sm" color="#b91c1c" />
+            <span>{serverError}</span>
+          </div>
+        )}
 
         {/* 登入表單 */}
         <form onSubmit={handleSubmit} noValidate>
@@ -113,12 +142,14 @@ export const LoginPage: React.FC = () => {
                 type="text"
                 className={`form-input input-with-icon ${errors.account ? 'is-invalid' : ''}`}
                 style={{ padding: '12px 16px 12px 44px', fontSize: '15px' }}
-                placeholder="請輸入帳號"
+                placeholder="請輸入帳號 (例如: admin)"
                 value={account}
                 onChange={(e) => {
                   setAccount(e.target.value);
                   if (errors.account) setErrors((prev) => ({ ...prev, account: undefined }));
+                  if (serverError) setServerError(null);
                 }}
+                disabled={isLoading}
               />
             </div>
             {errors.account && <div className="form-error-msg">{errors.account}</div>}
@@ -143,7 +174,9 @@ export const LoginPage: React.FC = () => {
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                  if (serverError) setServerError(null);
                 }}
+                disabled={isLoading}
               />
               <button
                 type="button"
@@ -163,6 +196,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             className="btn btn-primary"
+            disabled={isLoading}
             style={{
               width: '100%',
               padding: '14px',
@@ -175,13 +209,14 @@ export const LoginPage: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              cursor: 'pointer',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.7 : 1,
               border: 'none',
               transition: 'all 0.2s ease'
             }}
           >
             <TextIcon name="login" size="md" color="#ffffff" />
-            <span>登入</span>
+            <span>{isLoading ? '登入中...' : '登入'}</span>
           </button>
         </form>
       </div>

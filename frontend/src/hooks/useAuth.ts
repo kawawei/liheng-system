@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserProfile, UserRole } from '../types';
+import { UserProfile } from '../types';
+import { authService } from '../services/auth.service';
 
 /**
  * @file useAuth.ts
  * @description 認證與 8 小時效期管理 Hook / Auth & 8-Hour Session Hook
- * @description_en Manages JWT tokens, user profiles, and automatic 8h expiration redirects
- * @description_zh 管理 JWT Token、使用者角色資訊，並實現 8 小時憑證過期自動跳轉機制
+ * @description_en Manages JWT tokens, user profiles, and automatic 8h expiration redirects via backend API
+ * @description_zh 透過後端 API 管理真實 JWT Token、使用者資訊，並實現 8 小時憑證過期自動跳轉機制
  */
 
 const TOKEN_KEY = 'liheng_token';
@@ -22,33 +23,42 @@ export function useAuth() {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(EXPIRES_KEY);
-    setToken(null);
-    setUser(null);
-    navigate('/login', { replace: true });
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // 忽略
+    } finally {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(EXPIRES_KEY);
+      setToken(null);
+      setUser(null);
+      navigate('/login', { replace: true });
+    }
   }, [navigate]);
 
-  const login = useCallback((role: UserRole, email: string, name: string) => {
-    const fakeToken = `jwt_mock_${Date.now()}_${role}`;
-    const expiresAt = Date.now() + EIGHT_HOURS_MS;
-    const profile: UserProfile = {
-      id: `usr_${Date.now()}`,
-      name,
-      email,
-      role
-    };
+  const login = useCallback(
+    async (username: string, password: string) => {
+      const result = await authService.login(username, password);
+      const expiresAt = result.expiresAt || Date.now() + EIGHT_HOURS_MS;
+      const profile: UserProfile = {
+        id: result.user.id,
+        name: result.user.realName,
+        email: result.user.username,
+        role: result.user.role
+      };
 
-    localStorage.setItem(TOKEN_KEY, fakeToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(profile));
-    localStorage.setItem(EXPIRES_KEY, expiresAt.toString());
+      localStorage.setItem(TOKEN_KEY, result.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(profile));
+      localStorage.setItem(EXPIRES_KEY, expiresAt.toString());
 
-    setToken(fakeToken);
-    setUser(profile);
-    navigate('/dashboard', { replace: true });
-  }, [navigate]);
+      setToken(result.token);
+      setUser(profile);
+      navigate('/dashboard', { replace: true });
+    },
+    [navigate]
+  );
 
   // ========================================
   // 8 小時過期定時檢查 / 8h Expiration Check
