@@ -13,11 +13,11 @@ import { MOCK_PROJECT_WBS } from '../../mock/wbs.mock';
 /**
  * @file ProjectDetailPage.tsx
  * @description 專案工作台詳情頁 / Project Workspace Detail Page
- * @description_en 6-Tab workspace with stage dropdown selector, duration tracker, change orders, and payment stages
+ * @description_en 5-Tab workspace with stage dropdown selector, duration tracker, change orders, and payment stages
  * @description_zh 專案核心工作台，提供階段下拉切換選單、工期時程動態指示、需求追加變更單與多階段付款清冊
  */
 
-type ProjectTab = 'milestones' | 'logs' | 'qa' | 'change_orders' | 'finance' | 'line_sync';
+type ProjectTab = 'milestones' | 'qa' | 'change_orders' | 'finance' | 'line_sync';
 
 export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -107,9 +107,8 @@ export const ProjectDetailPage: React.FC = () => {
 
   const finalAmountTotal = (project.amountTotal || 0) + totalApprovedCoAmount;
 
-  const tabsConfig: Array<{ key: ProjectTab; label: string; icon: 'layers' | 'calendar' | 'warning' | 'contracts' | 'finance' | 'message' }> = [
+  const tabsConfig: Array<{ key: ProjectTab; label: string; icon: 'layers' | 'warning' | 'contracts' | 'finance' | 'message' }> = [
     { key: 'milestones', label: '里程碑進度', icon: 'layers' },
-    { key: 'logs', label: '工程進度日誌', icon: 'calendar' },
     { key: 'qa', label: 'QA 缺陷監控', icon: 'warning' },
     { key: 'change_orders', label: `需求變更單 (${changeOrders.length})`, icon: 'contracts' },
     { key: 'finance', label: '多階段付款與收支', icon: 'finance' },
@@ -261,27 +260,7 @@ export const ProjectDetailPage: React.FC = () => {
           />
         )}
 
-        {/* Tab 2: 工程進度日誌 */}
-        {currentTab === 'logs' && (
-          <div>
-            <div className="card-header">
-              <h2 className="card-title">工程師進度回報日誌</h2>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ padding: '16px', backgroundColor: 'var(--bg-app)', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 600 }}>2026-08-15 (張工程師)</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>17:30</span>
-                </div>
-                <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                  完成了 WBS 專案管理多階段付款與計稅模式重構，支援立案工期自動試算結案日、未稅/含稅/加5%營業稅精算與動態增刪階段雙向試算。
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 3: QA 缺陷監控 */}
+        {/* Tab 2: QA 缺陷監控 */}
         {currentTab === 'qa' && (
           <div>
             <div className="card-header">
