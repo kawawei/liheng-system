@@ -1,8 +1,8 @@
 /**
  * @file CreateProjectModal.tsx
  * @description 客戶轉正式專案立案彈窗組件 / Project Initiation Modal Component
- * @description_en Modal for converting a CRM client to an official project, integrating @kawawei/frontend-modules (Select, DatePicker), sequential code, duration auto-calc, and optional 5% tax checkbox on tax-exclusive mode
- * @description_zh 為 CRM 客戶進行正式立案之彈窗，全面採用 @kawawei/frontend-modules (Select 下拉核取, DatePicker 日期選擇器)，支援未稅模式下自選是否外加 5% 營業稅核取框
+ * @description_en Modal for converting a CRM client to an official project, integrating @kawawei/frontend-modules (Select, DatePicker), sequential code, duration auto-calc, and optimized dropdown positioning
+ * @description_zh 為 CRM 客戶進行正式立案之彈窗，全面採用 @kawawei/frontend-modules (Select 下拉核取, DatePicker 日期選擇器)，將工程師多選選單配置於視窗上半部以確保下拉視窗完全不被截斷且順暢滾動
  */
 
 import React, { useState, useEffect } from 'react';
@@ -156,7 +156,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <div className="create-project-modal-body">
-            {/* 客戶名稱 & 窗口 */}
+            {/* 1. 客戶名稱 & 窗口 */}
             <div className="create-project-grid-2">
               <div className="create-project-field-group">
                 <label className="create-project-field-label">主約客戶名稱</label>
@@ -178,7 +178,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
             </div>
 
-            {/* 專案名稱 */}
+            {/* 2. 正式專案名稱 */}
             <div className="create-project-field-group">
               <label className="create-project-field-label">正式專案名稱 *</label>
               <input
@@ -191,7 +191,32 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               />
             </div>
 
-            {/* 案號 (系統依序號自動生成) & 計稅方式 (使用 @kawawei/frontend-modules Select) */}
+            {/* 3. 負責工程師 (Select 多選核取) 與 初始階段 (Select 單選) - 配置於上半部確保選單展開空間充裕 */}
+            <div className="create-project-grid-2">
+              <div className="create-project-field-group">
+                <label className="create-project-field-label">主責工程師團隊 (下拉核取多選)</label>
+                <Select
+                  options={ENGINEER_OPTIONS}
+                  value={assignedEngineers}
+                  multiple
+                  showCheckbox
+                  placeholder="請勾選主責工程師..."
+                  onChange={(v) => setAssignedEngineers(v as string[])}
+                  width="100%"
+                />
+              </div>
+              <div className="create-project-field-group">
+                <label className="create-project-field-label">初始專案階段</label>
+                <Select
+                  options={STAGE_OPTIONS}
+                  value={stage}
+                  onChange={(v) => setStage(v as ProjectStage)}
+                  width="100%"
+                />
+              </div>
+            </div>
+
+            {/* 4. 案號 (系統依序號自動生成) & 計稅方式 (使用 @kawawei/frontend-modules Select) */}
             <div className="create-project-grid-2">
               <div className="create-project-field-group">
                 <label className="create-project-field-label">專案案號 (系統依序號自動生成)</label>
@@ -214,7 +239,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
             </div>
 
-            {/* 合約金額輸入 (無上下調節箭頭) 與即時試算 */}
+            {/* 5. 合約金額輸入 (無上下調節箭頭) 與即時試算 */}
             <div className="create-project-field-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <label className="create-project-field-label">
@@ -261,7 +286,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
             </div>
 
-            {/* 開工日期 (DatePicker) & 預估工期天數輸入 & 預計交付結案日 (3欄並排) */}
+            {/* 6. 開工日期 (DatePicker) & 預估工期天數輸入 & 預計交付結案日 (3欄並排) */}
             <div className="create-project-grid-3">
               <div className="create-project-field-group">
                 <label className="create-project-field-label">立案開工日期</label>
@@ -295,32 +320,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
             </div>
 
-            {/* 負責工程師 (Select 多選核取) 與 初始階段 (Select 單選) */}
-            <div className="create-project-grid-2">
-              <div className="create-project-field-group">
-                <label className="create-project-field-label">主責工程師團隊 (下拉核取多選)</label>
-                <Select
-                  options={ENGINEER_OPTIONS}
-                  value={assignedEngineers}
-                  multiple
-                  showCheckbox
-                  placeholder="請勾選主責工程師..."
-                  onChange={(v) => setAssignedEngineers(v as string[])}
-                  width="100%"
-                />
-              </div>
-              <div className="create-project-field-group">
-                <label className="create-project-field-label">初始專案階段</label>
-                <Select
-                  options={STAGE_OPTIONS}
-                  value={stage}
-                  onChange={(v) => setStage(v as ProjectStage)}
-                  width="100%"
-                />
-              </div>
-            </div>
-
-            {/* 標準 WBS 範本勾選 */}
+            {/* 7. 標準 WBS 範本勾選 */}
             <label className="create-project-template-box">
               <input
                 type="checkbox"

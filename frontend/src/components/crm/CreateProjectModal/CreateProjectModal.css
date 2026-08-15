@@ -66,7 +66,7 @@
 }
 
 .create-project-modal-body {
-  padding: 24px 32px 260px 32px;
+  padding: 24px 32px 40px 32px;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
