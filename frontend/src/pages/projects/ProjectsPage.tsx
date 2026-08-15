@@ -53,66 +53,64 @@ export const ProjectsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="card">
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>專案案號</th>
-                <th>專案名稱</th>
-                <th>客戶名稱</th>
-                <th>生命週期階段</th>
-                <th>研發進度</th>
-                <th>健康指示</th>
-                <th>指派工程師</th>
-                <th>預計交付</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((p) => (
-                <tr key={p.id}>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{p.projectCode}</td>
-                  <td style={{ fontWeight: 600 }}>
-                    <Link to={`/projects/${p.id}`} style={{ color: 'var(--primary-600)' }}>
-                      {p.name}
-                    </Link>
-                  </td>
-                  <td>{p.clientName}</td>
-                  <td>
-                    <StatusBadge
-                      label={p.stage === 'development' ? '開發階段' : '測試驗收'}
-                      variant="info"
-                      icon="layers"
-                    />
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '80px', height: '6px', backgroundColor: 'var(--bg-muted)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${p.progressPercent}%`, height: '100%', backgroundColor: 'var(--primary-600)' }} />
-                      </div>
-                      <span style={{ fontSize: '12px' }}>{p.progressPercent}%</span>
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>專案案號</th>
+              <th>專案名稱</th>
+              <th>客戶名稱</th>
+              <th>生命週期階段</th>
+              <th>研發進度</th>
+              <th>健康指示</th>
+              <th>指派工程師</th>
+              <th>預計交付</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((p) => (
+              <tr key={p.id}>
+                <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{p.projectCode}</td>
+                <td style={{ fontWeight: 600 }}>
+                  <Link to={`/projects/${p.id}`} style={{ color: 'var(--primary-600)' }}>
+                    {p.name}
+                  </Link>
+                </td>
+                <td>{p.clientName}</td>
+                <td>
+                  <StatusBadge
+                    label={p.stage === 'development' ? '開發階段' : '測試驗收'}
+                    variant="info"
+                    icon="layers"
+                  />
+                </td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '80px', height: '6px', backgroundColor: 'var(--bg-muted)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ width: `${p.progressPercent}%`, height: '100%', backgroundColor: 'var(--primary-600)' }} />
                     </div>
-                  </td>
-                  <td>
-                    <StatusBadge
-                      label={p.healthStatus === 'healthy' ? '正常' : '警告'}
-                      variant={p.healthStatus === 'healthy' ? 'success' : 'warning'}
-                      icon={p.healthStatus === 'healthy' ? 'success' : 'warning'}
-                    />
-                  </td>
-                  <td>{p.assignedEngineers.join(', ')}</td>
-                  <td>{p.deliveryDate}</td>
-                  <td>
-                    <Link to={`/projects/${p.id}`} className="btn btn-secondary btn-sm">
-                      進入工作台
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <span style={{ fontSize: '12px' }}>{p.progressPercent}%</span>
+                  </div>
+                </td>
+                <td>
+                  <StatusBadge
+                    label={p.healthStatus === 'healthy' ? '正常' : '警告'}
+                    variant={p.healthStatus === 'healthy' ? 'success' : 'warning'}
+                    icon={p.healthStatus === 'healthy' ? 'success' : 'warning'}
+                  />
+                </td>
+                <td>{p.assignedEngineers.join(', ')}</td>
+                <td>{p.deliveryDate}</td>
+                <td>
+                  <Link to={`/projects/${p.id}`} className="btn btn-secondary btn-sm">
+                    進入工作台
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -1,0 +1,13 @@
+/**
+ * @file Button.css
+ * @description 按鈕組件額外輔助樣式 / Button Component Auxiliary Styles
+ * @description_en Custom alignment and cursor resets for caas-button Web Component wrapper
+ * @description_zh 提供 caas-button 組件微調與對齊樣式
+ */
+
+caas-button.custom-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}

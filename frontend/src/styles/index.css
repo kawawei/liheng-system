@@ -267,12 +267,14 @@ input:-webkit-autofill:active {
   font-weight: 600;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .data-table td {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .data-table tr:last-child td {

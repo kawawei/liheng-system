@@ -62,10 +62,10 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* 進行中專案清單 / Active Projects Table */}
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">重點專案研發動態</h2>
-        </div>
+      <div style={{ marginTop: '24px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>
+          重點專案研發動態
+        </h2>
 
         <div className="table-container">
           <table className="data-table">

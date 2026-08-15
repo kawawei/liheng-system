@@ -58,41 +58,39 @@ export const ContractsPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="card">
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>合約單號</th>
-                <th>合約名稱</th>
-                <th>客戶名稱</th>
-                <th>未稅金額</th>
-                <th>營業稅 (5%)</th>
-                <th>含稅總額</th>
-                <th>狀態</th>
-                <th>建立日期</th>
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>合約單號</th>
+              <th>合約名稱</th>
+              <th>客戶名稱</th>
+              <th>未稅金額</th>
+              <th>營業稅 (5%)</th>
+              <th>含稅總額</th>
+              <th>狀態</th>
+              <th>建立日期</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contracts.map((c) => (
+              <tr key={c.id}>
+                <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{c.contractCode}</td>
+                <td>{c.title}</td>
+                <td>{c.clientName}</td>
+                <td>NT$ {c.amountUntaxed.toLocaleString()}</td>
+                <td>NT$ {c.taxAmount.toLocaleString()}</td>
+                <td style={{ fontWeight: 600, color: 'var(--primary-700)' }}>
+                  NT$ {c.amountTotal.toLocaleString()}
+                </td>
+                <td>
+                  <StatusBadge label="已簽署" variant="success" icon="file-check" />
+                </td>
+                <td>{c.createdAt}</td>
               </tr>
-            </thead>
-            <tbody>
-              {contracts.map((c) => (
-                <tr key={c.id}>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{c.contractCode}</td>
-                  <td>{c.title}</td>
-                  <td>{c.clientName}</td>
-                  <td>NT$ {c.amountUntaxed.toLocaleString()}</td>
-                  <td>NT$ {c.taxAmount.toLocaleString()}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--primary-700)' }}>
-                    NT$ {c.amountTotal.toLocaleString()}
-                  </td>
-                  <td>
-                    <StatusBadge label="已簽署" variant="success" icon="file-check" />
-                  </td>
-                  <td>{c.createdAt}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* 建立合約彈窗 (含 5% 稅額即時試算) */}

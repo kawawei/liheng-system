@@ -26,6 +26,7 @@ import {
   Lock,
   ArrowRight,
   User,
+  Menu,
   LucideIcon
 } from 'lucide-react';
 
@@ -62,7 +63,8 @@ export type IconName =
   | 'mail'
   | 'lock'
   | 'arrow-right'
-  | 'user';
+  | 'user'
+  | 'menu';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -99,7 +101,8 @@ const iconMap: Record<IconName, LucideIcon> = {
   mail: Mail,
   lock: Lock,
   'arrow-right': ArrowRight,
-  user: User
+  user: User,
+  menu: Menu
 };
 
 const sizeMap: Record<IconSize, number> = {

@@ -99,40 +99,38 @@ export const ClientsPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="card">
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>公司名稱</th>
-                <th>統一編號</th>
-                <th>聯絡人</th>
-                <th>聯絡電話</th>
-                <th>電子郵件</th>
-                <th>狀態</th>
-                <th>建立日期</th>
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>公司名稱</th>
+              <th>統一編號</th>
+              <th>聯絡人</th>
+              <th>聯絡電話</th>
+              <th>電子郵件</th>
+              <th>狀態</th>
+              <th>建立日期</th>
+            </tr>
+          </thead>
+          <tbody>
+            {clients.map((c) => (
+              <tr key={c.id}>
+                <td style={{ fontWeight: 600 }}>{c.companyName}</td>
+                <td style={{ fontFamily: 'var(--font-mono)' }}>{c.taxId || '-'}</td>
+                <td>{c.contactPerson}</td>
+                <td>{c.phone}</td>
+                <td>{c.email || '-'}</td>
+                <td>
+                  <StatusBadge
+                    label={c.status === 'signed' ? '已簽約' : '潛在洽談'}
+                    variant={c.status === 'signed' ? 'success' : 'info'}
+                  />
+                </td>
+                <td>{c.createdAt}</td>
               </tr>
-            </thead>
-            <tbody>
-              {clients.map((c) => (
-                <tr key={c.id}>
-                  <td style={{ fontWeight: 600 }}>{c.companyName}</td>
-                  <td style={{ fontFamily: 'var(--font-mono)' }}>{c.taxId || '-'}</td>
-                  <td>{c.contactPerson}</td>
-                  <td>{c.phone}</td>
-                  <td>{c.email || '-'}</td>
-                  <td>
-                    <StatusBadge
-                      label={c.status === 'signed' ? '已簽約' : '潛在洽談'}
-                      variant={c.status === 'signed' ? 'success' : 'info'}
-                    />
-                  </td>
-                  <td>{c.createdAt}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* 新增客戶彈窗 / New Client Modal (乾淨表單) */}

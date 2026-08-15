@@ -5,13 +5,14 @@ import { UserRole } from '../../types';
 
 /**
  * @file Sidebar.tsx
- * @description 側邊導航欄組件 / Sidebar Navigation Component
- * @description_en Renders navigation links with RBAC role-based filtering (hides finance for engineers)
- * @description_zh 渲染系統側邊導航欄，支援 RBAC 雙角色過濾 (工程師自動隱藏財務收支模組)
+ * @description 亮色主題側邊導航欄組件 / Light Theme Sidebar Navigation Component
+ * @description_en Renders light-themed navigation links with full-width active status and toggleable collapse mode
+ * @description_zh 渲染亮色主題側邊導航欄，支援選中效果佔滿寬度、RBAC 角色過濾與展開/折疊切換
  */
 
 interface SidebarProps {
   role?: UserRole;
+  isCollapsed?: boolean;
 }
 
 interface NavItem {
@@ -30,73 +31,46 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/search', label: '全局語意檢索', icon: 'search', roles: ['super_admin', 'engineer'] }
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ role = 'super_admin' }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ role = 'super_admin', isCollapsed = false }) => {
   const filteredNav = NAV_ITEMS.filter((item) => item.roles.includes(role));
 
   return (
     <aside
       style={{
-        width: '240px',
-        backgroundColor: 'var(--bg-sidebar)',
-        color: '#94a3b8',
+        width: isCollapsed ? '64px' : '240px',
+        backgroundColor: 'var(--bg-surface)',
+        borderRight: '1px solid var(--border-color)',
         display: 'flex',
         flexDirection: 'column',
-        flexShrink: 0
+        flexShrink: 0,
+        transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
-      {/* 品牌標識 / Brand Logo */}
-      <div
-        style={{
-          padding: '24px 20px',
-          borderBottom: '1px solid #1e293b',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}
-      >
-        <div
-          style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: 'var(--primary-600)',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            fontWeight: 'bold',
-            fontSize: '16px'
-          }}
-        >
-          LH
-        </div>
-        <div>
-          <div style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>利恒軟體管理系統</div>
-          <div style={{ fontSize: '11px', color: '#64748b' }}>Liheng System v1.0</div>
-        </div>
-      </div>
-
       {/* 導航選單 / Navigation Menu */}
-      <nav style={{ padding: '16px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <nav style={{ padding: '16px 0', flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {filteredNav.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
+            title={isCollapsed ? item.label : undefined}
             style={({ isActive }) => ({
               display: 'flex',
               alignItems: 'center',
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
               gap: '12px',
-              padding: '10px 14px',
-              borderRadius: 'var(--radius-md)',
+              padding: isCollapsed ? '12px 0' : '12px 20px',
+              width: '100%',
               fontSize: '14px',
-              fontWeight: 500,
-              color: isActive ? '#ffffff' : '#94a3b8',
-              backgroundColor: isActive ? 'var(--primary-600)' : 'transparent',
-              transition: 'background-color 0.15s ease, color 0.15s ease'
+              fontWeight: isActive ? 600 : 500,
+              color: isActive ? 'var(--primary-600)' : 'var(--text-secondary)',
+              backgroundColor: isActive ? 'var(--primary-50)' : 'transparent',
+              borderLeft: isActive ? '4px solid var(--primary-600)' : '4px solid transparent',
+              transition: 'all 0.15s ease',
+              boxSizing: 'border-box'
             })}
           >
             <TextIcon name={item.icon} size="md" />
-            <span>{item.label}</span>
+            {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>}
           </NavLink>
         ))}
       </nav>
@@ -104,13 +78,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'super_admin' }) => {
       {/* 系統狀態 / System Health Indicator */}
       <div
         style={{
-          padding: '16px 20px',
-          borderTop: '1px solid #1e293b',
+          padding: isCollapsed ? '16px 0' : '16px 20px',
+          borderTop: '1px solid var(--border-color)',
           fontSize: '12px',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
           gap: '8px',
-          color: '#64748b'
+          color: 'var(--text-secondary)'
         }}
       >
         <span
@@ -119,11 +94,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'super_admin' }) => {
             height: '8px',
             borderRadius: '50%',
             backgroundColor: '#10b981',
-            display: 'inline-block'
+            display: 'inline-block',
+            flexShrink: 0
           }}
         />
-        <span>系統連線正常 (Healthy)</span>
+        {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>系統連線正常 (Healthy)</span>}
       </div>
     </aside>
   );
 };
+

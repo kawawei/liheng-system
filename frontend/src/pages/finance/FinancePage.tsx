@@ -75,10 +75,10 @@ export const FinancePage: React.FC = () => {
         </button>
       </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">多階段收款清冊</h2>
-        </div>
+      <div style={{ marginTop: '24px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>
+          多階段收款清冊
+        </h2>
 
         <div className="table-container">
           <table className="data-table">
