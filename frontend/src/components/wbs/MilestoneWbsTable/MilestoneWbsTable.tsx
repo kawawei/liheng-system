@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.tsx
  * @description WBS 里程碑即時編輯表格組件 / Milestone WBS Live Editable Table Component
- * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with independent WBS Code, Diamond Checkpoint Toggle (0 duration), and Predecessors (FS, FF, SS, SF) dependencies.
- * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，支援獨立 WBS 編號、菱形里程碑檢查點 (0工期) 切換、FS/FF/SS/SF 前置依賴與時程連動推算。
+ * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with independent WBS Code, Diamond Checkpoint action button, and Predecessor dropdown selectors (FS, FF, SS, SF).
+ * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，操作欄提供菱形新增檢查點按鈕、前置任務與依賴類型全數採用組件庫 Select 下拉選單。
  */
 
 import React, { useState, useMemo } from 'react';
@@ -33,6 +33,13 @@ const STATUS_SELECT_OPTIONS = [
   { label: '已完成', value: 'COMPLETED' },
 ];
 
+const DEPENDENCY_TYPE_OPTIONS = [
+  { label: 'FS', value: 'FS' },
+  { label: 'FF', value: 'FF' },
+  { label: 'SS', value: 'SS' },
+  { label: 'SF', value: 'SF' },
+];
+
 // ========================================
 // 日期自動計算工具 / Date Calc Helper
 // ========================================
@@ -47,8 +54,6 @@ const calculateEndDate = (startDateStr?: string, duration?: number): string => {
   return end.toISOString().split('T')[0];
 };
 
-
-
 interface MilestoneWbsTableProps {
   projectId: string;
   initialNodes: WbsNode[];
@@ -61,6 +66,31 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   onProgressUpdate,
 }) => {
   const [nodes, setNodes] = useState<WbsNode[]>(initialNodes);
+
+  // ========================================
+  // 提取所有可用前置任務選項 / Predecessor Options
+  // ========================================
+  const predecessorSelectOptions = useMemo(() => {
+    const options: Array<{ label: string; value: string }> = [
+      { label: '無前置', value: '' },
+    ];
+    const collect = (list: WbsNode[]) => {
+      list.forEach((n) => {
+        const code = n.wbsCode || '';
+        if (code) {
+          options.push({
+            label: `${code} ${n.name.slice(0, 10)}${n.name.length > 10 ? '...' : ''}`,
+            value: code,
+          });
+        }
+        if (n.children && n.children.length > 0) {
+          collect(n.children);
+        }
+      });
+    };
+    collect(nodes);
+    return options;
+  }, [nodes]);
 
   // ========================================
   // 統計完成度與葉子節點 / Statistics & Leaf Progress
@@ -158,44 +188,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       count(newNodes);
       onProgressUpdate(total > 0 ? Math.round((completed / total) * 100) : 0);
     }
-  };
-
-  // 切換里程碑檢查點 (菱形按鈕)
-  const handleToggleMilestone = (nodeId: string) => {
-    updateNode(nodeId, (node) => {
-      const willBeMilestone = !node.isMilestone;
-      if (willBeMilestone) {
-        // 轉為檢查點：工期設為 0 天，結束日等於開始日
-        const start = node.plannedStartDate || node.startDate || '2026-08-15';
-        const actStart = node.actualStartDate || '';
-        return {
-          ...node,
-          isMilestone: true,
-          plannedDurationDays: 0,
-          plannedStartDate: start,
-          plannedEndDate: start,
-          actualDurationDays: 0,
-          actualStartDate: actStart,
-          actualEndDate: actStart,
-          durationDays: 0,
-          endDate: start,
-        };
-      } else {
-        // 恢復為一般工作任務
-        const pDur = 14;
-        const start = node.plannedStartDate || node.startDate || '2026-08-15';
-        const end = calculateEndDate(start, pDur);
-        return {
-          ...node,
-          isMilestone: false,
-          plannedDurationDays: pDur,
-          plannedStartDate: start,
-          plannedEndDate: end,
-          durationDays: pDur,
-          endDate: end,
-        };
-      }
-    });
   };
 
   // 預計開始日變更 (自動試算預計結束日)
@@ -331,6 +323,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     setNodes([...nodes, newRoot]);
   };
 
+  // 新增子任務或里程碑檢查點 (透過操作按鈕)
   const handleAddChildTask = (parentNode: WbsNode, isCheckpoint = false) => {
     const newId = `wbs_${Date.now()}`;
     const childIndex = (parentNode.children?.length || 0) + 1;
@@ -343,7 +336,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       projectId,
       parentId: parentNode.id,
       wbsCode: newCode,
-      name: isCheckpoint ? '新關鍵檢查點' : '新工作任務項目',
+      name: isCheckpoint ? '新里程碑檢查點' : '新工作任務項目',
       isMilestone: isCheckpoint,
       predecessorCode: parentNode.children && parentNode.children.length > 0
         ? parentNode.children[parentNode.children.length - 1].wbsCode
@@ -418,8 +411,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       const aDur = node.isMilestone ? 0 : (node.actualDurationDays ?? 0);
       const aEnd = node.actualEndDate || (aStart && (node.isMilestone ? aStart : calculateEndDate(aStart, aDur)));
 
-      const isCompleted = node.status === 'COMPLETED';
-
       return (
         <React.Fragment key={node.id}>
           <tr className={`wbs-row ${isRoot ? 'is-root' : ''} ${node.isMilestone ? 'is-milestone' : ''}`}>
@@ -443,25 +434,15 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 2. 檢查點 (菱形切換按鈕) */}
-            <td style={{ width: '45px', minWidth: '45px', textAlign: 'center' }}>
-              <button
-                type="button"
-                className={`wbs-diamond-btn ${node.isMilestone ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
-                onClick={() => handleToggleMilestone(node.id)}
-                title={node.isMilestone ? '點擊轉為一般任務 (有工期)' : '點擊轉為里程碑檢查點 (0工期)'}
-              >
-                <Diamond
-                  size={15}
-                  fill={node.isMilestone ? (isCompleted ? '#10b981' : '#f59e0b') : 'none'}
-                  strokeWidth={node.isMilestone ? 2 : 1.5}
-                />
-              </button>
-            </td>
-
-            {/* 3. 工作項目名稱 */}
+            {/* 2. 工作項目名稱 (若為檢查點則顯示菱形標籤) */}
             <td style={{ minWidth: '260px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {node.isMilestone && (
+                  <span className={`wbs-milestone-tag ${node.status === 'COMPLETED' ? 'completed' : ''}`}>
+                    <Diamond size={11} fill={node.status === 'COMPLETED' ? '#10b981' : '#f59e0b'} />
+                    <span>檢查點</span>
+                  </span>
+                )}
                 <input
                   type="text"
                   className="wbs-direct-input"
@@ -478,33 +459,32 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 4. 前置任務依賴 (Predecessors & FS/FF/SS/SF) */}
-            <td style={{ width: '130px', minWidth: '130px' }}>
-              <div className="wbs-predecessor-cell">
-                <input
-                  type="text"
-                  className="wbs-predecessor-input"
-                  value={node.predecessorCode || ''}
-                  placeholder="前置"
-                  onChange={(e) =>
-                    updateNode(node.id, (n) => ({ ...n, predecessorCode: e.target.value }))
-                  }
-                  title="輸入前置任務編號 (例如: 1.1)"
-                />
-                <select
-                  className="wbs-dependency-select"
-                  value={node.dependencyType || 'FS'}
-                  onChange={(e) =>
-                    updateNode(node.id, (n) => ({ ...n, dependencyType: e.target.value as DependencyType }))
-                  }
-                  title="選擇依賴關係: FS (完成至開始), FF (完成至完成), SS (開始至開始), SF (開始至完成)"
-                >
-                  <option value="FS">FS</option>
-                  <option value="FF">FF</option>
-                  <option value="SS">SS</option>
-                  <option value="SF">SF</option>
-                </select>
-              </div>
+            {/* 3. 前置任務 (使用 @kawawei/frontend-modules Select) */}
+            <td style={{ width: '135px', minWidth: '135px' }}>
+              <Select
+                className="wbs-select-field"
+                options={predecessorSelectOptions}
+                value={node.predecessorCode || ''}
+                onChange={(val: string | number | (string | number)[]) =>
+                  updateNode(node.id, (n) => ({ ...n, predecessorCode: String(val) }))
+                }
+                width="100%"
+                height="30px"
+              />
+            </td>
+
+            {/* 4. 依賴類型 (使用 @kawawei/frontend-modules Select) */}
+            <td style={{ width: '85px', minWidth: '85px' }}>
+              <Select
+                className="wbs-select-field"
+                options={DEPENDENCY_TYPE_OPTIONS}
+                value={node.dependencyType || 'FS'}
+                onChange={(val: string | number | (string | number)[]) =>
+                  updateNode(node.id, (n) => ({ ...n, dependencyType: String(val) as DependencyType }))
+                }
+                width="100%"
+                height="30px"
+              />
             </td>
 
             {/* 5. 負責人 (使用 @kawawei/frontend-modules Select) */}
@@ -622,16 +602,24 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               />
             </td>
 
-            {/* 14. 操作 (新增子工項 / 刪除) */}
-            <td style={{ width: '95px', minWidth: '95px', textAlign: 'center' }}>
+            {/* 14. 操作 (新增子任務 / 菱形新增檢查點 / 刪除) */}
+            <td style={{ width: '120px', minWidth: '120px', textAlign: 'center' }}>
               <div className="wbs-actions">
                 <button
                   type="button"
                   className="wbs-action-btn add"
-                  onClick={() => handleAddChildTask(node)}
-                  title="新增子任務"
+                  onClick={() => handleAddChildTask(node, false)}
+                  title="新增子工項任務"
                 >
                   <Plus size={16} />
+                </button>
+                <button
+                  type="button"
+                  className="wbs-action-btn checkpoint"
+                  onClick={() => handleAddChildTask(node, true)}
+                  title="新增里程碑檢查點 (0工期)"
+                >
+                  <Diamond size={15} fill="#f59e0b" color="#b45309" />
                 </button>
                 <button
                   type="button"
@@ -682,6 +670,10 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
             <ChevronUp size={16} />
             <span>收合全部</span>
           </Button>
+          <Button variant="secondary" size="md" onClick={() => handleAddRootMilestone(true)}>
+            <Diamond size={15} fill="#f59e0b" />
+            <span>新增檢查點</span>
+          </Button>
           <Button variant="primary" size="md" onClick={() => handleAddRootMilestone(false)}>
             <Plus size={16} />
             <span>新增主階段</span>
@@ -695,15 +687,15 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
           <thead>
             <tr className="wbs-th-row-1">
               <th rowSpan={2} style={{ width: '5%', minWidth: '90px', textAlign: 'center' }}>WBS 編號</th>
-              <th rowSpan={2} style={{ width: '3%', minWidth: '45px', textAlign: 'center' }}>◆</th>
               <th rowSpan={2} style={{ width: '18%', minWidth: '260px', textAlign: 'center' }}>工作項目名稱</th>
-              <th rowSpan={2} style={{ width: '8%', minWidth: '130px', textAlign: 'center' }}>前置依賴</th>
+              <th rowSpan={2} style={{ width: '8%', minWidth: '135px', textAlign: 'center' }}>前置任務</th>
+              <th rowSpan={2} style={{ width: '5%', minWidth: '85px', textAlign: 'center' }}>依賴類型</th>
               <th rowSpan={2} style={{ width: '8%', minWidth: '135px', textAlign: 'center' }}>負責人</th>
               <th colSpan={3} className="wbs-th-group planned" style={{ textAlign: 'center' }}>預計時程</th>
               <th colSpan={3} className="wbs-th-group actual" style={{ textAlign: 'center' }}>實際時程</th>
               <th rowSpan={2} style={{ width: '5%', minWidth: '90px', textAlign: 'center' }}>進度</th>
               <th rowSpan={2} style={{ width: '7%', minWidth: '125px', textAlign: 'center' }}>狀態</th>
-              <th rowSpan={2} style={{ width: '6%', minWidth: '95px', textAlign: 'center' }}>操作</th>
+              <th rowSpan={2} style={{ width: '7%', minWidth: '120px', textAlign: 'center' }}>操作</th>
             </tr>
             <tr className="wbs-th-row-2">
               <th style={{ width: '10%', minWidth: '165px', textAlign: 'center' }}>開始日期</th>

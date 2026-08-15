@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height, WBS Code column on the far left, milestone diamond toggle buttons, predecessor dependencies (FS, FF, SS, SF), compact table headers.
- * @description_zh WBS 編號獨立於最左側欄位、菱形里程碑檢查點按鈕、前置任務依賴關係 (FS/FF/SS/SF)、下拉與輸入框統一 30px 高度、緊湊表頭。
+ * @description_en Strictly uniform 30px height, WBS Code column on the far left, milestone creation via action button, @kawawei/frontend-modules Select for predecessors & dependency types.
+ * @description_zh WBS 編號獨立於最左側欄位、操作欄提供菱形新增檢查點按鈕、前置任務與依賴類型全數採用 @kawawei/frontend-modules 下拉選單、統一 30px 高度。
  */
 
 .wbs-wrapper {
@@ -103,7 +103,7 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1880px;
+  min-width: 1960px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
@@ -228,87 +228,26 @@
   display: inline-block;
 }
 
-/* ========================================
-   菱形按鈕 (Diamond Button - 里程碑檢查點切換)
-   ======================================== */
-.wbs-diamond-btn {
+/* 檢查點徽章標籤 */
+.wbs-milestone-tag {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background-color: #ffffff;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-}
-
-.wbs-diamond-btn:hover {
+  gap: 3px;
+  padding: 2px 6px;
   background-color: #fef3c7;
-  border-color: #f59e0b;
-  color: #d97706;
+  border: 1px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #b45309;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.wbs-diamond-btn.active {
-  background-color: #fef3c7;
-  border-color: #f59e0b;
-  color: #d97706;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-}
-
-.wbs-diamond-btn.active.completed {
+.wbs-milestone-tag.completed {
   background-color: #ecfdf5;
   border-color: #10b981;
-  color: #059669;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-}
-
-/* ========================================
-   前置任務依賴欄位 (Predecessors)
-   ======================================== */
-.wbs-predecessor-cell {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.wbs-predecessor-input {
-  width: 52px;
-  padding: 0 6px;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
-  outline: none;
-  font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  text-align: center;
-  color: #1e293b;
-  border-radius: 6px;
-  height: 30px;
-}
-
-.wbs-predecessor-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
-}
-
-.wbs-dependency-select {
-  height: 30px;
-  padding: 0 4px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background-color: #ffffff;
-  font-size: 12px;
-  font-weight: 600;
-  color: #334155;
-  cursor: pointer;
-  outline: none;
-}
-
-.wbs-dependency-select:focus {
-  border-color: #2563eb;
+  color: #047857;
 }
 
 /* ========================================
@@ -449,7 +388,7 @@
 }
 
 /* ========================================
-   操作按鈕 (34px)
+   操作按鈕 (32px, 包含新增檢查點菱形按鈕)
    ======================================== */
 .wbs-actions {
   display: flex;
@@ -483,6 +422,12 @@
   background-color: #eff6ff;
   border-color: #93c5fd;
   color: #2563eb;
+}
+
+.wbs-action-btn.checkpoint:hover {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  color: #b45309;
 }
 
 .wbs-action-btn.delete:hover {
