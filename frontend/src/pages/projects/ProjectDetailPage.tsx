@@ -4,14 +4,15 @@ import { useUrlTabs } from '../../hooks/useUrlTabs';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { Button } from '../../components/button/Button';
+import { SelectField, SelectOption } from '../../components/input/SelectField';
 import { Project, ProjectStage, ChangeOrder } from '../../types';
 import { MOCK_PROJECTS } from '../../mock/projects.mock';
 
 /**
  * @file ProjectDetailPage.tsx
  * @description 專案工作台詳情頁 / Project Workspace Detail Page
- * @description_en 6-Tab workspace with 5-stage lifecycle pipeline, duration tracker, change orders, and payment stages
- * @description_zh 專案核心工作台，提供 5 大生命週期管線、工期時程動態指示、需求追加變更單與多階段付款清冊
+ * @description_en 6-Tab workspace with stage dropdown selector, duration tracker, change orders, and payment stages
+ * @description_zh 專案核心工作台，提供階段下拉切換選單、工期時程動態指示、需求追加變更單與多階段付款清冊
  */
 
 type ProjectTab = 'milestones' | 'logs' | 'qa' | 'change_orders' | 'finance' | 'line_sync';
@@ -25,6 +26,14 @@ export const ProjectDetailPage: React.FC = () => {
 
   const [currentStage, setCurrentStage] = useState<ProjectStage>(project.stage);
   const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(project.changeOrders || []);
+
+  const STAGE_OPTIONS: SelectOption[] = [
+    { value: 'development', label: '1. 開發中', iconName: 'layers' },
+    { value: 'testing', label: '2. 測試驗證', iconName: 'layers' },
+    { value: 'delivery', label: '3. 交付驗收', iconName: 'layers' },
+    { value: 'maintenance', label: '4. 保固維護', iconName: 'layers' },
+    { value: 'closed', label: '5. 正式結案', iconName: 'layers' }
+  ];
 
   // 追加需求變更單 State
   const [isAddCoOpen, setIsAddCoOpen] = useState(false);
@@ -94,15 +103,6 @@ export const ProjectDetailPage: React.FC = () => {
 
   const finalAmountTotal = (project.amountTotal || 0) + totalApprovedCoAmount;
 
-  // 5 大生命週期階段定義
-  const lifecycleStages: Array<{ key: ProjectStage; label: string; desc: string }> = [
-    { key: 'development', label: '1. 開發中', desc: '前後端代碼開發' },
-    { key: 'testing', label: '2. 測試驗證', desc: 'QA 整合測試與修復' },
-    { key: 'delivery', label: '3. 交付驗收', desc: '上線部署與客戶 UAT' },
-    { key: 'maintenance', label: '4. 保固維護', desc: '正式運行與保固 SLA' },
-    { key: 'closed', label: '5. 正式結案', desc: '尾款結清與歸檔' }
-  ];
-
   const tabsConfig: Array<{ key: ProjectTab; label: string; icon: 'layers' | 'calendar' | 'warning' | 'contracts' | 'finance' | 'message' }> = [
     { key: 'milestones', label: '里程碑進度', icon: 'layers' },
     { key: 'logs', label: '工程進度日誌', icon: 'calendar' },
@@ -114,7 +114,7 @@ export const ProjectDetailPage: React.FC = () => {
 
   return (
     <div>
-      {/* 專案主標題與狀態 Header (含返回列表按鈕) */}
+      {/* 專案主標題與狀態 Header (含階段下拉選單與返回列表按鈕) */}
       <div className="page-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">
@@ -126,17 +126,24 @@ export const ProjectDetailPage: React.FC = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <StatusBadge
-            label={lifecycleStages.find((s) => s.key === currentStage)?.label || '開發中'}
-            variant="info"
-            icon="layers"
-          />
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {/* 專案階段下拉切換選單 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>專案階段:</span>
+            <SelectField
+              options={STAGE_OPTIONS}
+              value={currentStage}
+              onChange={(val) => setCurrentStage(val as ProjectStage)}
+              style={{ width: '150px' }}
+            />
+          </div>
+
           <StatusBadge
             label={`進度 ${project.progressPercent}%`}
             variant={project.progressPercent >= 90 ? 'success' : 'info'}
             icon="success"
           />
+
           <Link to="/projects" style={{ textDecoration: 'none' }}>
             <Button variant="secondary" size="md">
               <TextIcon name="arrow-left" size="sm" />
@@ -195,50 +202,6 @@ export const ProjectDetailPage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
-
-      {/* 5 大生命週期 Pipeline 導航進度條 */}
-      <div
-        style={{
-          display: 'flex',
-          backgroundColor: '#ffffff',
-          border: '1px solid var(--border-color)',
-          borderRadius: '8px',
-          padding: '12px 16px',
-          marginBottom: '24px',
-          gap: '8px',
-          overflowX: 'auto'
-        }}
-      >
-        {lifecycleStages.map((stage, idx) => {
-          const isCurrent = currentStage === stage.key;
-          const stageIndex = lifecycleStages.findIndex((s) => s.key === currentStage);
-          const isPassed = idx < stageIndex;
-
-          return (
-            <div
-              key={stage.key}
-              onClick={() => setCurrentStage(stage.key)}
-              style={{
-                flex: 1,
-                minWidth: '130px',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                backgroundColor: isCurrent ? 'var(--primary-50)' : isPassed ? '#f8fafc' : 'transparent',
-                border: isCurrent ? '1px solid var(--primary-600)' : '1px solid transparent',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <div style={{ fontSize: '13px', fontWeight: isCurrent ? 700 : 500, color: isCurrent ? 'var(--primary-600)' : isPassed ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                {stage.label}
-              </div>
-              <div style={{ fontSize: '11px', color: isCurrent ? 'var(--primary-600)' : 'var(--text-secondary)', marginTop: '2px' }}>
-                {stage.desc}
-              </div>
-            </div>
-          );
-        })}
       </div>
 
       {/* 6 大 Tab 頁籤標籤列 (支援 URL Query 保持) */}
