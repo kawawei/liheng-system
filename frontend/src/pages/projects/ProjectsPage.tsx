@@ -188,9 +188,14 @@ export const ProjectsPage: React.FC = () => {
                   </td>
                   <td>{p.assignedEngineers.join(', ')}</td>
                   <td>
-                    <Link to={`/projects/${p.id}`}>
-                      <Button variant="secondary" size="sm">
-                        <span>工作台</span>
+                    <Link to={`/projects/${p.id}`} style={{ textDecoration: 'none' }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        title="查看專案工作台"
+                        style={{ padding: '8px 12px' }}
+                      >
+                        <TextIcon name="eye" size="md" />
                       </Button>
                     </Link>
                   </td>
