@@ -35,6 +35,7 @@ import {
   AtSign,
   Trash2,
   Pencil,
+  Save,
   LucideIcon
 } from 'lucide-react';
 
@@ -80,7 +81,8 @@ export type IconName =
   | 'ig'
   | 'threads'
   | 'trash'
-  | 'edit';
+  | 'edit'
+  | 'save';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -127,7 +129,8 @@ const iconMap: Record<IconName, LucideIcon> = {
   ig: Camera,
   threads: AtSign,
   trash: Trash2,
-  edit: Pencil
+  edit: Pencil,
+  save: Save
 };
 
 const sizeMap: Record<IconSize, number> = {

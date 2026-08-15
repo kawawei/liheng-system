@@ -222,7 +222,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             title="儲存修改"
             style={{ padding: '8px 12px' }}
           >
-            <TextIcon name="file-check" size="md" />
+            <TextIcon name="save" size="md" />
           </Button>
 
           {/* 3. 返回客戶列表按鈕 */}
