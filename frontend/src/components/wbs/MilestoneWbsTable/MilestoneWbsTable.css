@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table 2-Tier Header Styles
- * @description_en Styles for hierarchical WBS table with 2-tier header (Planned / Actual), direct inputs, and no spinner arrows
- * @description_zh 定義 WBS 樹狀階層雙層表頭 (預計/實際時程)、直出即時編輯、移除數字箭頭樣式
+ * @description_en Unified 36px height for all inputs & dropdowns, 13px font size, wide scrollable container, and 2-tier header.
+ * @description_zh 統一輸入框與下拉選單 36px 高度、13px 字級、加寬橫向捲動表格與雙層表頭樣式。
  */
 
 .wbs-wrapper {
@@ -52,7 +52,7 @@
   gap: 6px;
   background-color: var(--bg-app, #f8fafc);
   border: 1px solid var(--border-color, #e2e8f0);
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 9999px;
   font-size: 13px;
   font-weight: 500;
@@ -72,7 +72,7 @@
 }
 
 /* ========================================
-   表格主體與雙層表頭 / Table Styles & 2-Tier Header
+   表格主體與寬度 (超出範圍支援左右滾動)
    ======================================== */
 .wbs-table-container {
   background-color: #ffffff;
@@ -84,7 +84,7 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1100px;
+  min-width: 1380px;
   border-collapse: collapse;
   font-size: 13px;
   text-align: left;
@@ -93,27 +93,26 @@
 .wbs-table thead tr.wbs-th-row-1 th {
   background-color: #f8fafc;
   border-bottom: 1px solid var(--border-color, #e2e8f0);
-  padding: 8px 10px;
+  padding: 10px 10px;
   font-weight: 600;
   color: var(--text-secondary, #475569);
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .wbs-table thead tr.wbs-th-row-2 th {
   background-color: #f1f5f9;
   border-bottom: 2px solid var(--border-color, #cbd5e1);
-  padding: 6px 8px;
+  padding: 8px 10px;
   font-weight: 600;
   color: #334155;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .wbs-th-group {
   text-align: center;
   font-weight: 700 !important;
-  color: var(--text-primary, #0f172a) !important;
   border-left: 1px solid #e2e8f0;
   border-right: 1px solid #e2e8f0;
 }
@@ -155,8 +154,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: none;
   background: transparent;
   color: var(--text-secondary, #64748b);
@@ -173,45 +172,75 @@
 }
 
 .wbs-expand-placeholder {
-  width: 20px;
+  width: 22px;
   flex-shrink: 0;
   display: inline-block;
 }
 
 /* ========================================
-   直出即時輸入框 / Direct Live Inputs
+   統一組件高度 (36px) 與文字尺寸 (13px)
    ======================================== */
+.wbs-table .caas-select-box,
+.wbs-table .caas-field-input,
+.wbs-table .caas-date-display,
+.wbs-table .wbs-direct-input,
+.wbs-table .wbs-direct-days,
+.wbs-table .wbs-direct-pct {
+  min-height: 36px !important;
+  height: 36px !important;
+  max-height: 36px !important;
+  font-size: 13px !important;
+  box-sizing: border-box !important;
+  border-radius: 6px !important;
+  line-height: 34px !important;
+}
+
+.wbs-table .caas-select-group,
+.wbs-table .caas-date-picker-container {
+  gap: 0 !important;
+  margin: 0 !important;
+}
+
+.wbs-table .caas-select-box {
+  padding: 0 10px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+}
+
+.wbs-table .caas-field-input {
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+}
+
 .wbs-direct-input {
   width: 100%;
-  padding: 5px 8px;
-  font-size: 13px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background-color: transparent;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
   outline: none;
   font-weight: 500;
   color: var(--text-primary, #1e293b);
   transition: all 0.15s ease;
 }
 
-.wbs-direct-input:hover {
-  border-color: #cbd5e1;
-  background-color: #ffffff;
+.wbs-direct-input:hover,
+.wbs-table .caas-select-box:hover,
+.wbs-table .caas-field-input:hover {
+  border-color: #94a3b8 !important;
 }
 
-.wbs-direct-input:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+.wbs-direct-input:focus,
+.wbs-table .caas-select-box.active,
+.wbs-table .caas-field-input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12) !important;
 }
 
 .wbs-direct-days {
-  width: 44px;
-  padding: 4px 4px;
-  font-size: 12px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background-color: transparent;
+  width: 50px;
+  padding: 0 4px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
   outline: none;
   font-family: var(--font-mono, monospace);
   text-align: center;
@@ -220,37 +249,34 @@
 }
 
 .wbs-direct-days:hover {
-  border-color: #cbd5e1;
-  background-color: #ffffff;
+  border-color: #94a3b8;
 }
 
 .wbs-direct-days:focus {
   border-color: #2563eb;
-  background-color: #ffffff;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
 .wbs-readonly-date {
   display: inline-block;
   font-family: var(--font-mono, monospace);
-  font-size: 12px;
+  font-size: 13px;
   color: #334155;
-  padding: 4px 2px;
+  padding: 0 4px;
+  line-height: 36px;
   white-space: nowrap;
 }
 
 .wbs-readonly-date.auto-calc {
   color: #2563eb;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .wbs-direct-pct {
-  width: 40px;
-  padding: 4px 4px;
-  font-size: 12px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background-color: transparent;
+  width: 46px;
+  padding: 0 4px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
   text-align: right;
   outline: none;
   font-family: var(--font-mono, monospace);
@@ -260,13 +286,12 @@
 }
 
 .wbs-direct-pct:hover {
-  border-color: #cbd5e1;
-  background-color: #ffffff;
+  border-color: #94a3b8;
 }
 
 .wbs-direct-pct:focus {
   border-color: #2563eb;
-  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
 /* 狀態切換按鈕 */
@@ -274,9 +299,10 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
+  padding: 0 10px;
+  height: 32px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   border: 1px solid transparent;
   cursor: pointer;
@@ -312,7 +338,7 @@
 .wbs-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   justify-content: center;
 }
 
@@ -320,9 +346,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
   border: 1px solid transparent;
   background-color: transparent;
   color: #64748b;
