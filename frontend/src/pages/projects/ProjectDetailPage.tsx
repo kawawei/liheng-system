@@ -17,7 +17,7 @@ import { MOCK_PROJECT_WBS } from '../../mock/wbs.mock';
  * @description_zh 專案核心工作台，提供階段下拉切換選單、工期時程動態指示、需求追加變更單與多階段付款清冊
  */
 
-type ProjectTab = 'milestones' | 'qa' | 'change_orders' | 'finance' | 'line_sync';
+type ProjectTab = 'milestones' | 'change_orders' | 'finance' | 'line_sync';
 
 export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -107,9 +107,8 @@ export const ProjectDetailPage: React.FC = () => {
 
   const finalAmountTotal = (project.amountTotal || 0) + totalApprovedCoAmount;
 
-  const tabsConfig: Array<{ key: ProjectTab; label: string; icon: 'layers' | 'warning' | 'contracts' | 'finance' | 'message' }> = [
+  const tabsConfig: Array<{ key: ProjectTab; label: string; icon: 'layers' | 'contracts' | 'finance' | 'message' }> = [
     { key: 'milestones', label: '里程碑進度', icon: 'layers' },
-    { key: 'qa', label: 'QA 缺陷監控', icon: 'warning' },
     { key: 'change_orders', label: `需求變更單 (${changeOrders.length})`, icon: 'contracts' },
     { key: 'finance', label: '多階段付款與收支', icon: 'finance' },
     { key: 'line_sync', label: 'LINE 雙向動態與 AI', icon: 'message' }
@@ -260,19 +259,7 @@ export const ProjectDetailPage: React.FC = () => {
           />
         )}
 
-        {/* Tab 2: QA 缺陷監控 */}
-        {currentTab === 'qa' && (
-          <div>
-            <div className="card-header">
-              <h2 className="card-title">QA Bug 缺陷監控與線上健康狀態</h2>
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-              目前未發現重大缺陷 (Critical Issues)。所有自動化測試與 Docker 探針運行正常。
-            </p>
-          </div>
-        )}
-
-        {/* Tab 4: 需求追加與變更單 */}
+        {/* Tab 2: 需求追加與變更單 */}
         {currentTab === 'change_orders' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
