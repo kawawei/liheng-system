@@ -23,7 +23,6 @@ interface ClientsDetailPageProps {
   client: Client;
   onBack: () => void;
   onUpdateClient: (updatedClient: Client) => void;
-  onDeleteClient: (clientId: string) => void;
 }
 
 const STATUS_OPTIONS: SelectOption[] = [
@@ -39,7 +38,6 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
   client,
   onBack,
   onUpdateClient,
-  onDeleteClient
 }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'info' | 'timeline' | 'projects'>('info');
@@ -200,7 +198,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </div>
         </div>
 
-        {/* 右側按鈕群組 (狀態下拉選單 + 轉為正式專案立案 + 儲存 + 刪除 + 返回) */}
+        {/* 右側按鈕群組 (狀態下拉選單 + 轉為正式專案立案 + 儲存 + 返回) */}
         <div className="client-detail-header-right">
           {/* 1. 客戶狀態下拉選單 */}
           <div style={{ width: '130px' }}>
@@ -238,22 +236,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             <TextIcon name="file-check" size="md" />
           </Button>
 
-          {/* 4. 刪除客戶按鈕 */}
-          <Button
-            variant="danger"
-            title="刪除客戶"
-            style={{ padding: '8px 12px' }}
-            onClick={() => {
-              if (window.confirm(`確定要刪除「${client.name}」的客戶資料嗎？此操作無法撤銷。`)) {
-                onDeleteClient(client.id);
-                onBack();
-              }
-            }}
-          >
-            <TextIcon name="trash" size="md" />
-          </Button>
-
-          {/* 5. 返回客戶列表按鈕 */}
+          {/* 4. 返回客戶列表按鈕 */}
           <Button variant="secondary" onClick={onBack}>
             <TextIcon name="arrow-left" size="sm" />
             <span>返回客戶列表</span>

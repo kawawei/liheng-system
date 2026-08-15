@@ -77,7 +77,6 @@ export const ClientsPage: React.FC = () => {
         client={editingClient}
         onBack={() => setEditingClient(null)}
         onUpdateClient={handleUpdateClient}
-        onDeleteClient={(id) => handleDeleteClient(id, editingClient.name)}
       />
     );
   }
