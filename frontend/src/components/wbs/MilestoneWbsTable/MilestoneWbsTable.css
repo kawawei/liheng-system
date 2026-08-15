@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height, WBS Code column on the far left, compact table headers, wider duration/progress, large action buttons.
- * @description_zh WBS 編號獨立於最左側欄位、下拉與輸入框統一 30px 高度、緊湊表頭垂直高度、加寬工期與進度。
+ * @description_en Strictly uniform 30px height, WBS Code column on the far left, milestone diamond toggle buttons, predecessor dependencies (FS, FF, SS, SF), compact table headers.
+ * @description_zh WBS 編號獨立於最左側欄位、菱形里程碑檢查點按鈕、前置任務依賴關係 (FS/FF/SS/SF)、下拉與輸入框統一 30px 高度、緊湊表頭。
  */
 
 .wbs-wrapper {
@@ -65,7 +65,7 @@
   color: #065f46;
 }
 
-/* 放大頂部按鈕組 (展開全部 / 收合全部 / 新增主里程碑) */
+/* 頂部按鈕組 */
 .wbs-btn-group {
   display: flex;
   align-items: center;
@@ -103,7 +103,7 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1780px;
+  min-width: 1880px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
@@ -156,9 +156,9 @@
   color: #065f46 !important;
 }
 
-/* 單元格留白間距加大 */
+/* 單元格留白間距 */
 .wbs-table td {
-  padding: 8px 12px !important;
+  padding: 8px 10px !important;
   border-bottom: 1px solid var(--border-color, #f1f5f9);
   color: var(--text-primary, #1e293b);
   vertical-align: middle;
@@ -171,6 +171,14 @@
 .wbs-row.is-root td {
   background-color: #ffffff;
   border-top: 1px solid #e2e8f0;
+}
+
+.wbs-row.is-milestone td {
+  background-color: #fffdf5;
+}
+
+.wbs-row.is-milestone:hover td {
+  background-color: #fefce8;
 }
 
 /* WBS 編號單元格 */
@@ -187,7 +195,7 @@
   color: #1e293b;
   background-color: #f1f5f9;
   border: 1px solid #cbd5e1;
-  padding: 3px 8px;
+  padding: 3px 7px;
   border-radius: 4px;
   white-space: nowrap;
   letter-spacing: 0.02em;
@@ -197,8 +205,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border: none;
   background: transparent;
   color: var(--text-secondary, #64748b);
@@ -215,9 +223,92 @@
 }
 
 .wbs-expand-placeholder {
-  width: 22px;
+  width: 20px;
   flex-shrink: 0;
   display: inline-block;
+}
+
+/* ========================================
+   菱形按鈕 (Diamond Button - 里程碑檢查點切換)
+   ======================================== */
+.wbs-diamond-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.wbs-diamond-btn:hover {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.wbs-diamond-btn.active {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  color: #d97706;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.wbs-diamond-btn.active.completed {
+  background-color: #ecfdf5;
+  border-color: #10b981;
+  color: #059669;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* ========================================
+   前置任務依賴欄位 (Predecessors)
+   ======================================== */
+.wbs-predecessor-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wbs-predecessor-input {
+  width: 52px;
+  padding: 0 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  text-align: center;
+  color: #1e293b;
+  border-radius: 6px;
+  height: 30px;
+}
+
+.wbs-predecessor-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.wbs-dependency-select {
+  height: 30px;
+  padding: 0 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  outline: none;
+}
+
+.wbs-dependency-select:focus {
+  border-color: #2563eb;
 }
 
 /* ========================================
@@ -244,7 +335,7 @@
 
 /* 針對 Select 組件內層 Trigger 容器的精準高度與樣式覆寫 */
 .wbs-select-field > div > div {
-  padding: 0 10px !important;
+  padding: 0 8px !important;
   border: 1px solid #cbd5e1 !important;
   background-color: #ffffff !important;
   border-radius: 6px !important;
@@ -256,7 +347,7 @@
   border: 1px solid #cbd5e1 !important;
   background-color: #ffffff !important;
   border-radius: 6px !important;
-  padding: 0 8px !important;
+  padding: 0 6px !important;
 }
 
 .wbs-datepicker-field .caas-field-input {
@@ -289,9 +380,9 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12) !important;
 }
 
-/* 工期天數輸入框 (加大寬度為 64px) */
+/* 工期天數輸入框 */
 .wbs-direct-days {
-  width: 64px;
+  width: 60px;
   padding: 0 6px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
@@ -300,6 +391,13 @@
   text-align: center;
   color: #1e293b;
   transition: all 0.15s ease;
+}
+
+.wbs-direct-days.milestone-zero {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  color: #b45309;
+  font-weight: 700;
 }
 
 .wbs-direct-days:hover {
@@ -327,9 +425,9 @@
   font-weight: 600;
 }
 
-/* 進度輸入框 (加大寬度為 58px) */
+/* 進度輸入框 */
 .wbs-direct-pct {
-  width: 58px;
+  width: 54px;
   padding: 0 6px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
@@ -351,12 +449,12 @@
 }
 
 /* ========================================
-   操作按鈕 (放大為 34px，圖示清晰好點擊)
+   操作按鈕 (34px)
    ======================================== */
 .wbs-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
 }
 
@@ -364,8 +462,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;

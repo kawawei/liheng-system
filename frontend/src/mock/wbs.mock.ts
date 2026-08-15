@@ -1,8 +1,8 @@
 /**
  * @file wbs.mock.ts
  * @description 專案 WBS 工作分解結構模擬數據 / Project WBS Mock Dataset
- * @description_en Provides multi-level hierarchical WBS data with independent wbsCode and clean task names
- * @description_zh 提供軟體開發生命週期之多層級 WBS 模擬數據，包含獨立 WBS 編號與預計/實際雙軌時程
+ * @description_en Provides multi-level hierarchical WBS data with independent wbsCode, milestone checkpoints (0 duration), and dependencies (FS, FF, SS, SF)
+ * @description_zh 提供軟體開發生命週期之多層級 WBS 模擬數據，包含獨立 WBS 編號、菱形里程碑檢查點 (0工期) 與 FS/FF/SS 前置任務依賴
  */
 
 import { WbsNode } from '../types';
@@ -47,6 +47,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_1',
           wbsCode: '1.2',
           name: '系統架構設計與 12 張資料表 Drizzle Schema',
+          predecessorCode: '1.1',
+          dependencyType: 'FS',
           status: 'COMPLETED',
           plannedStartDate: '2026-08-08',
           plannedEndDate: '2026-08-14',
@@ -56,6 +58,25 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           actualDurationDays: 7,
           progress: 100,
           assignees: ['李工程師']
+        },
+        {
+          id: 'wbs_1_3',
+          projectId: 'pj_1',
+          parentId: 'wbs_1',
+          wbsCode: '1.3',
+          name: 'SDD 架構與資料庫 Schema 客戶簽核審定',
+          isMilestone: true,
+          predecessorCode: '1.2',
+          dependencyType: 'FS',
+          status: 'COMPLETED',
+          plannedStartDate: '2026-08-14',
+          plannedEndDate: '2026-08-14',
+          plannedDurationDays: 0,
+          actualStartDate: '2026-08-14',
+          actualEndDate: '2026-08-14',
+          actualDurationDays: 0,
+          progress: 100,
+          assignees: ['王架構師']
         }
       ]
     },
@@ -64,6 +85,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
       projectId: 'pj_1',
       wbsCode: '2',
       name: '物聯網核心模組與看板開發',
+      predecessorCode: '1',
+      dependencyType: 'FS',
       status: 'IN_PROGRESS',
       plannedStartDate: '2026-08-15',
       plannedEndDate: '2026-10-15',
@@ -81,6 +104,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_2',
           wbsCode: '2.1',
           name: 'PLC 數據採集與 Modbus 協議轉換模組 (CO-001)',
+          predecessorCode: '1.3',
+          dependencyType: 'FS',
           status: 'IN_PROGRESS',
           plannedStartDate: '2026-08-15',
           plannedEndDate: '2026-09-05',
@@ -97,6 +122,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_2',
           wbsCode: '2.2',
           name: '即時數據可視化看板與警報推播',
+          predecessorCode: '2.1',
+          dependencyType: 'SS',
           status: 'IN_PROGRESS',
           plannedStartDate: '2026-09-01',
           plannedEndDate: '2026-09-25',
@@ -113,6 +140,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_2',
           wbsCode: '2.3',
           name: '8h JWT 雙向身分驗證與權限控制',
+          predecessorCode: '2.1',
+          dependencyType: 'FS',
           status: 'COMPLETED',
           plannedStartDate: '2026-08-15',
           plannedEndDate: '2026-08-25',
@@ -130,6 +159,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
       projectId: 'pj_1',
       wbsCode: '3',
       name: '系統整合測試、QA 與壓力檢測',
+      predecessorCode: '2',
+      dependencyType: 'FS',
       status: 'NOT_STARTED',
       plannedStartDate: '2026-10-16',
       plannedEndDate: '2026-11-10',
@@ -147,6 +178,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_3',
           wbsCode: '3.1',
           name: '整合測試案例執行與缺陷回歸',
+          predecessorCode: '2.2',
+          dependencyType: 'FF',
           status: 'NOT_STARTED',
           plannedStartDate: '2026-10-16',
           plannedEndDate: '2026-10-31',
@@ -163,10 +196,31 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_3',
           wbsCode: '3.2',
           name: '併發壓力測試與效能調優',
+          predecessorCode: '3.1',
+          dependencyType: 'FS',
           status: 'NOT_STARTED',
           plannedStartDate: '2026-11-01',
           plannedEndDate: '2026-11-10',
           plannedDurationDays: 10,
+          actualStartDate: '',
+          actualEndDate: '',
+          actualDurationDays: 0,
+          progress: 0,
+          assignees: ['王架構師']
+        },
+        {
+          id: 'wbs_3_3',
+          projectId: 'pj_1',
+          parentId: 'wbs_3',
+          wbsCode: '3.3',
+          name: '系統壓力測試與安全性檢驗通過 (Alpha Release)',
+          isMilestone: true,
+          predecessorCode: '3.2',
+          dependencyType: 'FS',
+          status: 'NOT_STARTED',
+          plannedStartDate: '2026-11-10',
+          plannedEndDate: '2026-11-10',
+          plannedDurationDays: 0,
           actualStartDate: '',
           actualEndDate: '',
           actualDurationDays: 0,
@@ -180,6 +234,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
       projectId: 'pj_1',
       wbsCode: '4',
       name: 'Docker 容器部署與客戶 UAT 驗收交付',
+      predecessorCode: '3',
+      dependencyType: 'FS',
       status: 'NOT_STARTED',
       plannedStartDate: '2026-11-11',
       plannedEndDate: '2026-11-29',
@@ -197,6 +253,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_4',
           wbsCode: '4.1',
           name: '正式環境 Docker 容器化編排與部屬',
+          predecessorCode: '3.3',
+          dependencyType: 'FS',
           status: 'NOT_STARTED',
           plannedStartDate: '2026-11-11',
           plannedEndDate: '2026-11-20',
@@ -213,6 +271,8 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           parentId: 'wbs_4',
           wbsCode: '4.2',
           name: '客戶 UAT 測試驗收與教育訓練手冊提供',
+          predecessorCode: '4.1',
+          dependencyType: 'FS',
           status: 'NOT_STARTED',
           plannedStartDate: '2026-11-21',
           plannedEndDate: '2026-11-29',
@@ -222,6 +282,25 @@ export const MOCK_PROJECT_WBS: Record<string, WbsNode[]> = {
           actualDurationDays: 0,
           progress: 0,
           assignees: ['李工程師']
+        },
+        {
+          id: 'wbs_4_3',
+          projectId: 'pj_1',
+          parentId: 'wbs_4',
+          wbsCode: '4.3',
+          name: '客戶正式驗收單簽署 (結案請款閘門)',
+          isMilestone: true,
+          predecessorCode: '4.2',
+          dependencyType: 'FS',
+          status: 'NOT_STARTED',
+          plannedStartDate: '2026-11-29',
+          plannedEndDate: '2026-11-29',
+          plannedDurationDays: 0,
+          actualStartDate: '',
+          actualEndDate: '',
+          actualDurationDays: 0,
+          progress: 0,
+          assignees: ['張工程師']
         }
       ]
     }

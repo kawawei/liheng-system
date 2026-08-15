@@ -144,6 +144,7 @@ export interface Receivable {
 }
 
 export type WbsStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+export type DependencyType = 'FS' | 'FF' | 'SS' | 'SF';
 
 export interface WbsNode {
   id: string;
@@ -152,6 +153,9 @@ export interface WbsNode {
   wbsCode?: string;
   name: string;
   description?: string;
+  isMilestone?: boolean;
+  predecessorCode?: string;
+  dependencyType?: DependencyType;
   status: WbsStatus;
   // 預計期程與工期 / Planned dates & duration
   plannedStartDate?: string;
