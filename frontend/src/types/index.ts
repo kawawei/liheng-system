@@ -156,6 +156,7 @@ export interface WbsNode {
   isMilestone?: boolean;
   predecessorCode?: string;
   dependencyType?: DependencyType;
+  allowPullForward?: boolean; // 勾選是否允許提前啟動 (Pull-Forward)
   status: WbsStatus;
   // 預計期程與工期 / Planned dates & duration
   plannedStartDate?: string;

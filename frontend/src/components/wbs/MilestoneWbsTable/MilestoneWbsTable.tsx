@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.tsx
  * @description WBS 里程碑即時編輯表格組件 / Milestone WBS Live Editable Table Component
- * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with independent WBS Code, Diamond Checkpoint action button, and Predecessor dropdown selectors (FS, FF, SS, SF).
- * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，操作欄提供菱形新增檢查點按鈕、前置任務與依賴類型全數採用組件庫 Select 下拉選單。
+ * @description_en Direct spreadsheet-style hierarchical WBS table integrating @kawawei/frontend-modules (Select, DatePicker), with independent WBS Code, Diamond Checkpoint action button, Predecessors Select, and Pull-Forward strategy checkbox.
+ * @description_zh 整合 @kawawei/frontend-modules (Select, DatePicker) 之直出即時編輯 WBS 樹狀表格，里程碑檢查點不顯示工期/結束日/進度、操作欄提供菱形新增檢查點、前置任務依賴支援組件庫 Select 與允許提前 (Pull-Forward) 策略勾選。
  */
 
 import React, { useState, useMemo } from 'react';
@@ -34,10 +34,10 @@ const STATUS_SELECT_OPTIONS = [
 ];
 
 const DEPENDENCY_TYPE_OPTIONS = [
-  { label: 'FS', value: 'FS' },
-  { label: 'FF', value: 'FF' },
-  { label: 'SS', value: 'SS' },
-  { label: 'SF', value: 'SF' },
+  { label: 'FS (完成至開始)', value: 'FS' },
+  { label: 'FF (完成至完成)', value: 'FF' },
+  { label: 'SS (開始至開始)', value: 'SS' },
+  { label: 'SF (開始至完成)', value: 'SF' },
 ];
 
 // ========================================
@@ -52,6 +52,14 @@ const calculateEndDate = (startDateStr?: string, duration?: number): string => {
   const end = new Date(start);
   end.setDate(start.getDate() + Math.max(1, dur) - 1);
   return end.toISOString().split('T')[0];
+};
+
+const addDaysToDate = (dateStr: string, days: number): string => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
 };
 
 interface MilestoneWbsTableProps {
@@ -79,7 +87,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         const code = n.wbsCode || '';
         if (code) {
           options.push({
-            label: `${code} ${n.name.slice(0, 10)}${n.name.length > 10 ? '...' : ''}`,
+            label: `${code} ${n.name.slice(0, 12)}${n.name.length > 12 ? '...' : ''}`,
             value: code,
           });
         }
@@ -106,13 +114,13 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         if (node.isMilestone) {
           totalMilestones += 1;
           if (node.status === 'COMPLETED') completedMilestones += 1;
-        }
-        if (!node.children || node.children.length === 0) {
+        } else if (!node.children || node.children.length === 0) {
           totalTasks += 1;
           if (node.status === 'COMPLETED') {
             completedTasks += 1;
           }
-        } else {
+        }
+        if (node.children && node.children.length > 0) {
           traverse(node.children);
         }
       });
@@ -154,6 +162,78 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   };
 
   // ========================================
+  // 排程連動推算 / Schedule Cascade Calculation
+  // ========================================
+  const cascadeScheduleUpdates = (allNodes: WbsNode[]): WbsNode[] => {
+    // 建立編號映射表
+    const codeMap = new Map<string, WbsNode>();
+    const buildMap = (list: WbsNode[]) => {
+      list.forEach((n) => {
+        if (n.wbsCode) codeMap.set(n.wbsCode, n);
+        if (n.children && n.children.length > 0) buildMap(n.children);
+      });
+    };
+    buildMap(allNodes);
+
+    const updateCascade = (list: WbsNode[]): WbsNode[] => {
+      return list.map((node) => {
+        let updatedNode = { ...node };
+
+        if (node.predecessorCode && codeMap.has(node.predecessorCode)) {
+          const pred = codeMap.get(node.predecessorCode)!;
+          const predPlannedEnd = pred.plannedEndDate || pred.plannedStartDate || '';
+          const predPlannedStart = pred.plannedStartDate || '';
+          const depType = node.dependencyType || 'FS';
+          const dur = node.isMilestone ? 0 : (node.plannedDurationDays || node.durationDays || 14);
+
+          let calculatedStart = node.plannedStartDate || '';
+
+          if (depType === 'FS' && predPlannedEnd) {
+            calculatedStart = addDaysToDate(predPlannedEnd, 1);
+          } else if (depType === 'SS' && predPlannedStart) {
+            calculatedStart = predPlannedStart;
+          }
+
+          if (calculatedStart) {
+            if (node.allowPullForward) {
+              // 策略 A：積極提前啟動 (Pull-Forward) -> 自動對齊最早可開始日
+              const newEnd = calculateEndDate(calculatedStart, dur);
+              updatedNode = {
+                ...updatedNode,
+                plannedStartDate: calculatedStart,
+                plannedEndDate: newEnd,
+                startDate: calculatedStart,
+                endDate: newEnd,
+              };
+            } else {
+              // 策略 B：維持原計畫基準 (Keep Baseline) -> 若前置延誤才自動順延，提前則維持原預計
+              const currentPlannedStart = node.plannedStartDate || calculatedStart;
+              if (calculatedStart > currentPlannedStart) {
+                // 前置延誤，自動順延
+                const newEnd = calculateEndDate(calculatedStart, dur);
+                updatedNode = {
+                  ...updatedNode,
+                  plannedStartDate: calculatedStart,
+                  plannedEndDate: newEnd,
+                  startDate: calculatedStart,
+                  endDate: newEnd,
+                };
+              }
+            }
+          }
+        }
+
+        if (updatedNode.children && updatedNode.children.length > 0) {
+          updatedNode.children = updateCascade(updatedNode.children);
+        }
+        return updatedNode;
+      });
+    };
+
+    return updateCascade(allNodes);
+  };
+
+  // ========================================
   // 直出即時修改欄位 / Update Node Field
   // ========================================
   const updateNode = (nodeId: string, updater: (n: WbsNode) => WbsNode) => {
@@ -169,7 +249,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       });
     };
 
-    const newNodes = updateList(nodes);
+    const newNodes = cascadeScheduleUpdates(updateList(nodes));
     setNodes(newNodes);
 
     if (onProgressUpdate) {
@@ -177,12 +257,11 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
       let completed = 0;
       const count = (items: WbsNode[]) => {
         items.forEach((n) => {
-          if (!n.children || n.children.length === 0) {
+          if (!n.isMilestone && (!n.children || n.children.length === 0)) {
             total++;
             if (n.status === 'COMPLETED') completed++;
-          } else {
-            count(n.children);
           }
+          if (n.children && n.children.length > 0) count(n.children);
         });
       };
       count(newNodes);
@@ -194,7 +273,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
   const handlePlannedStartChange = (nodeId: string, newStart: string) => {
     updateNode(nodeId, (node) => {
       const dur = node.isMilestone ? 0 : (node.plannedDurationDays || node.durationDays || 14);
-      const end = calculateEndDate(newStart, dur);
+      const end = node.isMilestone ? newStart : calculateEndDate(newStart, dur);
       return {
         ...node,
         plannedStartDate: newStart,
@@ -290,6 +369,14 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
     });
   };
 
+  // 勾選是否允許提前 (Pull-Forward)
+  const handleTogglePullForward = (nodeId: string, checked: boolean) => {
+    updateNode(nodeId, (node) => ({
+      ...node,
+      allowPullForward: checked,
+    }));
+  };
+
   // ========================================
   // 直出新增工項 / Direct Add Actions
   // ========================================
@@ -342,6 +429,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
         ? parentNode.children[parentNode.children.length - 1].wbsCode
         : parentCode,
       dependencyType: 'FS',
+      allowPullForward: false,
       assignees: parentNode.assignees || ['張工程師'],
       plannedStartDate: pStart,
       plannedDurationDays: pDur,
@@ -459,35 +547,57 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               </div>
             </td>
 
-            {/* 3. 前置任務 (使用 @kawawei/frontend-modules Select) */}
-            <td style={{ width: '135px', minWidth: '135px' }}>
-              <Select
-                className="wbs-select-field"
-                options={predecessorSelectOptions}
-                value={node.predecessorCode || ''}
-                onChange={(val: string | number | (string | number)[]) =>
-                  updateNode(node.id, (n) => ({ ...n, predecessorCode: String(val) }))
-                }
-                width="100%"
-                height="30px"
-              />
+            {/* 3. 前置依賴組合欄位 (前置工項 Select + 依賴類型 Select + 允許提前 Checkbox) */}
+            <td style={{ width: '250px', minWidth: '250px' }}>
+              <div className="wbs-dependency-composite-cell">
+                {/* 前置工項 Select */}
+                <div style={{ width: '115px', flexShrink: 0 }}>
+                  <Select
+                    className="wbs-select-field"
+                    options={predecessorSelectOptions}
+                    value={node.predecessorCode || ''}
+                    onChange={(val: string | number | (string | number)[]) =>
+                      updateNode(node.id, (n) => ({ ...n, predecessorCode: String(val) }))
+                    }
+                    width="100%"
+                    height="30px"
+                  />
+                </div>
+
+                {/* 依賴類型 Select */}
+                <div style={{ width: '70px', flexShrink: 0 }}>
+                  <Select
+                    className="wbs-select-field"
+                    options={DEPENDENCY_TYPE_OPTIONS}
+                    value={node.dependencyType || 'FS'}
+                    onChange={(val: string | number | (string | number)[]) =>
+                      updateNode(node.id, (n) => ({ ...n, dependencyType: String(val) as DependencyType }))
+                    }
+                    width="100%"
+                    height="30px"
+                  />
+                </div>
+
+                {/* 允許提前 (Pull-Forward) 勾選框 */}
+                <label
+                  className={`wbs-pull-forward-toggle ${node.allowPullForward ? 'active' : ''}`}
+                  title={
+                    node.allowPullForward
+                      ? '【策略 A：積極提前啟動】前置提早完成時，後續依賴的項目自動往前拉早開始，縮短總工期。'
+                      : '【策略 B：維持原計畫基準】即使前置提前完成仍鎖定原計畫開始日（若前置延誤則自動順延）。'
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    checked={Boolean(node.allowPullForward)}
+                    onChange={(e) => handleTogglePullForward(node.id, e.target.checked)}
+                  />
+                  <span>提前</span>
+                </label>
+              </div>
             </td>
 
-            {/* 4. 依賴類型 (使用 @kawawei/frontend-modules Select) */}
-            <td style={{ width: '85px', minWidth: '85px' }}>
-              <Select
-                className="wbs-select-field"
-                options={DEPENDENCY_TYPE_OPTIONS}
-                value={node.dependencyType || 'FS'}
-                onChange={(val: string | number | (string | number)[]) =>
-                  updateNode(node.id, (n) => ({ ...n, dependencyType: String(val) as DependencyType }))
-                }
-                width="100%"
-                height="30px"
-              />
-            </td>
-
-            {/* 5. 負責人 (使用 @kawawei/frontend-modules Select) */}
+            {/* 4. 負責人 (使用 @kawawei/frontend-modules Select) */}
             <td style={{ width: '135px', minWidth: '135px' }}>
               <Select
                 className="wbs-select-field"
@@ -501,7 +611,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               />
             </td>
 
-            {/* 6. 預計開始 (使用 @kawawei/frontend-modules DatePicker) */}
+            {/* 5. 預計開始 (使用 @kawawei/frontend-modules DatePicker) */}
             <td style={{ width: '165px', minWidth: '165px' }}>
               <DatePicker
                 className="wbs-datepicker-field"
@@ -511,17 +621,19 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               />
             </td>
 
-            {/* 7. 預計結束 (自動計算，純文字顯示) */}
-            <td style={{ width: '125px', minWidth: '125px', textAlign: 'center' }}>
-              <span className="wbs-readonly-date auto-calc">{pEnd || '—'}</span>
+            {/* 6. 預計結束 (如果是檢查點則不顯示結束日期) */}
+            <td style={{ width: '120px', minWidth: '120px', textAlign: 'center' }}>
+              {node.isMilestone ? (
+                <span className="wbs-milestone-na">—</span>
+              ) : (
+                <span className="wbs-readonly-date auto-calc">{pEnd || '—'}</span>
+              )}
             </td>
 
-            {/* 8. 預計工期 (如果是檢查點則固定 0 天) */}
-            <td style={{ width: '95px', minWidth: '95px', textAlign: 'center' }}>
+            {/* 7. 預計工期 (如果是檢查點則不顯示工期) */}
+            <td style={{ width: '90px', minWidth: '90px', textAlign: 'center' }}>
               {node.isMilestone ? (
-                <span className="wbs-direct-days milestone-zero" style={{ display: 'inline-block', lineHeight: '28px' }}>
-                  0 天
-                </span>
+                <span className="wbs-milestone-na">—</span>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
                   <input
@@ -536,7 +648,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               )}
             </td>
 
-            {/* 9. 實際開始 (使用 @kawawei/frontend-modules DatePicker) */}
+            {/* 8. 實際開始 (使用 @kawawei/frontend-modules DatePicker) */}
             <td style={{ width: '165px', minWidth: '165px' }}>
               <DatePicker
                 className="wbs-datepicker-field"
@@ -546,19 +658,21 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               />
             </td>
 
-            {/* 10. 實際結束 (自動計算，純文字顯示) */}
-            <td style={{ width: '125px', minWidth: '125px', textAlign: 'center' }}>
-              <span className="wbs-readonly-date" style={{ color: aEnd ? '#059669' : 'inherit' }}>
-                {aEnd || '—'}
-              </span>
+            {/* 9. 實際結束 (如果是檢查點則不顯示結束日期) */}
+            <td style={{ width: '120px', minWidth: '120px', textAlign: 'center' }}>
+              {node.isMilestone ? (
+                <span className="wbs-milestone-na">—</span>
+              ) : (
+                <span className="wbs-readonly-date" style={{ color: aEnd ? '#059669' : 'inherit' }}>
+                  {aEnd || '—'}
+                </span>
+              )}
             </td>
 
-            {/* 11. 實際工期 (如果是檢查點則固定 0 天) */}
-            <td style={{ width: '95px', minWidth: '95px', textAlign: 'center' }}>
+            {/* 10. 實際工期 (如果是檢查點則不顯示工期) */}
+            <td style={{ width: '90px', minWidth: '90px', textAlign: 'center' }}>
               {node.isMilestone ? (
-                <span className="wbs-direct-days milestone-zero" style={{ display: 'inline-block', lineHeight: '28px' }}>
-                  0 天
-                </span>
+                <span className="wbs-milestone-na">—</span>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
                   <input
@@ -573,22 +687,26 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               )}
             </td>
 
-            {/* 12. 工項進度 */}
+            {/* 11. 工項進度 (如果是檢查點則不顯示百分比進度) */}
             <td style={{ width: '90px', minWidth: '90px', textAlign: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  className="wbs-direct-pct"
-                  value={node.progress || 0}
-                  onChange={(e) => handleProgressChange(node.id, Number(e.target.value))}
-                />
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>%</span>
-              </div>
+              {node.isMilestone ? (
+                <span className="wbs-milestone-na">—</span>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className="wbs-direct-pct"
+                    value={node.progress || 0}
+                    onChange={(e) => handleProgressChange(node.id, Number(e.target.value))}
+                  />
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>%</span>
+                </div>
+              )}
             </td>
 
-            {/* 13. 狀態 (使用 @kawawei/frontend-modules Select) */}
+            {/* 12. 狀態 (使用 @kawawei/frontend-modules Select) */}
             <td style={{ width: '125px', minWidth: '125px' }}>
               <Select
                 className="wbs-select-field"
@@ -602,7 +720,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               />
             </td>
 
-            {/* 14. 操作 (新增子任務 / 菱形新增檢查點 / 刪除) */}
+            {/* 13. 操作 (新增子任務 / 菱形新增檢查點 / 刪除) */}
             <td style={{ width: '120px', minWidth: '120px', textAlign: 'center' }}>
               <div className="wbs-actions">
                 <button
@@ -617,7 +735,7 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
                   type="button"
                   className="wbs-action-btn checkpoint"
                   onClick={() => handleAddChildTask(node, true)}
-                  title="新增里程碑檢查點 (0工期)"
+                  title="新增里程碑檢查點 (無工期/結束日/進度)"
                 >
                   <Diamond size={15} fill="#f59e0b" color="#b45309" />
                 </button>
@@ -687,10 +805,9 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
           <thead>
             <tr className="wbs-th-row-1">
               <th rowSpan={2} style={{ width: '5%', minWidth: '90px', textAlign: 'center' }}>WBS 編號</th>
-              <th rowSpan={2} style={{ width: '18%', minWidth: '260px', textAlign: 'center' }}>工作項目名稱</th>
-              <th rowSpan={2} style={{ width: '8%', minWidth: '135px', textAlign: 'center' }}>前置任務</th>
-              <th rowSpan={2} style={{ width: '5%', minWidth: '85px', textAlign: 'center' }}>依賴類型</th>
-              <th rowSpan={2} style={{ width: '8%', minWidth: '135px', textAlign: 'center' }}>負責人</th>
+              <th rowSpan={2} style={{ width: '16%', minWidth: '260px', textAlign: 'center' }}>工作項目名稱</th>
+              <th rowSpan={2} style={{ width: '13%', minWidth: '250px', textAlign: 'center' }}>前置依賴 (項目 / 關係 / 提前)</th>
+              <th rowSpan={2} style={{ width: '7%', minWidth: '135px', textAlign: 'center' }}>負責人</th>
               <th colSpan={3} className="wbs-th-group planned" style={{ textAlign: 'center' }}>預計時程</th>
               <th colSpan={3} className="wbs-th-group actual" style={{ textAlign: 'center' }}>實際時程</th>
               <th rowSpan={2} style={{ width: '5%', minWidth: '90px', textAlign: 'center' }}>進度</th>
@@ -698,12 +815,12 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
               <th rowSpan={2} style={{ width: '7%', minWidth: '120px', textAlign: 'center' }}>操作</th>
             </tr>
             <tr className="wbs-th-row-2">
-              <th style={{ width: '10%', minWidth: '165px', textAlign: 'center' }}>開始日期</th>
-              <th style={{ width: '7%', minWidth: '125px', textAlign: 'center' }}>結束日期</th>
-              <th style={{ width: '5%', minWidth: '95px', textAlign: 'center' }}>工期</th>
-              <th style={{ width: '10%', minWidth: '165px', textAlign: 'center' }}>開始日期</th>
-              <th style={{ width: '7%', minWidth: '125px', textAlign: 'center' }}>結束日期</th>
-              <th style={{ width: '5%', minWidth: '95px', textAlign: 'center' }}>工期</th>
+              <th style={{ width: '9%', minWidth: '165px', textAlign: 'center' }}>開始日期</th>
+              <th style={{ width: '7%', minWidth: '120px', textAlign: 'center' }}>結束日期</th>
+              <th style={{ width: '5%', minWidth: '90px', textAlign: 'center' }}>工期</th>
+              <th style={{ width: '9%', minWidth: '165px', textAlign: 'center' }}>開始日期</th>
+              <th style={{ width: '7%', minWidth: '120px', textAlign: 'center' }}>結束日期</th>
+              <th style={{ width: '5%', minWidth: '90px', textAlign: 'center' }}>工期</th>
             </tr>
           </thead>
           <tbody>{renderRows(nodes)}</tbody>

@@ -57,9 +57,22 @@ declare module '@kawawei/frontend-modules' {
     height?: string | number;
   }
 
+  export interface CheckboxProps {
+    label?: string;
+    checked?: boolean;
+    defaultChecked?: boolean;
+    onChange?: (checked: boolean) => void;
+    disabled?: boolean;
+    indeterminate?: boolean;
+    size?: 'sm' | 'md' | 'lg';
+    className?: string;
+    style?: React.CSSProperties;
+  }
+
   export const Select: React.FC<SelectProps>;
   export const DatePicker: React.FC<DatePickerProps>;
   export const Button: React.FC<ButtonProps>;
+  export const Checkbox: React.FC<CheckboxProps>;
   export const TextField: React.FC<any>;
   export const InputNumber: React.FC<any>;
   export const StatusBadge: React.FC<any>;
