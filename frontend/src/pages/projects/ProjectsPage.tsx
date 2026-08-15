@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { message } from '@kawawei/frontend-modules';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { Button } from '../../components/button/Button';
 import { Project, ProjectStage } from '../../types';
-import { MOCK_PROJECTS } from '../../mock/projects.mock';
 import { ProjectCreateModal } from '../../components/wbs/ProjectCreateModal';
+import { projectService } from '../../services/project.service';
 
 /**
  * @file ProjectsPage.tsx
  * @description WBS 專案管理看板 / WBS Project Management Page
- * @description_en 5-stage lifecycle Kanban and project list with chartering modal
- * @description_zh 提供 5 大生命週期階段專案看板、工期試算、多階段付款與簽約立案彈窗
+ * @description_en 5-stage lifecycle Kanban and project list with chartering modal via backend API
+ * @description_zh 提供 5 大生命週期階段專案看板、工期試算、多階段付款與簽約立案彈窗 (串接真實 API 與 @kawawei/frontend-modules 消息組件)
  */
 
 export const ProjectsPage: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [loading, setLoading] = useState(false);
 
   const stageMap: Record<ProjectStage, { label: string; variant: 'info' | 'warning' | 'success' | 'neutral' }> = {
     development: { label: '開發中', variant: 'info' },
@@ -28,12 +30,38 @@ export const ProjectsPage: React.FC = () => {
     closed: { label: '已結案', variant: 'neutral' }
   };
 
-  const handleCreateProject = (newProjData: Omit<Project, 'id'>) => {
-    const newProject: Project = {
-      ...newProjData,
-      id: `pj_${Date.now()}`
-    };
-    setProjects([newProject, ...projects]);
+  // ========================================
+  // 載入專案清單 / Fetch Projects List
+  // ========================================
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await projectService.getProjects();
+      setProjects(data);
+    } catch (err: any) {
+      console.error('Failed to fetch projects:', err);
+      message.error(err.response?.data?.message || '載入專案資料失敗');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // ========================================
+  // 建立專案處理 / Create Project Handler
+  // ========================================
+  const handleCreateProject = async (newProjData: Omit<Project, 'id'>) => {
+    try {
+      const created = await projectService.createProject(newProjData);
+      message.success(`專案「${created.name}」已成功立案！案號：${created.projectCode}`);
+      setIsCreateModalOpen(false);
+      await fetchProjects();
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '建立專案失敗');
+    }
   };
 
   const filteredProjects = projects.filter((p) => {
@@ -43,8 +71,8 @@ export const ProjectsPage: React.FC = () => {
       !q ||
       p.name.toLowerCase().includes(q) ||
       p.projectCode.toLowerCase().includes(q) ||
-      p.clientName.toLowerCase().includes(q) ||
-      p.assignedEngineers.some((eng) => eng.toLowerCase().includes(q));
+      (p.clientName && p.clientName.toLowerCase().includes(q)) ||
+      (p.assignedEngineers && p.assignedEngineers.some((eng) => eng.toLowerCase().includes(q)));
     return matchesStage && matchesSearch;
   });
 
@@ -156,95 +184,101 @@ export const ProjectsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>專案案號</th>
-              <th>專案名稱</th>
-              <th>客戶名稱</th>
-              <th>當前階段</th>
-              <th>工期 / 預計結案</th>
-              <th>專案總額</th>
-              <th>專案進度</th>
-              <th>健康狀態</th>
-              <th>負責人</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProjects.map((p) => {
-              const stageInfo = stageMap[p.stage] || { label: '開發中', variant: 'info' };
-              return (
-                <tr key={p.id}>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{p.projectCode}</td>
-                  <td style={{ fontWeight: 600 }}>
-                    <Link to={`/projects/${p.id}`} style={{ color: 'var(--primary-600)' }}>
-                      {p.name}
-                    </Link>
-                  </td>
-                  <td>{p.clientName}</td>
-                  <td>
-                    <StatusBadge
-                      label={stageInfo.label}
-                      variant={stageInfo.variant}
-                      icon="layers"
-                    />
-                  </td>
-                  <td>
-                    <div>
-                      <span style={{ fontWeight: 500, fontFamily: 'var(--font-mono)' }}>
-                        {p.durationDays ? `${p.durationDays} 天` : '-'}
-                      </span>
-                      <span style={{ color: 'var(--text-muted)', margin: '0 4px' }}>|</span>
-                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
-                        {p.expectedDeliveryDate || '-'}
-                      </span>
-                    </div>
-                    <div style={{ marginTop: '2px' }}>{getScheduleTag(p)}</div>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
-                      NT$ {(p.amountTotal || 0).toLocaleString()}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                      {p.taxType === 'tax_inclusive' ? '含稅' : p.isTaxAdded ? '未稅+5%' : '未稅'}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '70px', height: '6px', backgroundColor: 'var(--bg-muted)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${p.progressPercent}%`, height: '100%', backgroundColor: 'var(--primary-600)' }} />
+      {loading ? (
+        <div className="card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          載入專案資料中...
+        </div>
+      ) : (
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>專案案號</th>
+                <th>專案名稱</th>
+                <th>客戶名稱</th>
+                <th>當前階段</th>
+                <th>工期 / 預計結案</th>
+                <th>專案總額</th>
+                <th>專案進度</th>
+                <th>健康狀態</th>
+                <th>負責人</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProjects.map((p) => {
+                const stageInfo = stageMap[p.stage] || { label: '開發中', variant: 'info' };
+                return (
+                  <tr key={p.id}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{p.projectCode}</td>
+                    <td style={{ fontWeight: 600 }}>
+                      <Link to={`/projects/${p.id}`} style={{ color: 'var(--primary-600)' }}>
+                        {p.name}
+                      </Link>
+                    </td>
+                    <td>{p.clientName}</td>
+                    <td>
+                      <StatusBadge
+                        label={stageInfo.label}
+                        variant={stageInfo.variant}
+                        icon="layers"
+                      />
+                    </td>
+                    <td>
+                      <div>
+                        <span style={{ fontWeight: 500, fontFamily: 'var(--font-mono)' }}>
+                          {p.durationDays ? `${p.durationDays} 天` : '-'}
+                        </span>
+                        <span style={{ color: 'var(--text-muted)', margin: '0 4px' }}>|</span>
+                        <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
+                          {p.expectedDeliveryDate || '-'}
+                        </span>
                       </div>
-                      <span style={{ fontSize: '12px' }}>{p.progressPercent}%</span>
-                    </div>
-                  </td>
-                  <td>
-                    <StatusBadge
-                      label={p.healthStatus === 'healthy' ? '正常' : p.healthStatus === 'warning' ? '警告' : '嚴重'}
-                      variant={p.healthStatus === 'healthy' ? 'success' : p.healthStatus === 'warning' ? 'warning' : 'danger'}
-                      icon={p.healthStatus === 'healthy' ? 'success' : 'warning'}
-                    />
-                  </td>
-                  <td>{p.assignedEngineers.join(', ')}</td>
-                  <td>
-                    <Link to={`/projects/${p.id}`} style={{ textDecoration: 'none' }}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        title="查看專案工作台"
-                        style={{ padding: '8px 12px' }}
-                      >
-                        <TextIcon name="eye" size="md" />
-                      </Button>
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                      <div style={{ marginTop: '2px' }}>{getScheduleTag(p)}</div>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                        NT$ {(p.amountTotal || 0).toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                        {p.taxType === 'tax_inclusive' ? '含稅' : p.isTaxAdded ? '未稅+5%' : '未稅'}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '70px', height: '6px', backgroundColor: 'var(--bg-muted)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: `${p.progressPercent}%`, height: '100%', backgroundColor: 'var(--primary-600)' }} />
+                        </div>
+                        <span style={{ fontSize: '12px' }}>{p.progressPercent}%</span>
+                      </div>
+                    </td>
+                    <td>
+                      <StatusBadge
+                        label={p.healthStatus === 'healthy' ? '正常' : p.healthStatus === 'warning' ? '警告' : '嚴重'}
+                        variant={p.healthStatus === 'healthy' ? 'success' : p.healthStatus === 'warning' ? 'warning' : 'danger'}
+                        icon={p.healthStatus === 'healthy' ? 'success' : 'warning'}
+                      />
+                    </td>
+                    <td>{(p.assignedEngineers || []).join(', ')}</td>
+                    <td>
+                      <Link to={`/projects/${p.id}`} style={{ textDecoration: 'none' }}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          title="查看專案工作台"
+                          style={{ padding: '8px 12px' }}
+                        >
+                          <TextIcon name="eye" size="md" />
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* 一鍵立案彈窗 */}
       <ProjectCreateModal
@@ -255,4 +289,3 @@ export const ProjectsPage: React.FC = () => {
     </div>
   );
 };
-

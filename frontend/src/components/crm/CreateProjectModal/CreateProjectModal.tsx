@@ -1,16 +1,8 @@
-/**
- * @file CreateProjectModal.tsx
- * @description 客戶轉正式專案立案彈窗組件 / Project Initiation Modal Component
- * @description_en Modal for converting a CRM client to an official project, integrating @kawawei/frontend-modules (Select, DatePicker), sequential code, duration auto-calc, and optimized dropdown positioning
- * @description_zh 為 CRM 客戶進行正式立案之彈窗，全面採用 @kawawei/frontend-modules (Select 下拉核取, DatePicker 日期選擇器)，將工程師多選選單配置於視窗上半部以確保下拉視窗完全不被截斷且順暢滾動
- */
-
 import React, { useState, useEffect } from 'react';
 import { X, FolderPlus, Rocket } from 'lucide-react';
 import { Select, DatePicker } from '@kawawei/frontend-modules';
 import { Client, Project, ProjectStage, TaxType } from '../../../types';
 import { Button } from '../../button';
-import { MOCK_PROJECTS } from '../../../mock/projects.mock';
 import './CreateProjectModal.css';
 
 interface CreateProjectModalProps {
@@ -52,7 +44,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const todayStr = new Date().toISOString().split('T')[0];
 
   const [projectName, setProjectName] = useState('');
-  const [projectCode, setProjectCode] = useState('');
+  const [projectCode] = useState('');
   const [taxType, setTaxType] = useState<TaxType>('tax_exclusive');
   const [isTaxAdded, setIsTaxAdded] = useState(true); // 選未稅時是否外加 5% 營業稅
   const [amountInput, setAmountInput] = useState('1000000');
@@ -62,15 +54,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const [stage, setStage] = useState<ProjectStage>('development');
   const [applyWbsTemplate, setApplyWbsTemplate] = useState(true);
 
-  // 依當日年月日與既有專案數量依序生成案號 (例如：PJ-20260815-0001)
+  // 初始化專案名稱
   useEffect(() => {
     if (client) {
-      const todayCode = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      const prefix = `PJ-${todayCode}-`;
-      const existingToday = MOCK_PROJECTS.filter((p) => p.projectCode?.startsWith(prefix));
-      const seq = existingToday.length + 1;
-      const seqStr = String(seq).padStart(4, '0');
-      setProjectCode(`${prefix}${seqStr}`);
       setProjectName(`${client.name} ${client.systemType || '軟體系統'}開發專案`);
     }
   }, [client]);

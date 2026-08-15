@@ -4,7 +4,7 @@ import { TextIcon } from '../../icon/TextIcon';
 import { Button } from '../../button/Button';
 import { TextField } from '../../input/TextField';
 import { SelectField, SelectOption } from '../../input/SelectField';
-import { INITIAL_CLIENTS_MOCK } from '../../../mock/clients.mock';
+import { clientService } from '../../../services/client.service';
 import './ProjectCreateModal.css';
 
 /**
@@ -32,13 +32,22 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
   isOpen,
   onClose,
   onCreateProject,
-  clients = INITIAL_CLIENTS_MOCK
+  clients: propClients
 }) => {
   const todayStr = new Date().toISOString().split('T')[0];
+  const [availableClients, setAvailableClients] = useState<Client[]>(propClients || []);
+
+  useEffect(() => {
+    if (propClients && propClients.length > 0) {
+      setAvailableClients(propClients);
+    } else if (isOpen) {
+      clientService.getClients().then((res) => setAvailableClients(res)).catch(() => {});
+    }
+  }, [propClients, isOpen]);
 
   // 基本資訊 State
   const [projectCode, setProjectCode] = useState(`PJ-${todayStr.replace(/-/g, '')}-0001`);
-  const [clientId, setClientId] = useState(clients[0]?.id || '');
+  const [clientId, setClientId] = useState('');
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState(todayStr);
   const [durationDays, setDurationDays] = useState<number | string>(60);
@@ -195,7 +204,7 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
       return;
     }
 
-    const selectedClient = clients.find((c: Client) => c.id === clientId);
+    const selectedClient = availableClients.find((c: Client) => c.id === clientId);
 
     const convertedStages: PaymentStage[] = paymentStages.map((s) => ({
       id: s.id,
@@ -232,7 +241,7 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
 
   if (!isOpen) return null;
 
-  const clientOptions: SelectOption[] = clients.map((c: Client) => ({
+  const clientOptions: SelectOption[] = availableClients.map((c: Client) => ({
     value: c.id,
     label: `${c.name} ${c.companyName ? `(${c.companyName})` : ''}`
   }));

@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { message } from '@kawawei/frontend-modules';
 import { useUrlTabs } from '../../hooks/useUrlTabs';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { Button } from '../../components/button/Button';
 import { SelectField, SelectOption } from '../../components/input/SelectField';
 import { MilestoneWbsTable } from '../../components/wbs';
-import { Project, ProjectStage, ChangeOrder } from '../../types';
-import { MOCK_PROJECTS } from '../../mock/projects.mock';
-import { MOCK_PROJECT_WBS } from '../../mock/wbs.mock';
+import { Project, ProjectStage, ChangeOrder, WbsNode } from '../../types';
+import { projectService } from '../../services/project.service';
 
 /**
  * @file ProjectDetailPage.tsx
  * @description 專案工作台詳情頁 / Project Workspace Detail Page
- * @description_en 5-Tab workspace with stage dropdown selector, duration tracker, change orders, and payment stages
- * @description_zh 專案核心工作台，提供階段下拉切換選單、工期時程動態指示、需求追加變更單與多階段付款清冊
+ * @description_en 5-Tab workspace with stage dropdown selector, duration tracker, change orders, and payment stages via backend API
+ * @description_zh 專案核心工作台，提供階段下拉切換選單、工期時程動態指示、需求追加變更單與多階段付款清冊 (串接真實 API 與 @kawawei/frontend-modules 消息組件)
  */
 
 type ProjectTab = 'milestones' | 'change_orders' | 'finance';
@@ -23,12 +23,19 @@ export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [currentTab, setTab] = useUrlTabs<ProjectTab>('milestones');
 
-  const project: Project =
-    MOCK_PROJECTS.find((p) => p.id === id || p.projectCode === id) || MOCK_PROJECTS[0];
+  const [project, setProject] = useState<Project | null>(null);
+  const [wbsNodes, setWbsNodes] = useState<WbsNode[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [currentStage, setCurrentStage] = useState<ProjectStage>(project.stage);
-  const [progressPercent, setProgressPercent] = useState<number>(project.progressPercent);
-  const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(project.changeOrders || []);
+  const [currentStage, setCurrentStage] = useState<ProjectStage>('development');
+  const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>([]);
+
+  // 追加需求變更單 State
+  const [isAddCoOpen, setIsAddCoOpen] = useState(false);
+  const [coTitle, setCoTitle] = useState('');
+  const [coAmountUntaxed, setCoAmountUntaxed] = useState<string>('50000');
+  const [coAddedDays, setCoAddedDays] = useState<string>('7');
 
   const STAGE_OPTIONS: SelectOption[] = [
     { value: 'development', label: '開發中', iconName: 'layers' },
@@ -38,40 +45,100 @@ export const ProjectDetailPage: React.FC = () => {
     { value: 'maintenance', label: '保固維護', iconName: 'layers' }
   ];
 
-  // 追加需求變更單 State
-  const [isAddCoOpen, setIsAddCoOpen] = useState(false);
-  const [coTitle, setCoTitle] = useState('');
-  const [coAmountUntaxed, setCoAmountUntaxed] = useState<string>('50000');
-  const [coAddedDays, setCoAddedDays] = useState<string>('7');
+  // ========================================
+  // 載入專案資料 / Fetch Project By ID
+  // ========================================
+  const fetchProjectData = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const data = await projectService.getProjectById(id);
+      setProject(data);
+      setCurrentStage(data.stage);
+      setProgressPercent(data.progressPercent || 0);
+      setChangeOrders(data.changeOrders || []);
+      setWbsNodes(data.wbsNodes || []);
+    } catch (err: any) {
+      console.error('Failed to fetch project:', err);
+      message.error(err.response?.data?.message || '載入專案失敗');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
-  // 新增變更單處理
-  const handleAddChangeOrder = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchProjectData();
+  }, [fetchProjectData]);
+
+  // ========================================
+  // 切換專案階段 / Handle Stage Change
+  // ========================================
+  const handleStageChange = async (newStage: ProjectStage) => {
+    if (!project) return;
+    try {
+      await projectService.updateProject(project.id, { stage: newStage });
+      setCurrentStage(newStage);
+      message.success(`專案階段已切換為「${STAGE_OPTIONS.find((s) => s.value === newStage)?.label || newStage}」`);
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '切換專案階段失敗');
+    }
+  };
+
+  // ========================================
+  // 新增變更單處理 / Add Change Order
+  // ========================================
+  const handleAddChangeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coTitle.trim()) return;
+    if (!project || !coTitle.trim()) {
+      message.warning('請輸入追加需求標題');
+      return;
+    }
 
     const untaxed = Number(coAmountUntaxed) || 0;
     const tax = Math.round(untaxed * 0.05);
     const total = untaxed + tax;
     const addedDays = Number(coAddedDays) || 0;
 
-    const newCO: ChangeOrder = {
-      id: `co_${Date.now()}`,
-      code: `CO-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-000${changeOrders.length + 1}`,
-      title: coTitle.trim(),
-      amountUntaxed: untaxed,
-      taxAmount: tax,
-      amountTotal: total,
-      addedDays,
-      status: 'approved',
-      createdAt: new Date().toISOString().split('T')[0]
-    };
+    try {
+      const createdCO = await projectService.addChangeOrder(project.id, {
+        title: coTitle.trim(),
+        amountUntaxed: untaxed,
+        taxAmount: tax,
+        amountTotal: total,
+        addedDays,
+        status: 'approved'
+      });
 
-    setChangeOrders([...changeOrders, newCO]);
-    setCoTitle('');
-    setCoAmountUntaxed('50000');
-    setCoAddedDays('7');
-    setIsAddCoOpen(false);
+      setChangeOrders([createdCO, ...changeOrders]);
+      setCoTitle('');
+      setCoAmountUntaxed('50000');
+      setCoAddedDays('7');
+      setIsAddCoOpen(false);
+      message.success(`需求變更單「${createdCO.code}」已成功追加！`);
+      await fetchProjectData();
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '追加變更單失敗');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="card" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        載入專案工作台資料中...
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="card" style={{ padding: '60px', textAlign: 'center' }}>
+        <p>找不到該專案資料</p>
+        <Link to="/projects">
+          <Button variant="primary" size="sm">返回專案列表</Button>
+        </Link>
+      </div>
+    );
+  }
 
   // 累計追加金額與展延工期
   const totalApprovedCoAmount = changeOrders
@@ -100,7 +167,7 @@ export const ProjectDetailPage: React.FC = () => {
             <span>{project.name}</span>
           </h1>
           <p className="page-subtitle">
-            案號：{project.projectCode} ｜ 客戶：{project.clientName} ｜ 負責人：{project.assignedEngineers.join(', ')}
+            案號：{project.projectCode} ｜ 客戶：{project.clientName} ｜ 負責人：{(project.assignedEngineers || []).join(', ')}
           </p>
         </div>
 
@@ -111,7 +178,7 @@ export const ProjectDetailPage: React.FC = () => {
             <SelectField
               options={STAGE_OPTIONS}
               value={currentStage}
-              onChange={(val) => setCurrentStage(val as ProjectStage)}
+              onChange={(val) => handleStageChange(val as ProjectStage)}
               style={{ width: '150px' }}
             />
           </div>
@@ -143,14 +210,14 @@ export const ProjectDetailPage: React.FC = () => {
         <div style={{ padding: '16px', backgroundColor: '#ffffff', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>立案開始日期</div>
           <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
-            {project.startDate}
+            {project.startDate || '未排定'}
           </div>
         </div>
 
         <div style={{ padding: '16px', backgroundColor: '#ffffff', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>工期與預計結案</div>
           <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
-            {project.durationDays + totalAddedDays} 天 ({project.expectedDeliveryDate})
+            {(project.durationDays || 0) + totalAddedDays} 天 ({project.expectedDeliveryDate || '未排定'})
           </div>
           {totalAddedDays > 0 && (
             <div style={{ fontSize: '11px', color: 'var(--primary-600)', marginTop: '2px' }}>
@@ -182,7 +249,7 @@ export const ProjectDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 6 大 Tab 頁籤標籤列 (支援 URL Query 保持) */}
+      {/* 3 大 Tab 頁籤標籤列 */}
       <div
         style={{
           display: 'flex',
@@ -230,7 +297,7 @@ export const ProjectDetailPage: React.FC = () => {
         {currentTab === 'milestones' && (
           <MilestoneWbsTable
             projectId={project.id}
-            initialNodes={MOCK_PROJECT_WBS[project.id] || MOCK_PROJECT_WBS['pj_1']}
+            initialNodes={wbsNodes}
             onProgressUpdate={(pct) => setProgressPercent(pct)}
           />
         )}
@@ -332,7 +399,7 @@ export const ProjectDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* Tab 5: 多階段付款與收支 */}
+        {/* Tab 3: 多階段付款與收支 */}
         {currentTab === 'finance' && (
           <div>
             <div className="card-header">

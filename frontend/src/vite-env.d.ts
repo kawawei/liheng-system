@@ -69,10 +69,34 @@ declare module '@kawawei/frontend-modules' {
     style?: React.CSSProperties;
   }
 
+  export interface AlertProps {
+    type?: 'info' | 'success' | 'warning' | 'error';
+    message: React.ReactNode;
+    description?: React.ReactNode;
+    showIcon?: boolean;
+    closable?: boolean;
+    onClose?: () => void;
+    className?: string;
+  }
+
+  export interface MessageApi {
+    success: (text: string, duration?: number) => void;
+    error: (text: string, duration?: number) => void;
+    info: (text: string, duration?: number) => void;
+    warning: (text: string, duration?: number) => void;
+  }
+
+  export interface NotificationApi {
+    notify: (title: string, description: string, type?: 'success' | 'info' | 'warning' | 'error', duration?: number) => void;
+  }
+
   export const Select: React.FC<SelectProps>;
   export const DatePicker: React.FC<DatePickerProps>;
   export const Button: React.FC<ButtonProps>;
   export const Checkbox: React.FC<CheckboxProps>;
+  export const Alert: React.FC<AlertProps>;
+  export const message: MessageApi;
+  export const notification: NotificationApi;
   export const TextField: React.FC<any>;
   export const InputNumber: React.FC<any>;
   export const StatusBadge: React.FC<any>;

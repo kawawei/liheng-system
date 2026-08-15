@@ -10,6 +10,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { authController } from './controllers/auth.controller';
 import { userController } from './controllers/user.controller';
+import { clientController } from './controllers/client.controller';
+import { projectController } from './controllers/project.controller';
 import { healthController } from './controllers/health.controller';
 import { authenticateToken, requireSuperAdmin } from './middlewares/auth.middleware';
 import { errorHandler } from './middlewares/error.middleware';
@@ -51,6 +53,24 @@ apiRouter.get('/users/:id', authenticateToken, (req, res, next) => userControlle
 apiRouter.post('/users', authenticateToken, requireSuperAdmin, (req, res, next) => userController.createUser(req, res, next));
 apiRouter.put('/users/:id', authenticateToken, requireSuperAdmin, (req, res, next) => userController.updateUser(req, res, next));
 apiRouter.delete('/users/:id', authenticateToken, requireSuperAdmin, (req, res, next) => userController.deleteUser(req, res, next));
+
+// 4. 客戶關係管理 (CRM) / Clients Module
+apiRouter.get('/clients', authenticateToken, (req, res, next) => clientController.getClients(req, res, next));
+apiRouter.get('/clients/:id', authenticateToken, (req, res, next) => clientController.getClientById(req, res, next));
+apiRouter.post('/clients', authenticateToken, requireSuperAdmin, (req, res, next) => clientController.createClient(req, res, next));
+apiRouter.put('/clients/:id', authenticateToken, requireSuperAdmin, (req, res, next) => clientController.updateClient(req, res, next));
+apiRouter.delete('/clients/:id', authenticateToken, requireSuperAdmin, (req, res, next) => clientController.deleteClient(req, res, next));
+apiRouter.post('/clients/:id/activity-logs', authenticateToken, (req, res, next) => clientController.addActivityLog(req, res, next));
+
+// 5. WBS 專案管理 / Projects Module
+apiRouter.get('/projects', authenticateToken, (req, res, next) => projectController.getProjects(req, res, next));
+apiRouter.get('/projects/:id', authenticateToken, (req, res, next) => projectController.getProjectById(req, res, next));
+apiRouter.post('/projects', authenticateToken, requireSuperAdmin, (req, res, next) => projectController.createProject(req, res, next));
+apiRouter.put('/projects/:id', authenticateToken, (req, res, next) => projectController.updateProject(req, res, next));
+apiRouter.delete('/projects/:id', authenticateToken, requireSuperAdmin, (req, res, next) => projectController.deleteProject(req, res, next));
+apiRouter.get('/projects/:id/wbs', authenticateToken, (req, res, next) => projectController.getWbsNodes(req, res, next));
+apiRouter.put('/projects/:id/wbs', authenticateToken, (req, res, next) => projectController.saveWbsNodes(req, res, next));
+apiRouter.post('/projects/:id/change-orders', authenticateToken, (req, res, next) => projectController.addChangeOrder(req, res, next));
 
 app.use('/api/v1', apiRouter);
 

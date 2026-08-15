@@ -2,11 +2,12 @@
  * @file ClientsDetailPage.tsx
  * @description 客戶詳情與編輯獨立頁面 / CRM Client Detail Page
  * @description_en Full-width client detail view with tabs for basic info, contact timeline, and associated official projects with direct project initiation
- * @description_zh 獨立客戶詳情頁面，包含「基本資料」、「聯繫歷史」、「關聯專案清單」三大頁籤，支援直接為此客戶正式立案與穿透導航
+ * @description_zh 獨立客戶詳情頁面，包含「基本資料」、「聯繫歷史」、「關聯專案清單」三大頁籤，支援直接為此客戶正式立案與穿透導航 (串接後端 API 與 @kawawei/frontend-modules 消息組件)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { message } from '@kawawei/frontend-modules';
 import { Client, InteractionLog, ClientStatus, Project } from '../../types';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { Button } from '../../components/button/Button';
@@ -16,7 +17,8 @@ import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { HorizontalTimeline } from '../../components/crm/HorizontalTimeline';
 import { AddLogModal } from '../../components/crm/AddLogModal';
 import { CreateProjectModal } from '../../components/crm/CreateProjectModal';
-import { MOCK_PROJECTS } from '../../mock/projects.mock';
+import { clientService } from '../../services/client.service';
+import { projectService } from '../../services/project.service';
 import './ClientsDetailPage.css';
 
 interface ClientsDetailPageProps {
@@ -33,6 +35,15 @@ const STATUS_OPTIONS: SelectOption[] = [
   { value: 'delivered', label: '已交付' },
   { value: 'lost', label: '未成交' }
 ];
+
+const clientStatusMap: Record<ClientStatus, { label: string; variant: 'info' | 'warning' | 'success' | 'neutral' }> = {
+  pending: { label: '待洽談', variant: 'info' },
+  negotiating: { label: '洽談中', variant: 'warning' },
+  pending_signature: { label: '待簽約', variant: 'warning' },
+  in_cooperation: { label: '合作中', variant: 'info' },
+  delivered: { label: '已交付', variant: 'success' },
+  lost: { label: '未成交', variant: 'neutral' }
+};
 
 export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
   client,
@@ -60,14 +71,25 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
 
   // 聯繫歷史紀錄 State / Interaction log state
   const [logs, setLogs] = useState<InteractionLog[]>(client.logs || []);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
-  // 尋找關聯專案
-  const clientProjects = MOCK_PROJECTS.filter(
-    (p) =>
-      p.clientId === client.id ||
-      (client.companyName && p.clientName.includes(client.companyName)) ||
-      p.clientName.includes(client.name)
-  );
+  // 載入關聯專案列表 / Load Associated Projects
+  const fetchClientProjects = useCallback(async () => {
+    setLoadingProjects(true);
+    try {
+      const data = await projectService.getProjects({ clientId: client.id });
+      setProjects(data);
+    } catch (err) {
+      console.error('Failed to load client projects:', err);
+    } finally {
+      setLoadingProjects(false);
+    }
+  }, [client.id]);
+
+  useEffect(() => {
+    fetchClientProjects();
+  }, [fetchClientProjects]);
 
   // ========================================
   // 驗證表單 / Validate Form
@@ -93,9 +115,12 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
   // ========================================
   // 儲存修改處理 / Save Info
   // ========================================
-  const handleSaveInfo = (e: React.FormEvent) => {
+  const handleSaveInfo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      message.error('請檢查表單填寫格式');
+      return;
+    }
 
     const updated: Client = {
       ...client,
@@ -113,376 +138,409 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
       logs
     };
 
-    onUpdateClient(updated);
-    alert('客戶資料已成功更新！');
+    try {
+      await clientService.updateClient(client.id, updated);
+      onUpdateClient(updated);
+      message.success('客戶資料已成功更新！');
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '更新失敗');
+    }
   };
 
   // ========================================
-  // 新增聯繫紀錄 / Add Log
+  // 新增聯繫紀錄 (API) / Add Log
   // ========================================
-  const handleAddLog = (logType: InteractionLog['type'], summary: string) => {
-    const newLog: InteractionLog = {
-      id: `log_${Date.now()}`,
-      clientId: client.id,
-      date: new Date().toLocaleString('zh-TW', { hour12: false }).replace(/\//g, '-'),
-      type: logType,
-      summary: summary.trim(),
-      createdByName: '系統工程師'
-    };
+  const handleAddLog = async (logType: InteractionLog['type'], summaryText: string) => {
+    try {
+      const createdLog = await clientService.addActivityLog(client.id, {
+        contactType: logType,
+        summary: summaryText.trim()
+      });
 
-    const updatedLogs = [newLog, ...logs];
-    setLogs(updatedLogs);
-
-    const updated: Client = {
-      ...client,
-      status,
-      name,
-      contactPerson,
-      contactPhone,
-      companyName,
-      taxId,
-      companyPhone,
-      email,
-      address,
-      systemType,
-      requirementSummary,
-      logs: updatedLogs
-    };
-    onUpdateClient(updated);
+      const updatedLogs = [createdLog, ...logs];
+      setLogs(updatedLogs);
+      message.success('聯繫紀錄已成功新增');
+      setIsAddLogModalOpen(false);
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '新增聯繫紀錄失敗');
+    }
   };
 
   // ========================================
-  // 正式立案完成 / Project Initiated
+  // 正式立案完成 (API) / Project Initiated
   // ========================================
-  const handleProjectInitiated = (newProject: Project) => {
-    MOCK_PROJECTS.unshift(newProject);
-    // 自動將客戶狀態推進為合作中
-    const nextStatus: ClientStatus = 'in_cooperation';
-    setStatus(nextStatus);
-    const updated: Client = {
-      ...client,
-      status: nextStatus,
-      name,
-      contactPerson,
-      contactPhone,
-      companyName,
-      taxId,
-      companyPhone,
-      email,
-      address,
-      systemType,
-      requirementSummary,
-      logs,
-    };
-    onUpdateClient(updated);
-    setIsCreateProjectModalOpen(false);
-    navigate(`/projects/${newProject.id}?tab=milestones`);
+  const handleProjectInitiated = async (newProjectData: Project) => {
+    try {
+      const created = await projectService.createProject({
+        ...newProjectData,
+        clientId: client.id,
+        clientName: client.companyName || client.name
+      });
+      message.success(`專案「${created.name}」已正式立案，案號：${created.projectCode}`);
+      setStatus('in_cooperation');
+      setIsCreateProjectModalOpen(false);
+      await fetchClientProjects();
+      navigate(`/projects/${created.id}?tab=milestones`);
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '專案立案失敗');
+    }
   };
+
+  const currentStatusInfo = clientStatusMap[status] || { label: status, variant: 'neutral' as const };
 
   return (
-    <div className="client-detail-container">
-      {/* 頂部 Header 標題與操作欄 */}
+    <div className="client-detail-page">
+      {/* 頂部導覽列 / Top Action Header */}
       <div className="client-detail-header">
-        <div className="client-detail-header-left">
-          <div className="client-title-row">
-            <h1 className="client-title">{name}</h1>
-            <StatusBadge
-              label={STATUS_OPTIONS.find((s) => s.value === status)?.label || '洽談中'}
-              variant={status === 'in_cooperation' ? 'success' : status === 'delivered' ? 'neutral' : 'warning'}
-            />
-          </div>
-          <div className="client-subtitle">
-            {companyName ? `公司: ${companyName}` : '個人/未具名公司'}
-            {taxId && ` (統編: ${taxId})`}
-            {` • 建立於 ${client.createdAt}`}
-          </div>
+        <div className="client-detail-title-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <h1 className="client-detail-title" style={{ margin: 0 }}>{name || '客戶詳情'}</h1>
+          <StatusBadge label={currentStatusInfo.label} variant={currentStatusInfo.variant} />
         </div>
 
-        {/* 右側按鈕群組 (狀態下拉選單 + 儲存 + 返回) */}
-        <div className="client-detail-header-right">
-          {/* 1. 客戶狀態下拉選單 */}
-          <div style={{ width: '130px' }}>
+        <div className="client-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'nowrap' }}>
+          {/* 客戶階段下拉選單 */}
+          <div className="header-status-select-wrapper" style={{ width: '130px' }}>
             <SelectField
-              id="client-status-header-select"
               value={status}
+              onChange={(val) => setStatus(val as ClientStatus)}
               options={STATUS_OPTIONS}
-              onChange={(val) => {
-                const newStatus = val as ClientStatus;
-                setStatus(newStatus);
-                onUpdateClient({ ...client, status: newStatus });
-              }}
+              style={{ height: '36px', fontSize: '13px' }}
             />
           </div>
 
-          {/* 2. 儲存修改按鈕 */}
           <Button
-            type="submit"
-            form="client-edit-form"
-            variant="secondary"
-            title="儲存修改"
-            style={{ padding: '8px 12px' }}
+            type="button"
+            variant="primary"
+            onClick={handleSaveInfo}
+            style={{ height: '36px', padding: '0 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
           >
-            <TextIcon name="save" size="md" />
+            <TextIcon name="save" size="sm" />
+            <span>儲存修改</span>
           </Button>
 
-          {/* 3. 返回客戶列表按鈕 */}
-          <Button variant="secondary" onClick={onBack}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            style={{ height: '36px', padding: '0 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
             <TextIcon name="arrow-left" size="sm" />
-            <span>返回客戶列表</span>
+            <span>返回列表</span>
           </Button>
         </div>
       </div>
 
-      {/* 頁籤分頁導覽 (左側為 Tab 頁籤，右側為動態按鈕) */}
-      <div className="client-tabs-nav">
-        <div style={{ display: 'flex', gap: '8px' }}>
+      {/* 頁籤切換導航 / Tab Navigation */}
+      <div className="client-detail-tabs-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="client-detail-tabs">
           <button
             type="button"
-            className={`tab-item-btn ${activeTab === 'info' ? 'active' : ''}`}
+            className={`client-tab-btn ${activeTab === 'info' ? 'active' : ''}`}
             onClick={() => setActiveTab('info')}
           >
-            <TextIcon name="user" size="sm" />
-            <span>客戶基本資料與需求編輯</span>
+            <TextIcon name="building" size="sm" />
+            <span>基本資料與需求編輯</span>
           </button>
-
           <button
             type="button"
-            className={`tab-item-btn ${activeTab === 'timeline' ? 'active' : ''}`}
+            className={`client-tab-btn ${activeTab === 'timeline' ? 'active' : ''}`}
             onClick={() => setActiveTab('timeline')}
           >
             <TextIcon name="clock" size="sm" />
             <span>聯繫歷史</span>
           </button>
-
           <button
             type="button"
-            className={`tab-item-btn ${activeTab === 'projects' ? 'active' : ''}`}
+            className={`client-tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
             onClick={() => setActiveTab('projects')}
           >
-            <TextIcon name="layers" size="sm" />
-            <span>名下關聯專案 ({clientProjects.length})</span>
+            <TextIcon name="projects" size="sm" />
+            <span>名下關聯專案 ({projects.length})</span>
           </button>
         </div>
 
-        {/* 僅在「聯繫歷史」頁籤顯示 [新增紀錄] 按鈕 */}
+        {/* 僅在聯繫歷史頁籤時顯示 [+ 新增紀錄] 按鈕 */}
         {activeTab === 'timeline' && (
           <Button
+            type="button"
             variant="primary"
+            size="sm"
             onClick={() => setIsAddLogModalOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '4px' }}
           >
             <TextIcon name="plus" size="sm" />
             <span>新增紀錄</span>
           </Button>
         )}
+      </div>
 
-        {/* 僅在「關聯專案」頁籤顯示 [為此客戶新增專案] 按鈕 */}
+      {/* Tab 內容區塊 / Tab Content */}
+      <div className="client-detail-content">
+        {/* 頁籤 1: 基本資料與需求編輯 */}
+        {activeTab === 'info' && (
+          <form onSubmit={handleSaveInfo} className="client-detail-form card">
+            <div className="form-section-title">核心資訊</div>
+            <div className="form-grid-2">
+              <TextField
+                label="客戶 / 單位簡稱"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="例如: 台元半導體"
+                error={errors.name}
+              />
+              <TextField
+                label="公司登記全名"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="例如: 台元半導體股份有限公司"
+              />
+            </div>
+
+            <div className="form-grid-2">
+              <TextField
+                label="統一編號"
+                value={taxId}
+                onChange={(e) => setTaxId(e.target.value)}
+                placeholder="8 碼數字"
+                error={errors.taxId}
+              />
+              <TextField
+                label="預估開發系統類型"
+                value={systemType}
+                onChange={(e) => setSystemType(e.target.value)}
+                placeholder="例如: IoT 物聯網監控 / POS / Web 平台"
+              />
+            </div>
+
+            <div className="form-section-title" style={{ marginTop: '24px' }}>聯絡人資訊</div>
+            <div className="form-grid-2">
+              <TextField
+                label="主要聯絡人"
+                required
+                value={contactPerson}
+                onChange={(e) => setContactPerson(e.target.value)}
+                placeholder="例如: 陳協理"
+                error={errors.contactPerson}
+              />
+              <TextField
+                label="行動電話"
+                required
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="例如: 0912-345-678"
+                error={errors.contactPhone}
+              />
+            </div>
+
+            <div className="form-grid-2">
+              <TextField
+                label="公司代表號"
+                value={companyPhone}
+                onChange={(e) => setCompanyPhone(e.target.value)}
+                placeholder="例如: 02-2789-1234"
+              />
+              <TextField
+                label="電子郵件"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="例如: contact@company.com"
+                error={errors.email}
+              />
+            </div>
+
+            <div className="form-grid-1">
+              <TextField
+                label="通訊 / 公司地址"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="例如: 新竹縣竹北市台元街 26 號"
+              />
+            </div>
+
+            <div className="form-section-title" style={{ marginTop: '24px' }}>專案構想與需求概要</div>
+            <div className="form-grid-1">
+              <div className="form-field-wrapper">
+                <label className="form-label" htmlFor="requirement-summary-textarea">需求與專案構想描述</label>
+                <textarea
+                  id="requirement-summary-textarea"
+                  className="form-textarea"
+                  rows={4}
+                  value={requirementSummary}
+                  onChange={(e) => setRequirementSummary(e.target.value)}
+                  placeholder="請輸入客戶提出的系統構想、技術要求與時程期待..."
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    fontSize: '14px',
+                    fontFamily: 'inherit',
+                    lineHeight: '1.5'
+                  }}
+                />
+              </div>
+            </div>
+          </form>
+        )}
+
+        {/* 頁籤 2: 聯繫歷史時間軸 */}
+        {activeTab === 'timeline' && (
+          <div className="client-timeline-container card">
+            <HorizontalTimeline
+              logs={logs}
+            />
+          </div>
+        )}
+
+        {/* 頁籤 3: 名下關聯專案 */}
         {activeTab === 'projects' && (
-          <Button
-            variant="primary"
-            onClick={() => setIsCreateProjectModalOpen(true)}
-          >
-            <TextIcon name="plus" size="sm" />
-            <span>為此客戶新增專案</span>
-          </Button>
+          <div className="client-projects-tab-container card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>
+                  名下關聯專案列表
+                </h3>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  展示此客戶已簽約或立案之所有軟硬體專案期程與研發進度
+                </p>
+              </div>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsCreateProjectModalOpen(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <TextIcon name="plus" size="sm" />
+                <span>為此客戶新增專案</span>
+              </Button>
+            </div>
+
+            {loadingProjects ? (
+              <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-secondary)' }}>載入專案中...</div>
+            ) : projects.length === 0 ? (
+              <div className="empty-projects-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <TextIcon name="projects" size="lg" color="var(--text-muted)" />
+                <p style={{ marginTop: '12px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                  此客戶目前尚無關聯專案
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCreateProjectModalOpen(true)}
+                  style={{ marginTop: '8px' }}
+                >
+                  <TextIcon name="plus" size="sm" />
+                  <span>立即為此客戶立案</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="client-projects-grid">
+                {projects.map((proj) => (
+                  <div
+                    key={proj.id}
+                    className="client-project-card"
+                    style={{
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      padding: '18px 20px',
+                      backgroundColor: '#ffffff',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                      marginBottom: '12px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: 600, color: 'var(--primary-600)' }}>
+                            {proj.projectCode}
+                          </span>
+                          <span
+                            style={{
+                              padding: '2px 8px',
+                              borderRadius: '10px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              backgroundColor: '#e0f2fe',
+                              color: '#0369a1'
+                            }}
+                          >
+                            {proj.stage === 'development' ? '開發中' : proj.stage === 'testing' ? '測試驗證' : proj.stage === 'delivery' ? '交付驗收' : proj.stage === 'closed' ? '已結案' : '保固維護'}
+                          </span>
+                        </div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>
+                          {proj.name}
+                        </h4>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/projects/${proj.id}?tab=milestones`)}
+                        style={{ fontSize: '12px', padding: '4px 12px' }}
+                      >
+                        <span>進入專案工作台</span>
+                        <TextIcon name="arrow-right" size="sm" />
+                      </Button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '24px', fontSize: '13px', color: 'var(--text-secondary)', marginTop: '12px', flexWrap: 'wrap' }}>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>開工日期: </span>
+                        <span>{proj.startDate || '未排定'}</span>
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>預計結案: </span>
+                        <span>{proj.expectedDeliveryDate || '未排定'}</span>
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>合約總額: </span>
+                        <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                          NT$ {proj.amountTotal.toLocaleString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)' }}>負責工程師: </span>
+                        <span>{proj.assignedEngineers?.join(', ') || '尚未指派'}</span>
+                      </div>
+                    </div>
+
+                    {/* 進度條 */}
+                    <div style={{ marginTop: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>研發進度</span>
+                        <span style={{ fontWeight: 700, color: 'var(--primary-600)' }}>{proj.progressPercent}%</span>
+                      </div>
+                      <div style={{ height: '6px', borderRadius: '3px', backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            height: '100%',
+                            width: `${proj.progressPercent}%`,
+                            backgroundColor: 'var(--primary-600)',
+                            borderRadius: '3px',
+                            transition: 'width 0.3s ease'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Tab 1: 客戶基本資料與需求編輯 */}
-      {activeTab === 'info' && (
-        <div style={{ width: '100%', background: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
-          <form id="client-edit-form" onSubmit={handleSaveInfo} noValidate>
-            <TextField
-              id="client-name-edit"
-              label="客戶 / 單位名稱"
-              required
-              value={name}
-              error={errors.name}
-              placeholder="請輸入客戶或單位名稱"
-              onChange={(e) => setName(e.target.value)}
-            />
-
-            <div className="form-grid-2">
-              <TextField
-                id="contact-person-edit"
-                label="聯絡人姓名"
-                required
-                value={contactPerson}
-                error={errors.contactPerson}
-                placeholder="例如：王小明"
-                onChange={(e) => setContactPerson(e.target.value)}
-              />
-              <TextField
-                id="contact-phone-edit"
-                label="聯絡人電話"
-                required
-                value={contactPhone}
-                error={errors.contactPhone}
-                placeholder="例如：0912-345-678"
-                onChange={(e) => setContactPhone(e.target.value)}
-              />
-            </div>
-
-            <div className="form-grid-2">
-              <TextField
-                id="company-name-edit"
-                label="公司名稱 (選填)"
-                value={companyName}
-                placeholder="例如：台元半導體股份有限公司"
-                onChange={(e) => setCompanyName(e.target.value)}
-              />
-              <TextField
-                id="tax-id-edit"
-                label="統一編號 (選填，8碼)"
-                value={taxId}
-                error={errors.taxId}
-                placeholder="例如：12345678"
-                onChange={(e) => setTaxId(e.target.value)}
-              />
-            </div>
-
-            <div className="form-grid-2">
-              <TextField
-                id="company-phone-edit"
-                label="公司電話 (選填)"
-                value={companyPhone}
-                placeholder="例如：02-27891234"
-                onChange={(e) => setCompanyPhone(e.target.value)}
-              />
-              <TextField
-                id="email-edit"
-                label="電子郵件 Email (選填)"
-                type="email"
-                value={email}
-                error={errors.email}
-                placeholder="例如：contact@company.com"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <TextField
-              id="address-edit"
-              label="地址 (選填)"
-              value={address}
-              placeholder="例如：新竹縣竹北市台元街 26 號 5 樓"
-              onChange={(e) => setAddress(e.target.value)}
-            />
-
-            <div style={{ marginBottom: '16px' }}>
-              <TextField
-                id="system-type-edit"
-                label="預計開發系統類型 (選填)"
-                value={systemType}
-                placeholder="例如：Web 管理系統、App 開發、IoT 物聯網"
-                onChange={(e) => setSystemType(e.target.value)}
-              />
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label htmlFor="requirement-summary-edit" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                客戶需求概要 / 專案構想 (選填)
-              </label>
-              <textarea
-                id="requirement-summary-edit"
-                className="form-input"
-                rows={4}
-                value={requirementSummary}
-                placeholder="請輸入本次洽談之功能需求、痛點或預算範圍..."
-                style={{ width: '100%', resize: 'vertical', boxSizing: 'border-box' }}
-                onChange={(e) => setRequirementSummary(e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-              <Button type="submit" variant="primary">
-                儲存客戶修改
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Tab 2: 聯繫歷史 */}
-      {activeTab === 'timeline' && (
-        <div style={{ width: '100%', background: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
-          <HorizontalTimeline logs={logs} />
-        </div>
-      )}
-
-      {/* Tab 3: 名下關聯專案 */}
-      {activeTab === 'projects' && (
-        <div style={{ width: '100%', background: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#0f172a' }}>
-              {name} 名下正式合約專案清單
-            </h2>
-          </div>
-
-          {clientProjects.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
-              <p style={{ fontSize: '14px', marginBottom: '16px' }}>此客戶目前尚未建立任何正式專案。</p>
-              <Button variant="primary" onClick={() => setIsCreateProjectModalOpen(true)}>
-                <TextIcon name="plus" size="sm" />
-                <span>立即為此客戶建立第一個專案</span>
-              </Button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {clientProjects.map((p) => (
-                <div
-                  key={p.id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '16px 20px',
-                    backgroundColor: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onClick={() => navigate(`/projects/${p.id}?tab=milestones`)}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>{p.name}</span>
-                      <span style={{ fontSize: '12px', fontFamily: 'monospace', color: '#64748b', backgroundColor: '#e2e8f0', padding: '2px 6px', borderRadius: '4px' }}>
-                        {p.projectCode}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '13px', color: '#64748b', display: 'flex', gap: '16px' }}>
-                      <span>合約總額: NT$ {p.amountTotal.toLocaleString()}</span>
-                      <span>工期: {p.durationDays} 天 ({p.startDate} ~ {p.expectedDeliveryDate})</span>
-                      <span>負責工程師: {p.assignedEngineers.join(', ')}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '2px' }}>進度 {p.progressPercent}%</div>
-                      <div style={{ width: '100px', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${p.progressPercent}%`, height: '100%', backgroundColor: '#2563eb' }} />
-                      </div>
-                    </div>
-                    <Button variant="secondary" size="sm">
-                      前往工作台 ➔
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 新增紀錄彈窗 */}
+      {/* 新增聯繫歷史彈窗 */}
       <AddLogModal
         isOpen={isAddLogModalOpen}
         onClose={() => setIsAddLogModalOpen(false)}
         onSubmit={handleAddLog}
       />
 
-      {/* 客戶轉正式專案立案彈窗 */}
+      {/* 為此客戶正式立案彈窗 */}
       <CreateProjectModal
         isOpen={isCreateProjectModalOpen}
         client={client}

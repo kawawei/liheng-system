@@ -1,19 +1,20 @@
 /**
  * @file ClientsPage.tsx
  * @description CRM 客戶關係管理頁面 / CRM Clients Management Page
- * @description_en Page level container handling client list, creation modal, project initiation modal, deletion, and full-page client detail editing
- * @description_zh 頁面級容器，負責客戶列表、多專案膠囊展示、新增客戶、為客戶正式立案與導頁至 ClientsDetailPage 獨立詳情頁
+ * @description_en Page level container handling client list, creation modal, project initiation modal, deletion, and full-page client detail editing via backend API
+ * @description_zh 頁面級容器，負責客戶列表、多專案膠囊展示、新增客戶、為客戶正式立案與導頁至 ClientsDetailPage 獨立詳情頁 (串接真實 API 與 @kawawei/frontend-modules 消息組件)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { message } from '@kawawei/frontend-modules';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { Button } from '../../components/button/Button';
 import { Client, Project } from '../../types';
-import { INITIAL_CLIENTS_MOCK } from '../../mock/clients.mock';
-import { MOCK_PROJECTS } from '../../mock/projects.mock';
 import { ClientTable, ClientFormModal, CreateProjectModal } from '../../components/crm';
 import { ClientsDetailPage } from './ClientsDetailPage';
+import { clientService } from '../../services/client.service';
+import { projectService } from '../../services/project.service';
 import './ClientsPage.css';
 
 export const ClientsPage: React.FC = () => {
@@ -21,9 +22,30 @@ export const ClientsPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [initiatingClient, setInitiatingClient] = useState<Client | null>(null);
-  const [clients, setClients] = useState<Client[]>(INITIAL_CLIENTS_MOCK);
+  const [clients, setClients] = useState<Client[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+
+  // ========================================
+  // 載入客戶列表 / Fetch Clients List
+  // ========================================
+  const fetchClients = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await clientService.getClients();
+      setClients(data);
+    } catch (err: any) {
+      console.error('Failed to fetch clients:', err);
+      message.error(err.response?.data?.message || '載入客戶資料失敗');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   // ========================================
   // 篩選客戶列表 / Filtered Clients
@@ -43,21 +65,34 @@ export const ClientsPage: React.FC = () => {
   });
 
   // ========================================
-  // 新增客戶處理 / Create Client Handler
+  // 新增客戶處理 (API) / Create Client Handler
   // ========================================
-  const handleCreateClient = (newClient: Client) => {
-    setClients([newClient, ...clients]);
+  const handleCreateClient = async (newClientData: Client) => {
+    try {
+      await clientService.createClient(newClientData);
+      message.success('客戶建檔成功');
+      setShowModal(false);
+      await fetchClients();
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '新增客戶失敗');
+    }
   };
 
   // ========================================
-  // 刪除客戶處理 / Delete Client Handler
+  // 刪除客戶處理 (API 軟刪除) / Delete Client Handler
   // ========================================
-  const handleDeleteClient = (clientId: string, clientName?: string) => {
+  const handleDeleteClient = async (clientId: string, clientName?: string) => {
     const targetName = clientName || '此客戶';
     if (window.confirm(`確定要刪除「${targetName}」嗎？此操作無法恢復。`)) {
-      setClients((prev) => prev.filter((c) => c.id !== clientId));
-      if (editingClient && editingClient.id === clientId) {
-        setEditingClient(null);
+      try {
+        await clientService.deleteClient(clientId);
+        message.success(`已成功刪除客戶「${targetName}」`);
+        if (editingClient && editingClient.id === clientId) {
+          setEditingClient(null);
+        }
+        await fetchClients();
+      } catch (err: any) {
+        message.error(err.response?.data?.message || '刪除客戶失敗');
       }
     }
   };
@@ -65,31 +100,37 @@ export const ClientsPage: React.FC = () => {
   // ========================================
   // 更新客戶資料與狀態 / Update Client Handler
   // ========================================
-  const handleUpdateClient = (updatedClient: Client) => {
-    setClients((prev) =>
-      prev.map((c) => (c.id === updatedClient.id ? updatedClient : c))
-    );
-    setEditingClient(updatedClient);
-  };
-
-  // ========================================
-  // 正式立案完成 / Project Initiated Handler
-  // ========================================
-  const handleProjectInitiated = (newProject: Project) => {
-    MOCK_PROJECTS.unshift(newProject);
-    // 自動將客戶狀態推進為合作中
-    if (initiatingClient) {
-      setClients((prev) =>
-        prev.map((c) =>
-          c.id === initiatingClient.id ? { ...c, status: 'in_cooperation' } : c
-        )
-      );
+  const handleUpdateClient = async (updatedClient: Client) => {
+    try {
+      await clientService.updateClient(updatedClient.id, updatedClient);
+      message.success('客戶資料已更新');
+      setEditingClient(updatedClient);
+      await fetchClients();
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '更新客戶資料失敗');
     }
-    setInitiatingClient(null);
-    navigate(`/projects/${newProject.id}?tab=milestones`);
   };
 
-  // 若處於編輯狀態，則完全以全頁面渲染 ClientsDetailPage (非抽屜非 Modal)
+  // ========================================
+  // 正式立案完成 (API) / Project Initiated Handler
+  // ========================================
+  const handleProjectInitiated = async (newProjectData: Project) => {
+    try {
+      const created = await projectService.createProject({
+        ...newProjectData,
+        clientId: initiatingClient?.id || newProjectData.clientId,
+        clientName: initiatingClient?.companyName || initiatingClient?.name || newProjectData.clientName
+      });
+      message.success(`專案「${created.name}」已正式立案，案號：${created.projectCode}`);
+      setInitiatingClient(null);
+      await fetchClients();
+      navigate(`/projects/${created.id}?tab=milestones`);
+    } catch (err: any) {
+      message.error(err.response?.data?.message || '專案立案失敗');
+    }
+  };
+
+  // 若處於編輯狀態，則以全頁面渲染 ClientsDetailPage
   if (editingClient) {
     return (
       <ClientsDetailPage
@@ -184,15 +225,21 @@ export const ClientsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 客戶數據表格組件 (含專案膠囊、立案、編輯與刪除按鈕) */}
-      <ClientTable
-        clients={filteredClients}
-        onEditClient={(c) => setEditingClient(c)}
-        onDeleteClient={(id, name) => handleDeleteClient(id, name)}
-        onInitiateProject={(c) => setInitiatingClient(c)}
-      />
+      {/* 客戶數據表格組件 */}
+      {loading ? (
+        <div className="card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          載入客戶資料中...
+        </div>
+      ) : (
+        <ClientTable
+          clients={filteredClients}
+          onEditClient={(c) => setEditingClient(c)}
+          onDeleteClient={(id, name) => handleDeleteClient(id, name)}
+          onInitiateProject={(c) => setInitiatingClient(c)}
+        />
+      )}
 
-      {/* 新增客戶彈窗組件 / Client Creation Form Modal Component */}
+      {/* 新增客戶彈窗組件 */}
       <ClientFormModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

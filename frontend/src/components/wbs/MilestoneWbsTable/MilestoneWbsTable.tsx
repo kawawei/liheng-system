@@ -15,10 +15,9 @@ import {
   ChevronUp,
   Diamond,
 } from 'lucide-react';
-import { Select, DatePicker } from '@kawawei/frontend-modules';
+import { Select, DatePicker, message } from '@kawawei/frontend-modules';
 import { WbsNode, WbsStatus, DependencyType } from '../../../types';
 import { Button } from '../../button';
-import { Toast, ToastType } from '../../toast';
 import './MilestoneWbsTable.css';
 
 const ENGINEER_SELECT_OPTIONS = [
@@ -92,14 +91,13 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 }) => {
   const [nodes, setNodes] = useState<WbsNode[]>(initialNodes);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
-  // 提示彈出輔助函數
-  const showToast = (message: string, type: ToastType = 'warning') => {
-    setToast({ message, type });
-    setTimeout(() => {
-      setToast((prev) => (prev?.message === message ? null : prev));
-    }, 3800);
+  // 提示彈出輔助函數 (使用指定套件庫 message 組件)
+  const showToast = (text: string, type: 'warning' | 'info' | 'success' | 'error' = 'warning') => {
+    if (type === 'warning') message.warning(text);
+    else if (type === 'success') message.success(text);
+    else if (type === 'error') message.error(text);
+    else message.info(text);
   };
 
   // ========================================
@@ -893,17 +891,6 @@ export const MilestoneWbsTable: React.FC<MilestoneWbsTableProps> = ({
 
   return (
     <div className="wbs-wrapper">
-      {/* Toast 提示容器 */}
-      {toast && (
-        <div className="toast-container">
-          <Toast
-            type={toast.type}
-            message={toast.message}
-            onClose={() => setToast(null)}
-          />
-        </div>
-      )}
-
       {/* 頂部工具列與完成度膠囊統計 */}
       <div className="wbs-header-bar">
         <div className="wbs-stats-group">
