@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑樹狀表格樣式 / Milestone WBS Tree Table Styles
- * @description_en Styles for hierarchical WBS table, badges, progress bars, and modal controls
- * @description_zh 定義 WBS 樹狀階層表格、狀態標籤、進度條與彈窗樣式
+ * @description_en Styles for hierarchical WBS table, badges, progress bars, and inline editing controls
+ * @description_zh 定義 WBS 樹狀階層表格、狀態標籤、進度條與行內直接編輯樣式
  */
 
 .wbs-wrapper {
@@ -113,11 +113,18 @@
   border-top: 1px solid #e2e8f0;
 }
 
+.wbs-row.is-editing td {
+  background-color: #f0fdf4 !important;
+  border-top: 1px solid #bbf7d0;
+  border-bottom: 1px solid #bbf7d0;
+}
+
 /* 階層名稱單元格 */
 .wbs-name-cell {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 1;
 }
 
 .wbs-expand-btn {
@@ -133,6 +140,7 @@
   border-radius: 4px;
   transition: all 0.15s ease;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .wbs-expand-btn:hover {
@@ -142,21 +150,9 @@
 
 .wbs-expand-placeholder {
   width: 22px;
+  flex-shrink: 0;
   display: inline-block;
 }
-
-.wbs-cat-badge {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.wbs-cat-req { background: #fef3c7; color: #92400e; }
-.wbs-cat-arch { background: #e0e7ff; color: #3730a3; }
-.wbs-cat-dev { background: #dbeafe; color: #1e40af; }
-.wbs-cat-test { background: #fce7f3; color: #9d174d; }
-.wbs-cat-deploy { background: #d1fae5; color: #065f46; }
 
 /* 工程師標籤 */
 .wbs-assignee-badge {
@@ -278,103 +274,92 @@
   color: #2563eb;
 }
 
+.wbs-action-btn.save {
+  color: #16a34a;
+  background-color: #dcfce7;
+  border-color: #86efac;
+}
+
+.wbs-action-btn.save:hover {
+  background-color: #bbf7d0;
+}
+
+.wbs-action-btn.cancel {
+  color: #64748b;
+  background-color: #f1f5f9;
+}
+
+.wbs-action-btn.cancel:hover {
+  background-color: #e2e8f0;
+}
+
 .wbs-action-btn.delete:hover {
   background-color: #fef2f2;
   color: #ef4444;
 }
 
-/* Modal 彈窗樣式 */
-.wbs-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-}
-
-.wbs-modal-content {
-  background: #ffffff;
-  border-radius: 10px;
+/* ========================================
+   行內編輯輸入控制項 / Inline Edit Controls
+   ======================================== */
+.wbs-inline-text-input {
   width: 100%;
-  max-width: 540px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1.5px solid #2563eb;
+  border-radius: 6px;
+  background-color: #ffffff;
+  outline: none;
+  font-weight: 500;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
-@keyframes modalPop {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.wbs-modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.wbs-modal-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.wbs-modal-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.wbs-modal-footer {
-  padding: 14px 20px;
-  border-top: 1px solid #e2e8f0;
-  background-color: #f8fafc;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.wbs-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.wbs-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.wbs-form-label {
+.wbs-inline-select {
+  padding: 5px 8px;
   font-size: 12px;
-  font-weight: 600;
-  color: #334155;
-}
-
-.wbs-form-input,
-.wbs-form-select {
-  padding: 8px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 13px;
-  outline: none;
   background-color: #ffffff;
-  transition: border-color 0.15s ease;
+  outline: none;
+  color: #1e293b;
 }
 
-.wbs-form-input:focus,
-.wbs-form-select:focus {
+.wbs-inline-select:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.wbs-inline-date-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wbs-inline-date-input {
+  padding: 4px 6px;
+  font-size: 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: #ffffff;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+  width: 110px;
+}
+
+.wbs-inline-date-input:focus {
+  border-color: #2563eb;
+}
+
+.wbs-inline-num-input {
+  width: 90px;
+  padding: 5px 8px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+  text-align: right;
+  outline: none;
+  font-family: var(--font-mono, monospace);
+}
+
+.wbs-inline-num-input:focus {
+  border-color: #2563eb;
 }
