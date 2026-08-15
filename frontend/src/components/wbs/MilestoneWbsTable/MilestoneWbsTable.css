@@ -1,8 +1,8 @@
 /**
  * @file MilestoneWbsTable.css
  * @description WBS 里程碑即時編輯雙層表頭樣式 / Milestone WBS Live Table Styles
- * @description_en Strictly uniform 30px height for all dropdowns and inputs, centered headers, and clean grid.
- * @description_zh 下拉選單與所有輸入框嚴格統一 30px 垂直高度、表頭文字全部置中、清爽資料網格。
+ * @description_en Strictly uniform 30px height for all dropdowns and inputs, generous column widths with ample spacing and smooth horizontal scrolling.
+ * @description_zh 下拉選單與所有輸入框嚴格統一 30px 垂直高度、放寬各欄位寬度與留白間距、表頭文字全部置中。
  */
 
 .wbs-wrapper {
@@ -52,7 +52,7 @@
   gap: 6px;
   background-color: var(--bg-app, #f8fafc);
   border: 1px solid var(--border-color, #e2e8f0);
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: 9999px;
   font-size: 13px;
   font-weight: 500;
@@ -72,7 +72,7 @@
 }
 
 /* ========================================
-   表格主體與標題欄文字置中
+   表格主體與寬度 (充裕欄寬，支援平滑橫向滑動)
    ======================================== */
 .wbs-table-container {
   background-color: #ffffff;
@@ -84,8 +84,9 @@
 
 .wbs-table {
   width: 100%;
-  min-width: 1380px;
-  border-collapse: collapse;
+  min-width: 1680px;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 13px;
   text-align: left;
 }
@@ -94,12 +95,12 @@
 .wbs-table th {
   text-align: center !important;
   vertical-align: middle !important;
+  padding: 10px 12px !important;
 }
 
 .wbs-table thead tr.wbs-th-row-1 th {
   background-color: #f8fafc;
   border-bottom: 1px solid var(--border-color, #e2e8f0);
-  padding: 8px 8px;
   font-weight: 600;
   color: var(--text-secondary, #475569);
   white-space: nowrap;
@@ -109,7 +110,6 @@
 .wbs-table thead tr.wbs-th-row-2 th {
   background-color: #f1f5f9;
   border-bottom: 2px solid var(--border-color, #cbd5e1);
-  padding: 6px 8px;
   font-weight: 600;
   color: #334155;
   white-space: nowrap;
@@ -133,8 +133,9 @@
   color: #065f46 !important;
 }
 
+/* 單元格留白間距加大，不再擁擠 */
 .wbs-table td {
-  padding: 4px 6px;
+  padding: 8px 12px !important;
   border-bottom: 1px solid var(--border-color, #f1f5f9);
   color: var(--text-primary, #1e293b);
   vertical-align: middle;
@@ -153,15 +154,15 @@
 .wbs-name-cell {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .wbs-expand-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: none;
   background: transparent;
   color: var(--text-secondary, #64748b);
@@ -178,58 +179,60 @@
 }
 
 .wbs-expand-placeholder {
-  width: 20px;
+  width: 22px;
   flex-shrink: 0;
   display: inline-block;
 }
 
 /* ========================================
-   嚴格統一高度 (30px) 與字級 (13px)
+   全面嚴格統一垂直高度為 30px (包含 Select 與 DatePicker)
    ======================================== */
-.wbs-table .caas-select-box,
-.wbs-table .caas-field-input,
-.wbs-table .caas-date-display,
+.wbs-select-field,
+.wbs-select-field > div,
+.wbs-select-field > div > div,
+.wbs-datepicker-field,
+.wbs-datepicker-field .caas-date-picker-wrapper,
+.wbs-datepicker-field .caas-field-input,
+.wbs-datepicker-field .caas-date-display,
 .wbs-table .wbs-direct-input,
 .wbs-table .wbs-direct-days,
-.wbs-table .wbs-direct-pct,
-.wbs-table div[class*="select-box"],
-.wbs-table button[class*="select-trigger"] {
-  min-height: 30px !important;
+.wbs-table .wbs-direct-pct {
   height: 30px !important;
+  min-height: 30px !important;
   max-height: 30px !important;
   font-size: 13px !important;
   box-sizing: border-box !important;
-  border-radius: 4px !important;
+  border-radius: 6px !important;
   line-height: 28px !important;
 }
 
-.wbs-table .caas-select-group,
-.wbs-table .caas-select-wrapper,
-.wbs-table .caas-date-picker-container,
-.wbs-table .caas-date-picker-wrapper {
-  min-height: 30px !important;
-  height: 30px !important;
-  max-height: 30px !important;
-  gap: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
+/* 針對 Select 組件內層 Trigger 容器的精準高度與樣式覆寫 */
+.wbs-select-field > div > div {
+  padding: 0 10px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
-.wbs-table .caas-select-box,
-.wbs-table div[class*="select-box"] {
+.wbs-datepicker-field .caas-date-picker-wrapper {
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  border-radius: 6px !important;
   padding: 0 8px !important;
-  border: 1px solid #cbd5e1 !important;
-  background-color: #ffffff !important;
 }
 
-.wbs-table .caas-field-input {
-  border: 1px solid #cbd5e1 !important;
-  background-color: #ffffff !important;
+.wbs-datepicker-field .caas-field-input {
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
 }
 
 .wbs-direct-input {
   width: 100%;
-  padding: 0 8px;
+  padding: 0 10px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   outline: none;
@@ -239,21 +242,20 @@
 }
 
 .wbs-direct-input:hover,
-.wbs-table .caas-select-box:hover,
-.wbs-table .caas-field-input:hover {
+.wbs-select-field > div > div:hover,
+.wbs-datepicker-field .caas-date-picker-wrapper:hover {
   border-color: #94a3b8 !important;
 }
 
 .wbs-direct-input:focus,
-.wbs-table .caas-select-box.active,
-.wbs-table .caas-field-input:focus {
+.wbs-datepicker-field .caas-date-picker-wrapper:focus-within {
   border-color: #2563eb !important;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12) !important;
 }
 
 .wbs-direct-days {
-  width: 46px;
-  padding: 0 2px;
+  width: 52px;
+  padding: 0 4px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   outline: none;
@@ -289,8 +291,8 @@
 }
 
 .wbs-direct-pct {
-  width: 44px;
-  padding: 0 2px;
+  width: 50px;
+  padding: 0 4px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   text-align: right;
@@ -314,7 +316,7 @@
 .wbs-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   justify-content: center;
 }
 
@@ -322,11 +324,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  background-color: transparent;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
   color: #64748b;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -340,10 +342,12 @@
 
 .wbs-action-btn.add:hover {
   background-color: #eff6ff;
+  border-color: #bfdbfe;
   color: #2563eb;
 }
 
 .wbs-action-btn.delete:hover {
   background-color: #fef2f2;
+  border-color: #fecaca;
   color: #ef4444;
 }
