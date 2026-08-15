@@ -6,8 +6,8 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { userService } from '../services/user.service.js';
-import { createUserSchema, updateUserSchema } from '../schemas/user.schema.js';
+import { userService } from '../services/user.service';
+import { createUserSchema, updateUserSchema } from '../schemas/user.schema';
 
 export class UserController {
   /**

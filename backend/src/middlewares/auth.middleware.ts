@@ -7,7 +7,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { isTokenBlacklisted } from '../config/redis.js';
+import { isTokenBlacklisted } from '../config/redis';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'liheng_dev_jwt_secret_key_8h_session_2026';
 

@@ -7,9 +7,9 @@
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { userRepository } from '../repositories/user.repository.js';
-import { addTokenToBlacklist } from '../config/redis.js';
-import { LoginInput } from '../schemas/auth.schema.js';
+import { userRepository } from '../repositories/user.repository';
+import { addTokenToBlacklist } from '../config/redis';
+import { LoginInput } from '../schemas/auth.schema';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'liheng_dev_jwt_secret_key_8h_session_2026';
 const EIGHT_HOURS_SECONDS = 8 * 60 * 60; // 28800 秒

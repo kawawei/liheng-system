@@ -6,9 +6,9 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { authService } from '../services/auth.service.js';
-import { userService } from '../services/user.service.js';
-import { loginSchema } from '../schemas/auth.schema.js';
+import { authService } from '../services/auth.service';
+import { userService } from '../services/user.service';
+import { loginSchema } from '../schemas/auth.schema';
 
 export class AuthController {
   /**

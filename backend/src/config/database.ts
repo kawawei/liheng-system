@@ -7,7 +7,7 @@
 
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import * as schema from '../schemas/schema.js';
+import * as schema from '../schemas/schema';
 import dotenv from 'dotenv';
 
 dotenv.config();

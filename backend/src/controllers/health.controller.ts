@@ -6,8 +6,8 @@
  */
 
 import { Request, Response } from 'express';
-import { pool } from '../config/database.js';
-import { redis } from '../config/redis.js';
+import { pool } from '../config/database';
+import { redis } from '../config/redis';
 
 export class HealthController {
   /**

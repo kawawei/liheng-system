@@ -6,7 +6,7 @@
  */
 
 import bcrypt from 'bcryptjs';
-import { pool } from '../config/database.js';
+import { pool } from '../config/database';
 
 export async function initDatabaseAndSeed(): Promise<void> {
   const client = await pool.connect();

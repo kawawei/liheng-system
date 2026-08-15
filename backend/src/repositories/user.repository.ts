@@ -6,8 +6,8 @@
  */
 
 import { eq, and, isNull, or, ilike, desc } from 'drizzle-orm';
-import { db } from '../config/database.js';
-import { users, User, NewUser } from '../schemas/schema.js';
+import { db } from '../config/database';
+import { users, User, NewUser } from '../schemas/schema';
 
 export class UserRepository {
   /**

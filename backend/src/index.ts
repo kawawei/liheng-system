@@ -8,12 +8,12 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { authController } from './controllers/auth.controller.js';
-import { userController } from './controllers/user.controller.js';
-import { healthController } from './controllers/health.controller.js';
-import { authenticateToken, requireSuperAdmin } from './middlewares/auth.middleware.js';
-import { errorHandler } from './middlewares/error.middleware.js';
-import { initDatabaseAndSeed } from './utils/seed.js';
+import { authController } from './controllers/auth.controller';
+import { userController } from './controllers/user.controller';
+import { healthController } from './controllers/health.controller';
+import { authenticateToken, requireSuperAdmin } from './middlewares/auth.middleware';
+import { errorHandler } from './middlewares/error.middleware';
+import { initDatabaseAndSeed } from './utils/seed';
 
 dotenv.config();
 

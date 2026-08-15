@@ -6,8 +6,8 @@
  */
 
 import bcrypt from 'bcryptjs';
-import { userRepository } from '../repositories/user.repository.js';
-import { CreateUserInput, UpdateUserInput } from '../schemas/user.schema.js';
+import { userRepository } from '../repositories/user.repository';
+import { CreateUserInput, UpdateUserInput } from '../schemas/user.schema';
 
 const SALT_ROUNDS = 10;
 
