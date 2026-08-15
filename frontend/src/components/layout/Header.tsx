@@ -1,14 +1,13 @@
 import React from 'react';
 import { TextIcon } from '../icon/TextIcon';
-import { StatusBadge } from '../status-badge/StatusBadge';
 import { Button } from '../button';
 import { UserProfile } from '../../types';
 
 /**
  * @file Header.tsx
  * @description 頂部全域導航列 / Top Header Navigation
- * @description_en Displays global brand title, sidebar hamburger toggle, user role, and CaaS logout button
- * @description_zh 顯示系統品牌標頭、漢堡選單按鈕、用戶角色標籤與 CaaS 登出按鈕
+ * @description_en Displays global brand title, sidebar hamburger toggle, user name, and enlarged logout button
+ * @description_zh 顯示系統品牌標頭、漢堡選單按鈕、使用者姓名與加大款登出按鈕
  */
 
 interface HeaderProps {
@@ -101,27 +100,28 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* 右側使用者資訊與紅色登出按鈕 / Right User Info & Danger Logout Button */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* 右側使用者姓名與加大款登出按鈕 / Right User Name & Enlarged Logout Button */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         {user && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
-              {user.name}
-            </span>
-            <StatusBadge
-              label={user.role === 'super_admin' ? '超級管理員' : '軟體工程師'}
-              variant={user.role === 'super_admin' ? 'info' : 'neutral'}
-            />
-          </div>
+          <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {user.name}
+          </span>
         )}
 
         <Button
           variant="danger"
-          size="sm"
+          size="md"
           onClick={onLogout}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 18px',
+            fontSize: '14px',
+            fontWeight: 600
+          }}
         >
-          <TextIcon name="logout" size="sm" />
+          <TextIcon name="logout" size="md" />
           <span>登出</span>
         </Button>
       </div>

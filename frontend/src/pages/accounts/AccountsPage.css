@@ -1,0 +1,35 @@
+/**
+ * @file AccountsPage.css
+ * @description 帳號管理頁面樣式 / Accounts Page Styles
+ * @description_en Styles for account management layout, filters, and chips
+ * @description_zh 定義帳號管理頁面容器、統計卡片與篩選按鈕樣式
+ */
+
+.accounts-page-container {
+  padding-bottom: 32px;
+}
+
+.filter-chip-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.filter-chip-btn:hover {
+  border-color: var(--primary-600, #0284c7);
+  color: var(--primary-600, #0284c7);
+}
+
+.filter-chip-btn.active {
+  background: var(--primary-50, #f0f9ff);
+  border-color: var(--primary-600, #0284c7);
+  color: var(--primary-600, #0284c7);
+  font-weight: 600;
+}

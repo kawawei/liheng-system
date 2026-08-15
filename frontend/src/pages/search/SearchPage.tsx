@@ -24,10 +24,10 @@ export const SearchPage: React.FC = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">
-            <TextIcon name="search" size="lg" />
-            <span>全局向量語意檢索 (pgvector)</span>
+            <TextIcon name="knowledge" size="lg" />
+            <span>知識庫 (語意檢索與 AI 問答)</span>
           </h1>
-          <p className="page-subtitle">透過 1536 維度 Embedding 進行跨模組自然語言搜尋與專案 RAG 問答</p>
+          <p className="page-subtitle">透過 1536 維度 Embedding 進行跨客戶、專案與合約之自然語言語意檢索與 RAG 智慧問答</p>
         </div>
       </div>
 

@@ -18,6 +18,7 @@ export const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [stageFilter, setStageFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const stageMap: Record<ProjectStage, { label: string; variant: 'info' | 'warning' | 'success' | 'neutral' }> = {
     development: { label: '開發中', variant: 'info' },
@@ -35,9 +36,17 @@ export const ProjectsPage: React.FC = () => {
     setProjects([newProject, ...projects]);
   };
 
-  const filteredProjects = stageFilter === 'all'
-    ? projects
-    : projects.filter((p) => p.stage === stageFilter);
+  const filteredProjects = projects.filter((p) => {
+    const matchesStage = stageFilter === 'all' || p.stage === stageFilter;
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      p.projectCode.toLowerCase().includes(q) ||
+      p.clientName.toLowerCase().includes(q) ||
+      p.assignedEngineers.some((eng) => eng.toLowerCase().includes(q));
+    return matchesStage && matchesSearch;
+  });
 
   // 判斷時程是否逾期
   const getScheduleTag = (p: Project) => {
@@ -83,37 +92,68 @@ export const ProjectsPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* 5 大階段快速過濾 Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
-        {[
-          { key: 'all', label: `全部專案 (${projects.length})` },
-          { key: 'development', label: `開發中 (${projects.filter((p) => p.stage === 'development').length})` },
-          { key: 'testing', label: `測試驗證 (${projects.filter((p) => p.stage === 'testing').length})` },
-          { key: 'delivery', label: `交付驗收 (${projects.filter((p) => p.stage === 'delivery').length})` },
-          { key: 'closed', label: `正式結案 (${projects.filter((p) => p.stage === 'closed').length})` },
-          { key: 'maintenance', label: `保固維護 (${projects.filter((p) => p.stage === 'maintenance').length})` }
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setStageFilter(tab.key)}
-            style={{
-              padding: '6px 14px',
-              fontSize: '13px',
-              fontWeight: stageFilter === tab.key ? 600 : 500,
-              backgroundColor: stageFilter === tab.key ? 'var(--primary-600)' : '#ffffff',
-              color: stageFilter === tab.key ? '#ffffff' : 'var(--text-secondary)',
-              border: '1px solid',
-              borderColor: stageFilter === tab.key ? 'var(--primary-600)' : 'var(--border-color)',
-              borderRadius: '20px',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* 階段過濾與搜尋工具列 / Stage & Search Toolbar */}
+      <div
+        className="card"
+        style={{
+          padding: '16px 20px',
+          marginBottom: '20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '16px',
+          flexWrap: 'wrap'
+        }}
+      >
+        {/* 左側：5 大階段快速過濾 Tabs */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', flex: 1, minWidth: '300px' }}>
+          {[
+            { key: 'all', label: `全部專案 (${projects.length})` },
+            { key: 'development', label: `開發中 (${projects.filter((p) => p.stage === 'development').length})` },
+            { key: 'testing', label: `測試驗證 (${projects.filter((p) => p.stage === 'testing').length})` },
+            { key: 'delivery', label: `交付驗收 (${projects.filter((p) => p.stage === 'delivery').length})` },
+            { key: 'closed', label: `正式結案 (${projects.filter((p) => p.stage === 'closed').length})` },
+            { key: 'maintenance', label: `保固維護 (${projects.filter((p) => p.stage === 'maintenance').length})` }
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setStageFilter(tab.key)}
+              style={{
+                padding: '6px 14px',
+                fontSize: '13px',
+                fontWeight: stageFilter === tab.key ? 600 : 500,
+                backgroundColor: stageFilter === tab.key ? 'var(--primary-600)' : '#ffffff',
+                color: stageFilter === tab.key ? '#ffffff' : 'var(--text-secondary)',
+                border: '1px solid',
+                borderColor: stageFilter === tab.key ? 'var(--primary-600)' : 'var(--border-color)',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 右側：搜尋框 */}
+        <div style={{ display: 'flex', alignItems: 'center', minWidth: '240px' }}>
+          <div className="input-wrapper" style={{ width: '100%', maxWidth: '320px' }}>
+            <span className="input-prefix-icon" style={{ left: '12px' }}>
+              <TextIcon name="search" size="sm" color="var(--text-secondary)" />
+            </span>
+            <input
+              type="text"
+              className="form-input input-with-icon"
+              placeholder="搜尋專案名稱、案號、客戶..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ paddingLeft: '38px', height: '38px', fontSize: '14px' }}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="table-container">

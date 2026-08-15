@@ -36,6 +36,9 @@ import {
   Trash2,
   Pencil,
   Save,
+  UserCog,
+  Shield,
+  BookOpen,
   LucideIcon
 } from 'lucide-react';
 
@@ -74,6 +77,8 @@ export type IconName =
   | 'arrow-right'
   | 'arrow-left'
   | 'user'
+  | 'user-cog'
+  | 'shield'
   | 'menu'
   | 'phone'
   | 'map-pin'
@@ -82,7 +87,9 @@ export type IconName =
   | 'threads'
   | 'trash'
   | 'edit'
-  | 'save';
+  | 'save'
+  | 'book'
+  | 'knowledge';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -122,6 +129,10 @@ const iconMap: Record<IconName, LucideIcon> = {
   'arrow-right': ArrowRight,
   'arrow-left': ArrowLeft,
   user: User,
+  'user-cog': UserCog,
+  shield: Shield,
+  book: BookOpen,
+  knowledge: BookOpen,
   menu: Menu,
   phone: Phone,
   'map-pin': MapPin,

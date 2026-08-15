@@ -1,0 +1,36 @@
+/**
+ * @file AccountFormModal.css
+ * @description 新增帳號彈窗樣式 / Account Form Modal Styles
+ * @description_en Styles for user account creation dialog
+ * @description_zh 定義新增帳號彈窗控制項與間距樣式
+ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

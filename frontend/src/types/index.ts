@@ -14,6 +14,16 @@ export interface UserProfile {
   role: UserRole;
 }
 
+export interface UserAccount {
+  id: string;
+  name: string;
+  account: string;
+  password?: string;
+  role: UserRole;
+  createdAt: string;
+  status?: 'active' | 'inactive';
+}
+
 export interface AuthState {
   token: string | null;
   user: UserProfile | null;

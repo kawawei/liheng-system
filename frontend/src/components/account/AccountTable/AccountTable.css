@@ -1,0 +1,73 @@
+/**
+ * @file AccountTable.css
+ * @description 帳號列表表格樣式 / Account Table Styles
+ * @description_en Styles for user account table
+ * @description_zh 定義帳號管理表格容器與特殊排版樣式
+ */
+
+.empty-state-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 240px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.action-buttons-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  width: 80px;
+}
+
+.action-icon-placeholder {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  visibility: hidden;
+}
+
+.action-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  padding: 0;
+}
+
+.action-icon-btn.edit {
+  color: var(--primary-600, #0284c7);
+  background-color: var(--primary-50, #f0f9ff);
+  border-color: rgba(2, 132, 199, 0.25);
+}
+
+.action-icon-btn.edit:hover {
+  background-color: var(--primary-600, #0284c7);
+  color: #ffffff;
+  border-color: var(--primary-600, #0284c7);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.action-icon-btn.delete {
+  color: #ef4444;
+  background-color: #fef2f2;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.action-icon-btn.delete:hover {
+  background-color: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+}

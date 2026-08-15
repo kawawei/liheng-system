@@ -1,121 +1,322 @@
-import React from 'react';
-import { TextIcon } from '../../components/icon/TextIcon';
-import { StatusBadge } from '../../components/status-badge/StatusBadge';
-
 /**
  * @file DashboardPage.tsx
- * @description 系統營運總覽儀表板 / Dashboard Overview Page
- * @description_en Key metrics, active project summary, and recent activity timeline
- * @description_zh 展示核心營運指標、進行中專案概況與即時動態時間軸
+ * @description 系統營運與研發儀表板 / Dashboard Overview & Analytics Page
+ * @description_en Comprehensive dashboard with KPI metrics, stage distribution donut chart, monthly income/expense trend bar chart, CRM sales pipeline funnel, and active projects health monitoring
+ * @description_zh 系統核心儀表板，展示營運指標、專案生命週期圓環圖、近半年月度收支趨勢圖、客戶轉換漏斗與專案進度健康度即時監控
  */
 
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { TextIcon } from '../../components/icon/TextIcon';
+import { StatusBadge } from '../../components/status-badge/StatusBadge';
+import { MOCK_PROJECTS } from '../../mock/projects.mock';
+import { INITIAL_CLIENTS_MOCK } from '../../mock/clients.mock';
+import './DashboardPage.css';
+
 export const DashboardPage: React.FC = () => {
+  // ========================================
+  // 專案階段數據統計 / Project Stage Stats
+  // ========================================
+  const stageCounts = {
+    development: MOCK_PROJECTS.filter((p) => p.stage === 'development').length,
+    testing: MOCK_PROJECTS.filter((p) => p.stage === 'testing').length,
+    delivery: MOCK_PROJECTS.filter((p) => p.stage === 'delivery').length,
+    maintenance: MOCK_PROJECTS.filter((p) => p.stage === 'maintenance').length,
+    closed: MOCK_PROJECTS.filter((p) => p.stage === 'closed').length
+  };
+  const totalProjects = MOCK_PROJECTS.length;
+
+  // ========================================
+  // 月度收支趨勢模擬數據 (近 6 個月) / Monthly Financial Trend
+  // ========================================
+  const monthlyFinancials = [
+    { month: '3月', income: 450000, expense: 120000 },
+    { month: '4月', income: 720000, expense: 210000 },
+    { month: '5月', income: 580000, expense: 160000 },
+    { month: '6月', income: 890000, expense: 280000 },
+    { month: '7月', income: 640000, expense: 190000 },
+    { month: '8月 (本月)', income: 1050000, expense: 320000 }
+  ];
+  const maxAmount = Math.max(...monthlyFinancials.map((d) => Math.max(d.income, d.expense)));
+
+  // ========================================
+  // CRM 客戶狀態漏斗數據 / CRM Funnel Stats
+  // ========================================
+  const totalClients = INITIAL_CLIENTS_MOCK.length;
+  const funnelStages = [
+    { label: '待洽談', count: INITIAL_CLIENTS_MOCK.filter((c) => c.status === 'pending').length, color: '#38bdf8' },
+    { label: '洽談中', count: INITIAL_CLIENTS_MOCK.filter((c) => c.status === 'negotiating').length, color: '#f59e0b' },
+    { label: '合作立案中', count: INITIAL_CLIENTS_MOCK.filter((c) => c.status === 'in_cooperation').length, color: '#0284c7' },
+    { label: '已交付上線', count: INITIAL_CLIENTS_MOCK.filter((c) => c.status === 'delivered').length, color: '#10b981' }
+  ];
+
   return (
-    <div>
+    <div className="dashboard-container">
+      {/* 頁面標頭 / Page Header */}
       <div className="page-header">
         <div>
-          <h1 className="page-title">
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <TextIcon name="dashboard" size="lg" />
-            <span>營運與研發總覽</span>
+            <span>儀表板</span>
           </h1>
-          <p className="page-subtitle">利恒軟體即時專案進度、客戶流轉與收支狀態</p>
+          <p className="page-subtitle">利恒軟體即時專案進度、財務收支分析與 CRM 客戶流轉漏斗</p>
         </div>
       </div>
 
-      {/* 統計卡片區域 / Stat Cards (整合組件庫與指標規範) */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
-          marginBottom: '24px'
-        }}
-      >
-        <caas-metric-card
-          title="進行中專案"
-          value="8 個"
-          trend="+2 個新立案"
-          trend-type="positive"
-          icon="Activity"
-        />
-        <caas-metric-card
-          title="本月活躍客戶"
-          value="14 家"
-          trend="追蹤中 5 家"
-          trend-type="positive"
-          icon="Users"
-        />
-        <caas-metric-card
-          title="待簽署合約"
-          value="3 份"
-          trend="NT$ 1,280,000"
-          trend-type="neutral"
-          icon="FileText"
-        />
-        <caas-metric-card
-          title="本月專案毛利率"
-          value="58.4%"
-          trend="毛利結構優良"
-          trend-type="positive"
-          icon="DollarSign"
-        />
+      {/* 4 大核心 KPI 指標卡 / Core KPI Cards */}
+      <div className="dashboard-kpi-grid">
+        <div className="card kpi-card">
+          <div className="kpi-icon-wrapper" style={{ backgroundColor: 'var(--primary-50)', color: 'var(--primary-600)' }}>
+            <TextIcon name="projects" size="lg" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>進行中專案</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+              {totalProjects} <span style={{ fontSize: '14px', fontWeight: 500 }}>個</span>
+            </div>
+            <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, marginTop: '2px' }}>
+              +1 本週新立案
+            </div>
+          </div>
+        </div>
+
+        <div className="card kpi-card">
+          <div className="kpi-icon-wrapper" style={{ backgroundColor: '#ecfdf5', color: '#059669' }}>
+            <TextIcon name="finance" size="lg" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>本月合約營收</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#059669', marginTop: '2px' }}>
+              NT$ 2,130,000
+            </div>
+            <div style={{ fontSize: '11px', color: '#059669', fontWeight: 600, marginTop: '2px' }}>
+              毛利率達 68.5%
+            </div>
+          </div>
+        </div>
+
+        <div className="card kpi-card">
+          <div className="kpi-icon-wrapper" style={{ backgroundColor: '#fef3c7', color: '#d97706' }}>
+            <TextIcon name="clock" size="lg" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>待收階段款項</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#d97706', marginTop: '2px' }}>
+              NT$ 735,000
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              2 筆即將請款
+            </div>
+          </div>
+        </div>
+
+        <div className="card kpi-card">
+          <div className="kpi-icon-wrapper" style={{ backgroundColor: '#f3e8ff', color: '#7c3aed' }}>
+            <TextIcon name="users" size="lg" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>活躍 CRM 客戶</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#7c3aed', marginTop: '2px' }}>
+              {totalClients} <span style={{ fontSize: '14px', fontWeight: 500 }}>家</span>
+            </div>
+            <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, marginTop: '2px' }}>
+              洽談轉化率 82%
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 進行中專案清單 / Active Projects Table */}
-      <div style={{ marginTop: '24px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>
-          重點專案管理動態
-        </h2>
+      {/* 圖表網格第一列：專案收支趨勢圖 ＋ 專案階段圓環分佈圖 */}
+      <div className="charts-grid-2">
+        {/* 近半年收支柱狀趨勢圖 / Monthly Income vs Expense Trend Chart */}
+        <div className="card chart-card">
+          <div className="chart-header">
+            <div className="chart-title">
+              <TextIcon name="finance" size="md" color="var(--primary-600)" />
+              <span>近半年專案收支與獲利趨勢 (NT$)</span>
+            </div>
+            <div className="chart-legend">
+              <div className="legend-item">
+                <span className="legend-dot" style={{ backgroundColor: '#0284c7' }} />
+                <span>專案收入</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-dot" style={{ backgroundColor: '#f43f5e' }} />
+                <span>專案支出成本</span>
+              </div>
+            </div>
+          </div>
 
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>專案案號</th>
-                <th>專案名稱</th>
-                <th>客戶名稱</th>
-                <th>當前階段</th>
-                <th>進度</th>
-                <th>健康狀態</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ fontFamily: 'var(--font-mono)' }}>PJ-20260814-0001</td>
-                <td style={{ fontWeight: 600 }}>利恒智慧工廠物聯網平台</td>
-                <td>台元半導體股份有限公司</td>
-                <td>開發中 (Development)</td>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--bg-muted)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: '65%', height: '100%', backgroundColor: 'var(--primary-600)' }} />
-                    </div>
-                    <span style={{ fontSize: '12px' }}>65%</span>
+          <div className="bar-chart-container">
+            {monthlyFinancials.map((item, idx) => {
+              const incomeHeight = (item.income / maxAmount) * 100;
+              const expenseHeight = (item.expense / maxAmount) * 100;
+              return (
+                <div key={idx} className="bar-group">
+                  <div className="bars-wrapper">
+                    <div
+                      className="bar-income"
+                      style={{ height: `${incomeHeight}%` }}
+                      title={`${item.month} 收入: NT$ ${item.income.toLocaleString()}`}
+                    />
+                    <div
+                      className="bar-expense"
+                      style={{ height: `${expenseHeight}%` }}
+                      title={`${item.month} 支出: NT$ ${item.expense.toLocaleString()}`}
+                    />
                   </div>
-                </td>
-                <td>
-                  <StatusBadge label="正常 (Healthy)" variant="success" icon="success" />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ fontFamily: 'var(--font-mono)' }}>PJ-20260812-0002</td>
-                <td style={{ fontWeight: 600 }}>金融交易風控 AI 引擎</td>
-                <td>國泰證券資訊處</td>
-                <td>測試驗收 (Testing)</td>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--bg-muted)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: '90%', height: '100%', backgroundColor: 'var(--primary-600)' }} />
-                    </div>
-                    <span style={{ fontSize: '12px' }}>90%</span>
+                  <span className="bar-label">{item.month}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 專案生命週期階段分佈圖 (Donut / Progress Chart) */}
+        <div className="card chart-card">
+          <div className="chart-header">
+            <div className="chart-title">
+              <TextIcon name="projects" size="md" color="var(--primary-600)" />
+              <span>專案生命週期 5 大階段分佈</span>
+            </div>
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              總計 {totalProjects} 案
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', flex: 1, justifyContent: 'center' }}>
+            {[
+              { label: '開發中 (Development)', count: stageCounts.development, color: '#0284c7' },
+              { label: '測試驗證 (Testing & QA)', count: stageCounts.testing, color: '#f59e0b' },
+              { label: '交付驗收 (Delivery)', count: stageCounts.delivery, color: '#8b5cf6' },
+              { label: '保固維護 (Maintenance)', count: stageCounts.maintenance, color: '#10b981' },
+              { label: '正式結案 (Closed)', count: stageCounts.closed, color: '#64748b' }
+            ].map((stage, idx) => {
+              const percent = totalProjects > 0 ? Math.round((stage.count / totalProjects) * 100) : 0;
+              return (
+                <div key={idx}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{stage.label}</span>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+                      {stage.count} 個 ({percent}%)
+                    </span>
                   </div>
-                </td>
-                <td>
-                  <StatusBadge label="警告 (Warning)" variant="warning" icon="warning" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <div style={{ height: '8px', backgroundColor: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${percent}%`,
+                        height: '100%',
+                        backgroundColor: stage.color,
+                        borderRadius: '4px',
+                        transition: 'width 0.4s ease'
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 圖表網格第二列：CRM 客戶轉化漏斗 ＋ 重點專案進度健康度監控 */}
+      <div className="charts-grid-2">
+        {/* CRM 客戶轉換漏斗 / Sales Pipeline Funnel */}
+        <div className="card chart-card">
+          <div className="chart-header">
+            <div className="chart-title">
+              <TextIcon name="users" size="md" color="var(--primary-600)" />
+              <span>CRM 商務客戶轉換流轉漏斗</span>
+            </div>
+            <Link to="/clients" style={{ fontSize: '13px', color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 500 }}>
+              前往客戶管理 →
+            </Link>
+          </div>
+
+          <div className="funnel-container">
+            {funnelStages.map((stage, idx) => {
+              const maxCount = Math.max(...funnelStages.map((s) => s.count), 1);
+              const widthPercent = Math.max((stage.count / maxCount) * 100, 15);
+              return (
+                <div key={idx} className="funnel-row">
+                  <div className="funnel-label">{stage.label}</div>
+                  <div className="funnel-bar-bg">
+                    <div
+                      className="funnel-bar-fill"
+                      style={{
+                        width: `${widthPercent}%`,
+                        backgroundColor: stage.color
+                      }}
+                    >
+                      {stage.count} 家
+                    </div>
+                  </div>
+                  <div className="funnel-count">
+                    {totalClients > 0 ? Math.round((stage.count / totalClients) * 100) : 0}%
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 重點專案健康度與工期即時動態 */}
+        <div className="card chart-card">
+          <div className="chart-header">
+            <div className="chart-title">
+              <TextIcon name="activity" size="md" color="var(--primary-600)" />
+              <span>重點研發專案進度與健康度</span>
+            </div>
+            <Link to="/projects" style={{ fontSize: '13px', color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 500 }}>
+              查看所有專案 →
+            </Link>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {MOCK_PROJECTS.slice(0, 3).map((p) => (
+              <div
+                key={p.id}
+                style={{
+                  padding: '12px 14px',
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>
+                      {p.name}
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>
+                      ({p.clientName})
+                    </span>
+                  </div>
+                  <StatusBadge
+                    label={p.healthStatus === 'healthy' ? '健康' : p.healthStatus === 'warning' ? '警告' : '嚴重'}
+                    variant={p.healthStatus === 'healthy' ? 'success' : p.healthStatus === 'warning' ? 'warning' : 'danger'}
+                  />
+                </div>
+
+                {/* 進度條 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ flex: 1, height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${p.progressPercent}%`,
+                        height: '100%',
+                        backgroundColor: p.healthStatus === 'healthy' ? '#0284c7' : '#f59e0b',
+                        borderRadius: '3px'
+                      }}
+                    />
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', width: '36px', textAlign: 'right' }}>
+                    {p.progressPercent}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
