@@ -17,7 +17,7 @@ import { MOCK_PROJECT_WBS } from '../../mock/wbs.mock';
  * @description_zh 專案核心工作台，提供階段下拉切換選單、工期時程動態指示、需求追加變更單與多階段付款清冊
  */
 
-type ProjectTab = 'milestones' | 'change_orders' | 'finance' | 'line_sync';
+type ProjectTab = 'milestones' | 'change_orders' | 'finance';
 
 export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +29,6 @@ export const ProjectDetailPage: React.FC = () => {
   const [currentStage, setCurrentStage] = useState<ProjectStage>(project.stage);
   const [progressPercent, setProgressPercent] = useState<number>(project.progressPercent);
   const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(project.changeOrders || []);
-
 
   const STAGE_OPTIONS: SelectOption[] = [
     { value: 'development', label: '開發中', iconName: 'layers' },
@@ -44,28 +43,6 @@ export const ProjectDetailPage: React.FC = () => {
   const [coTitle, setCoTitle] = useState('');
   const [coAmountUntaxed, setCoAmountUntaxed] = useState<string>('50000');
   const [coAddedDays, setCoAddedDays] = useState<string>('7');
-
-  // LINE 雙向即時訊息模擬狀態
-  const [lineMessages, setLineMessages] = useState<Array<{ sender: string; text: string; time: string; isBot?: boolean }>>([
-    { sender: `${project.clientName} - 負責人`, text: '請問系統目前測試與驗收進度如何？', time: '14:20' },
-    { sender: '系統 (LINE Bot)', text: '工程師已接獲需求，目前正在進行測試環境驗收。', time: '14:21', isBot: true }
-  ]);
-  const [inputMsg, setInputMsg] = useState('');
-
-  const handleSendLine = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMsg.trim()) return;
-
-    setLineMessages((prev) => [
-      ...prev,
-      {
-        sender: '利恒後台 (工程師)',
-        text: inputMsg,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
-    ]);
-    setInputMsg('');
-  };
 
   // 新增變更單處理
   const handleAddChangeOrder = (e: React.FormEvent) => {
@@ -107,11 +84,10 @@ export const ProjectDetailPage: React.FC = () => {
 
   const finalAmountTotal = (project.amountTotal || 0) + totalApprovedCoAmount;
 
-  const tabsConfig: Array<{ key: ProjectTab; label: string; icon: 'layers' | 'contracts' | 'finance' | 'message' }> = [
+  const tabsConfig: Array<{ key: ProjectTab; label: string; icon: 'layers' | 'contracts' | 'finance' }> = [
     { key: 'milestones', label: '里程碑進度', icon: 'layers' },
     { key: 'change_orders', label: `需求變更單 (${changeOrders.length})`, icon: 'contracts' },
-    { key: 'finance', label: '多階段付款與收支', icon: 'finance' },
-    { key: 'line_sync', label: 'LINE 雙向動態與 AI', icon: 'message' }
+    { key: 'finance', label: '多階段付款與收支', icon: 'finance' }
   ];
 
   return (
@@ -419,52 +395,6 @@ export const ProjectDetailPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Tab 6: LINE 雙向動態與 AI */}
-        {currentTab === 'line_sync' && (
-          <div>
-            <div className="card-header">
-              <h2 className="card-title">LINE 專案群組即時對話與雙向推播</h2>
-            </div>
-            <div
-              style={{
-                height: '240px',
-                overflowY: 'auto',
-                padding: '16px',
-                backgroundColor: 'var(--bg-app)',
-                borderRadius: '6px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                marginBottom: '16px'
-              }}
-            >
-              {lineMessages.map((m, idx) => (
-                <div key={idx} style={{ padding: '10px 14px', backgroundColor: '#fff', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: 600, color: m.isBot ? 'var(--primary-600)' : 'var(--text-primary)' }}>{m.sender}</span>
-                    <span>{m.time}</span>
-                  </div>
-                  <div style={{ fontSize: '14px' }}>{m.text}</div>
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={handleSendLine} style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="輸入要推播至客戶 LINE 群組的訊息..."
-                value={inputMsg}
-                onChange={(e) => setInputMsg(e.target.value)}
-              />
-              <button type="submit" className="btn btn-primary" style={{ flexShrink: 0 }}>
-                <TextIcon name="send" size="sm" />
-                <span>發送至 LINE 群</span>
-              </button>
-            </form>
           </div>
         )}
       </div>
