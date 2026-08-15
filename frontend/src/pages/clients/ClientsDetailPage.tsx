@@ -6,13 +6,14 @@ import { TextField } from '../../components/input/TextField';
 import { SelectField, SelectOption } from '../../components/input/SelectField';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { HorizontalTimeline } from '../../components/crm/HorizontalTimeline';
+import { AddLogModal } from '../../components/crm/AddLogModal';
 import './ClientsDetailPage.css';
 
 /**
  * @file ClientsDetailPage.tsx
  * @description 客戶詳情與編輯獨立頁面 / CRM Client Detail Page
- * @description_en Full-width client detail view with larger icon ratio (size md 20px) for save & delete toolbar buttons
- * @description_zh 獨立客戶詳情頁面，放大頂欄純 Icon 儲存與刪除按鈕圖示比例 (size md 20px)，提高視覺辨識度
+ * @description_en Full-width client detail view with Add Log button integrated into tab navigation bar right side
+ * @description_zh 獨立客戶詳情頁面，將「新增紀錄」按鈕整合於頁籤列右側，並彈出精致寬度之紀錄對話框
  */
 
 interface ClientsDetailPageProps {
@@ -21,14 +22,6 @@ interface ClientsDetailPageProps {
   onUpdateClient: (updatedClient: Client) => void;
   onDeleteClient: (clientId: string) => void;
 }
-
-const LOG_TYPE_OPTIONS: SelectOption[] = [
-  { value: 'line', label: 'LINE 訊息', iconName: 'message' },
-  { value: 'phone', label: '電話溝通', iconName: 'phone' },
-  { value: 'fb', label: 'FB 私訊', iconName: 'fb' },
-  { value: 'ig', label: 'IG 訊息', iconName: 'ig' },
-  { value: 'threads', label: 'Threads 互動', iconName: 'threads' }
-];
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: 'pending', label: '待洽談' },
@@ -46,6 +39,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
   onDeleteClient
 }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'timeline'>('info');
+  const [isAddLogModalOpen, setIsAddLogModalOpen] = useState(false);
 
   // 客戶狀態與基本資料 Local State / Client state
   const [status, setStatus] = useState<ClientStatus>(client.status);
@@ -62,8 +56,6 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // 聯繫歷史紀錄 State / Interaction log state
-  const [logType, setLogType] = useState<'line' | 'phone' | 'fb' | 'ig' | 'threads'>('line');
-  const [logSummary, setLogSummary] = useState('');
   const [logs, setLogs] = useState<InteractionLog[]>(client.logs || []);
 
   // 保存客戶基本資料與狀態修改 / Save handler
@@ -115,23 +107,19 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
     onUpdateClient(updatedClient);
   };
 
-  // 新增聯繫紀錄 / Add interaction log
-  const handleAddLogSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!logSummary.trim()) return;
-
+  // 彈窗新增聯繫紀錄 Submit / Add log handler
+  const handleAddLogModalSubmit = (type: InteractionLog['type'], summary: string) => {
     const newLog: InteractionLog = {
       id: `log_${Date.now()}`,
       clientId: client.id,
       date: new Date().toLocaleString('zh-TW', { hour12: false }).replace(/\//g, '-'),
-      type: logType,
-      summary: logSummary.trim(),
+      type,
+      summary,
       createdByName: '系統管理員'
     };
 
     const updatedLogs = [newLog, ...logs];
     setLogs(updatedLogs);
-    setLogSummary('');
 
     onUpdateClient({
       ...client,
@@ -190,7 +178,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             />
           </div>
 
-          {/* 2. 大比例 Icon 儲存修改按鈕 (size md 20px) */}
+          {/* 2. 大比例 Icon 儲存修改按鈕 */}
           <Button
             type="submit"
             form="client-edit-form"
@@ -201,7 +189,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             <TextIcon name="file-check" size="md" />
           </Button>
 
-          {/* 3. 大比例 Icon 刪除客戶按鈕 (size md 20px) */}
+          {/* 3. 大比例 Icon 刪除客戶按鈕 */}
           <Button
             variant="danger"
             title="刪除客戶"
@@ -224,25 +212,37 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
         </div>
       </div>
 
-      {/* 頁籤分頁導覽 / Tabs Navigation */}
+      {/* 頁籤分頁導覽 (左側為 Tab 頁籤，右側為 [+ 新增紀錄] 按鈕) / Tabs & Action Bar */}
       <div className="client-tabs-nav">
-        <button
-          type="button"
-          className={`tab-item-btn ${activeTab === 'info' ? 'active' : ''}`}
-          onClick={() => setActiveTab('info')}
-        >
-          <TextIcon name="user" size="sm" />
-          <span>客戶基本資料與需求編輯</span>
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className={`tab-item-btn ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            <TextIcon name="user" size="sm" />
+            <span>客戶基本資料與需求編輯</span>
+          </button>
 
-        <button
-          type="button"
-          className={`tab-item-btn ${activeTab === 'timeline' ? 'active' : ''}`}
-          onClick={() => setActiveTab('timeline')}
+          <button
+            type="button"
+            className={`tab-item-btn ${activeTab === 'timeline' ? 'active' : ''}`}
+            onClick={() => setActiveTab('timeline')}
+          >
+            <TextIcon name="clock" size="sm" />
+            <span>聯繫歷史時間軸 ({logs.length})</span>
+          </button>
+        </div>
+
+        {/* 移動到頁籤同一排右側的 [+ 新增紀錄] 按鈕 */}
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setIsAddLogModalOpen(true)}
         >
-          <TextIcon name="clock" size="sm" />
-          <span>聯繫歷史時間軸 ({logs.length})</span>
-        </button>
+          <TextIcon name="plus" size="sm" />
+          <span>新增紀錄</span>
+        </Button>
       </div>
 
       {/* Tab 1: 客戶基本資料與需求編輯 */}
@@ -355,47 +355,16 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
       {/* Tab 2: 橫向時間軸 (平均 5 欄寬度、5 筆分頁翻頁) / Horizontal Timeline */}
       {activeTab === 'timeline' && (
         <div style={{ width: '100%' }}>
-          {/* 新增聯繫紀錄表單 */}
-          <div style={{ background: '#ffffff', padding: '20px', borderRadius: '12px', marginBottom: '24px', border: '1px solid #e2e8f0' }}>
-            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#0f172a' }}>
-              <TextIcon name="plus" size="sm" />
-              <span>新增聯繫 / 拜訪紀錄 (支援 FB, IG, Threads, LINE, 電話)</span>
-            </div>
-            <form onSubmit={handleAddLogSubmit}>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                <SelectField
-                  options={LOG_TYPE_OPTIONS}
-                  value={logType}
-                  onChange={(v) => setLogType(v as any)}
-                  style={{ width: '160px' }}
-                />
-                <input
-                  type="text"
-                  className="form-input"
-                  style={{ flex: 1 }}
-                  placeholder="輸入聯繫紀要重點..."
-                  value={logSummary}
-                  onChange={(e) => setLogSummary(e.target.value)}
-                />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  disabled={!logSummary.trim()}
-                >
-                  <TextIcon name="plus" size="sm" />
-                  <span>新增紀錄</span>
-                </Button>
-              </div>
-            </form>
-          </div>
-
-          {/* 橫向時間軸 (平均分配 5 欄寬度、超過 5 筆分頁) */}
           <HorizontalTimeline logs={logs} />
         </div>
       )}
+
+      {/* 新增聯繫紀錄對話框 / Add Log Modal */}
+      <AddLogModal
+        isOpen={isAddLogModalOpen}
+        onClose={() => setIsAddLogModalOpen(false)}
+        onSubmit={handleAddLogModalSubmit}
+      />
     </div>
   );
 };

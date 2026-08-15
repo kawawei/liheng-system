@@ -1,0 +1,15 @@
+/**
+ * @file AddLogModal.css
+ * @description 新增聯繫紀錄彈窗樣式 / Add Log Modal Styles
+ * @description_en Styles for adding contact interaction log modal dialog
+ * @description_zh 新增聯繫歷史紀錄彈窗對話框樣式
+ */
+
+.add-log-modal-card {
+  width: 520px;
+  max-width: 90vw;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
