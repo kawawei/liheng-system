@@ -11,8 +11,8 @@ import './ClientsDetailPage.css';
 /**
  * @file ClientsDetailPage.tsx
  * @description 客戶詳情與編輯獨立頁面 / CRM Client Detail Page
- * @description_en Full-width client detail view without card container constraint, featuring 5-column average horizontal timeline with pagination
- * @description_zh 獨立客戶詳情頁面，移除左擠卡片外框，提供滿版表單排版與平均分配 5 欄寬度之橫向時間軸 (超過 5 筆自動分頁)
+ * @description_en Full-width client detail view with top-right navigation actions (Status, Delete, Back)
+ * @description_zh 獨立客戶詳情頁面，頂欄右側整合狀態選單、刪除與返回列表按鈕，移除系統類型下方晶片標籤
  */
 
 interface ClientsDetailPageProps {
@@ -37,15 +37,6 @@ const STATUS_OPTIONS: SelectOption[] = [
   { value: 'in_cooperation', label: '合作中' },
   { value: 'delivered', label: '已交付' },
   { value: 'lost', label: '未成交' }
-];
-
-const PRESET_SYSTEM_TYPES = [
-  'Web 管理系統',
-  'iOS / Android App',
-  'POS 軟硬體整合',
-  'E-Commerce 電商平台',
-  'IoT 物聯網監控',
-  '其他專案'
 ];
 
 export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
@@ -151,14 +142,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
 
   return (
     <div style={{ width: '100%' }}>
-      {/* 返回與標頭區域 / Navigation & Header */}
-      <div style={{ marginBottom: '16px' }}>
-        <Button variant="secondary" size="sm" onClick={onBack}>
-          <TextIcon name="arrow-left" size="sm" />
-          <span>返回客戶列表</span>
-        </Button>
-      </div>
-
+      {/* 標頭區域 (整合狀態切換、刪除與右側返回按鈕) / Header Section */}
       <div className="client-detail-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -194,18 +178,19 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* 客戶狀態切換器 / Status Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* 1. 客戶狀態切換器 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>客戶狀態:</span>
             <SelectField
               options={STATUS_OPTIONS}
               value={status}
               onChange={handleStatusChange}
-              style={{ width: '140px' }}
+              style={{ width: '130px' }}
             />
           </div>
 
+          {/* 2. 刪除客戶按鈕 */}
           <Button
             variant="danger"
             onClick={() => {
@@ -217,6 +202,12 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           >
             <TextIcon name="trash" size="sm" />
             <span>刪除客戶</span>
+          </Button>
+
+          {/* 3. 返回客戶列表按鈕 (移動至刪除按鈕右側) */}
+          <Button variant="secondary" onClick={onBack}>
+            <TextIcon name="arrow-left" size="sm" />
+            <span>返回客戶列表</span>
           </Button>
         </div>
       </div>
@@ -242,7 +233,7 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
         </button>
       </div>
 
-      {/* Tab 1: 客戶基本資料與需求編輯 (無硬包卡片，彈性直鋪全寬) */}
+      {/* Tab 1: 客戶基本資料與需求編輯 */}
       {activeTab === 'info' && (
         <div style={{ width: '100%', background: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
           <form onSubmit={handleSaveInfo} noValidate>
@@ -325,29 +316,14 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
               onChange={(e) => setAddress(e.target.value)}
             />
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="system-type-edit">預計開發系統類型 (選填)</label>
-              <input
-                id="system-type-edit"
-                type="text"
-                className="form-input"
-                value={systemType}
-                placeholder="可點選下方標籤或自行輸入"
-                onChange={(e) => setSystemType(e.target.value)}
-              />
-              <div className="system-type-chips">
-                {PRESET_SYSTEM_TYPES.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    className={`chip-btn ${systemType === t ? 'active' : ''}`}
-                    onClick={() => setSystemType(t)}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* 預計開發系統類型 (單純純文字輸入，下方不留選單 chips) */}
+            <TextField
+              id="system-type-edit"
+              label="預計開發系統類型 (選填)"
+              value={systemType}
+              placeholder="例如：IoT 物聯網監控、Web 管理系統、App 等..."
+              onChange={(e) => setSystemType(e.target.value)}
+            />
 
             <div className="form-group">
               <label className="form-label" htmlFor="req-summary-edit">客戶需求概要 / 專案構想 (選填)</label>

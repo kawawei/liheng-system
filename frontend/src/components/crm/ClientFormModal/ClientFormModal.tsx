@@ -17,15 +17,6 @@ interface ClientFormModalProps {
   onSubmit: (client: Client) => void;
 }
 
-const PRESET_SYSTEM_TYPES = [
-  'Web 管理系統',
-  'iOS / Android App',
-  'POS 軟硬體整合',
-  'E-Commerce 電商平台',
-  'IoT 物聯網監控',
-  '其他專案'
-];
-
 export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   isOpen,
   onClose,
@@ -206,30 +197,14 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
             onChange={(e) => setAddress(e.target.value)}
           />
 
-          {/* 5. 需求系統類型與概要 */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="system-type">預計開發系統類型 (選填)</label>
-            <input
-              id="system-type"
-              type="text"
-              className="form-input"
-              value={systemType}
-              placeholder="可點選下方標籤或自行輸入"
-              onChange={(e) => setSystemType(e.target.value)}
-            />
-            <div className="system-type-chips">
-              {PRESET_SYSTEM_TYPES.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`chip-btn ${systemType === t ? 'active' : ''}`}
-                  onClick={() => setSystemType(t)}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* 5. 預計開發系統類型與概要 */}
+          <TextField
+            id="system-type"
+            label="預計開發系統類型 (選填)"
+            value={systemType}
+            placeholder="例如：IoT 物聯網監控、Web 管理系統、App 等..."
+            onChange={(e) => setSystemType(e.target.value)}
+          />
 
           <div className="form-group">
             <label className="form-label" htmlFor="req-summary">客戶需求概要 / 專案構想 (選填)</label>
