@@ -234,10 +234,9 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
           </button>
         </div>
 
-        {/* 移動到頁籤同一排右側的 [+ 新增紀錄] 按鈕 */}
+        {/* 移動到頁籤同一排右側的 [+ 新增紀錄] 按鈕 (與返回客戶列表按鈕尺寸相同) */}
         <Button
           variant="primary"
-          size="sm"
           onClick={() => setIsAddLogModalOpen(true)}
         >
           <TextIcon name="plus" size="sm" />
