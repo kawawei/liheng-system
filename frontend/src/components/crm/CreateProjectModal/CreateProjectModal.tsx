@@ -261,8 +261,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </div>
             </div>
 
-            {/* 開工日期 (DatePicker) & 預估工期天數輸入 */}
-            <div className="create-project-grid-2">
+            {/* 開工日期 (DatePicker) & 預估工期天數輸入 & 預計交付結案日 (3欄並排) */}
+            <div className="create-project-grid-3">
               <div className="create-project-field-group">
                 <label className="create-project-field-label">立案開工日期</label>
                 <DatePicker
@@ -284,17 +284,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   required
                 />
               </div>
-            </div>
-
-            {/* 預計交付結案日 (根據工期自動計算) */}
-            <div className="create-project-field-group">
-              <label className="create-project-field-label">預計交付結案日 (根據開工日與工期自動推算)</label>
-              <input
-                type="text"
-                className="create-project-field-input"
-                value={`${expectedDeliveryDate} (共 ${durationDays} 天)`}
-                disabled
-              />
+              <div className="create-project-field-group">
+                <label className="create-project-field-label">預計交付結案日 (自動推算)</label>
+                <input
+                  type="text"
+                  className="create-project-field-input"
+                  value={`${expectedDeliveryDate} (共 ${durationDays} 天)`}
+                  disabled
+                />
+              </div>
             </div>
 
             {/* 負責工程師 (Select 多選核取) 與 初始階段 (Select 單選) */}
