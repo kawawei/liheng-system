@@ -1,0 +1,66 @@
+/**
+ * @file ClientFormModal.css
+ * @description 新增客戶彈窗樣式 / Client Form Modal Styles
+ * @description_en Styles for full client creation dialog and grid inputs
+ * @description_zh 定義新增客戶彈窗、雙欄網格與系統類型快捷標籤樣式
+ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.system-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.chip-btn {
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chip-btn:hover {
+  border-color: var(--primary-color, #2563eb);
+  color: var(--primary-color, #2563eb);
+}
+
+.chip-btn.active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: var(--primary-color, #2563eb);
+  color: var(--primary-color, #2563eb);
+  font-weight: 600;
+}
