@@ -5,13 +5,14 @@ import { Button } from '../../components/button/Button';
 import { TextField } from '../../components/input/TextField';
 import { SelectField, SelectOption } from '../../components/input/SelectField';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
+import { HorizontalTimeline } from '../../components/crm/HorizontalTimeline';
 import './ClientsDetailPage.css';
 
 /**
  * @file ClientsDetailPage.tsx
  * @description 客戶詳情與編輯獨立頁面 / CRM Client Detail Page
- * @description_en Full page view for editing client info, changing status, and managing interaction logs (FB, IG, Threads, LINE, Phone)
- * @description_zh 獨立客戶詳情頁面，支援修改基本資料、動態切換客戶狀態，並以 FB/IG/Threads/LINE/電話 紀錄聯繫歷史時間軸
+ * @description_en Full-width client detail view without card container constraint, featuring 5-column average horizontal timeline with pagination
+ * @description_zh 獨立客戶詳情頁面，移除左擠卡片外框，提供滿版表單排版與平均分配 5 欄寬度之橫向時間軸 (超過 5 筆自動分頁)
  */
 
 interface ClientsDetailPageProps {
@@ -148,24 +149,8 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
     });
   };
 
-  const getLogTypeTag = (type: InteractionLog['type']) => {
-    switch (type) {
-      case 'fb':
-        return { label: 'FB 私訊', className: 'meeting', iconName: 'fb' as const };
-      case 'ig':
-        return { label: 'IG 訊息', className: 'email', iconName: 'ig' as const };
-      case 'threads':
-        return { label: 'Threads 互動', className: 'note', iconName: 'threads' as const };
-      case 'phone':
-        return { label: '電話溝通', className: 'phone', iconName: 'phone' as const };
-      case 'line':
-      default:
-        return { label: 'LINE 訊息', className: 'line', iconName: 'message' as const };
-    }
-  };
-
   return (
-    <div>
+    <div style={{ width: '100%' }}>
       {/* 返回與標頭區域 / Navigation & Header */}
       <div style={{ marginBottom: '16px' }}>
         <Button variant="secondary" size="sm" onClick={onBack}>
@@ -257,9 +242,9 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
         </button>
       </div>
 
-      {/* Tab 1: 客戶基本資料與需求編輯 / Edit Client Info */}
+      {/* Tab 1: 客戶基本資料與需求編輯 (無硬包卡片，彈性直鋪全寬) */}
       {activeTab === 'info' && (
-        <div className="card" style={{ maxWidth: '800px' }}>
+        <div style={{ width: '100%', background: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
           <form onSubmit={handleSaveInfo} noValidate>
             <TextField
               id="client-name-edit"
@@ -387,12 +372,12 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
         </div>
       )}
 
-      {/* Tab 2: 聯繫歷史時間軸 (LINE, 電話, FB, IG, Threads) / Interaction History */}
+      {/* Tab 2: 橫向時間軸 (平均 5 欄寬度、5 筆分頁翻頁) / Horizontal Timeline */}
       {activeTab === 'timeline' && (
-        <div style={{ maxWidth: '800px' }}>
+        <div style={{ width: '100%' }}>
           {/* 新增聯繫紀錄表單 */}
-          <div className="card" style={{ marginBottom: '24px', background: '#f8fafc' }}>
-            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ background: '#ffffff', padding: '20px', borderRadius: '12px', marginBottom: '24px', border: '1px solid #e2e8f0' }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#0f172a' }}>
               <TextIcon name="plus" size="sm" />
               <span>新增聯繫 / 拜訪紀錄 (支援 FB, IG, Threads, LINE, 電話)</span>
             </div>
@@ -427,40 +412,8 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             </form>
           </div>
 
-          {/* 垂直時間軸 */}
-          <div className="card">
-            <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', marginBottom: '16px' }}>
-              聯繫歷史時間軸 ({logs.length})
-            </div>
-
-            {logs.length === 0 ? (
-              <div style={{ color: 'var(--text-secondary)', fontSize: '14px', padding: '30px 0', textAlign: 'center' }}>
-                尚無聯繫紀錄，歡迎於上方追加紀錄。
-              </div>
-            ) : (
-              <div className="timeline-container">
-                {logs.map((log) => {
-                  const tagInfo = getLogTypeTag(log.type);
-                  return (
-                    <div key={log.id} className="timeline-item">
-                      <div className={`timeline-dot ${tagInfo.className}`} />
-                      <div className="timeline-content">
-                        <div className="timeline-header">
-                          <span className="timeline-type-tag">
-                            <TextIcon name={tagInfo.iconName} size="sm" />
-                            <span>{tagInfo.label}</span>
-                          </span>
-                          <span className="timeline-date">{log.date}</span>
-                        </div>
-                        <div className="timeline-summary">{log.summary}</div>
-                        <div className="timeline-author">記錄人: {log.createdByName}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* 橫向時間軸 (平均分配 5 欄寬度、超過 5 筆分頁) */}
+          <HorizontalTimeline logs={logs} />
         </div>
       )}
     </div>

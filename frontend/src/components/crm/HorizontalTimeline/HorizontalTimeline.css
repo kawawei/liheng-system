@@ -1,0 +1,147 @@
+/**
+ * @file HorizontalTimeline.css
+ * @description 橫向時間軸組件樣式 / Horizontal Timeline Component Styles
+ * @description_en Styles for 5-column average width horizontal timeline with pagination
+ * @description_zh 定義平均分配 5 欄寬度之橫向時間軸、貫穿軸線、節點卡片與分頁導覽樣式
+ */
+
+.horizontal-timeline-wrapper {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.horizontal-timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.timeline-track-container {
+  position: relative;
+  padding: 20px 0 10px 0;
+  margin-bottom: 10px;
+}
+
+/* 水平貫穿線 */
+.timeline-track-line {
+  position: absolute;
+  top: 36px;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  background-color: #cbd5e1;
+  z-index: 1;
+}
+
+/* 5 欄平分網格 */
+.horizontal-timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.horizontal-timeline-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.node-dot-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 3px solid #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.horizontal-timeline-node:hover .node-dot-wrapper {
+  transform: scale(1.15);
+}
+
+.node-dot-wrapper.phone { border-color: #0284c7; color: #0284c7; }
+.node-dot-wrapper.line { border-color: #16a34a; color: #16a34a; }
+.node-dot-wrapper.fb { border-color: #2563eb; color: #2563eb; }
+.node-dot-wrapper.ig { border-color: #e1306c; color: #e1306c; }
+.node-dot-wrapper.threads { border-color: #000000; color: #000000; }
+
+.node-card {
+  width: 100%;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.horizontal-timeline-node:hover .node-card {
+  border-color: #94a3b8;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.node-type-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.node-date {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  font-family: var(--font-mono, monospace);
+  margin-bottom: 6px;
+}
+
+.node-summary {
+  font-size: 12px;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-author {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* 翻頁控制項 */
+.timeline-pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-indicator {
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  font-family: var(--font-mono, monospace);
+}
