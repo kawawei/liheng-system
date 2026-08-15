@@ -128,7 +128,7 @@ export const ProjectsPage: React.FC = () => {
               <th>專案總額</th>
               <th>專案進度</th>
               <th>健康狀態</th>
-              <th>指派工程師</th>
+              <th>負責人</th>
               <th>操作</th>
             </tr>
           </thead>

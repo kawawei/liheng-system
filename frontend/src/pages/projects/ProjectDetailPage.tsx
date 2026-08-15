@@ -129,7 +129,7 @@ export const ProjectDetailPage: React.FC = () => {
             <span>{project.name}</span>
           </h1>
           <p className="page-subtitle">
-            案號：{project.projectCode} ｜ 客戶：{project.clientName} ｜ 負責工程師：{project.assignedEngineers.join(', ')}
+            案號：{project.projectCode} ｜ 客戶：{project.clientName} ｜ 負責人：{project.assignedEngineers.join(', ')}
           </p>
         </div>
 

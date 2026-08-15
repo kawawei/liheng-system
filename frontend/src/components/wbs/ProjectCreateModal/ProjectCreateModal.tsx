@@ -296,8 +296,8 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               </div>
               <div className="project-form-col" style={{ flex: 1 }}>
                 <TextField
-                  label="指派工程師"
-                  placeholder="工程師姓名 (以逗點分隔)"
+                  label="專案負責人"
+                  placeholder="負責人姓名 (以逗點分隔)"
                   value={assignedEngineers}
                   onChange={(e) => setAssignedEngineers(e.target.value)}
                 />
