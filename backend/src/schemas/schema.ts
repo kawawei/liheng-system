@@ -124,3 +124,6 @@ export type ProjectRecord = typeof projects.$inferSelect;
 export type NewProjectRecord = typeof projects.$inferInsert;
 export type ProjectWbsRecord = typeof projectWbs.$inferSelect;
 export type NewProjectWbsRecord = typeof projectWbs.$inferInsert;
+
+export * from './kb.schema';
+

@@ -13,7 +13,9 @@ import { userController } from './controllers/user.controller';
 import { clientController } from './controllers/client.controller';
 import { projectController } from './controllers/project.controller';
 import { healthController } from './controllers/health.controller';
+import { kbController, uploadMiddleware } from './controllers/kb.controller';
 import { authenticateToken, requireSuperAdmin } from './middlewares/auth.middleware';
+
 import { errorHandler } from './middlewares/error.middleware';
 import { initDatabaseAndSeed } from './utils/seed';
 
@@ -72,7 +74,16 @@ apiRouter.get('/projects/:id/wbs', authenticateToken, (req, res, next) => projec
 apiRouter.put('/projects/:id/wbs', authenticateToken, (req, res, next) => projectController.saveWbsNodes(req, res, next));
 apiRouter.post('/projects/:id/change-orders', authenticateToken, (req, res, next) => projectController.addChangeOrder(req, res, next));
 
+// 6. 知識庫管理與檢索 / Knowledge Base Module
+apiRouter.post('/kb/documents', authenticateToken, uploadMiddleware.single('file'), (req, res, next) => kbController.uploadDocument(req, res, next));
+apiRouter.get('/kb/documents', authenticateToken, (req, res, next) => kbController.getDocuments(req, res, next));
+apiRouter.get('/kb/documents/:id', authenticateToken, (req, res, next) => kbController.getDocumentById(req, res, next));
+apiRouter.get('/kb/documents/:id/chunks', authenticateToken, (req, res, next) => kbController.getDocumentChunks(req, res, next));
+apiRouter.delete('/kb/documents/:id', authenticateToken, requireSuperAdmin, (req, res, next) => kbController.deleteDocument(req, res, next));
+apiRouter.post('/kb/search', authenticateToken, (req, res, next) => kbController.searchChunks(req, res, next));
+
 app.use('/api/v1', apiRouter);
+
 
 // ========================================
 // 404 與全局錯誤攔截 / Error Handling

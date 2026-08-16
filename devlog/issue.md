@@ -98,3 +98,25 @@ YYYY-MM-DD HH:MM — [問題標題]
 - 實機檢視客戶列表、專案立案彈窗與客戶詳情頁，所有樣式與排版皆精確對齊。
 
 紀錄時間：00:04
+
+### 2026-08-16 13:28 — [根目錄 tsconfig.json Project References 與 Vite noEmit 衝突診斷修復]
+
+**問題描述**
+- 場景：IDE 於根目錄 `tsconfig.json` 提示診斷錯誤。
+- 錯誤訊息：
+  - `參考的專案 '/Users/kawa_wei/Desktop/code-mac.nosync/liheng-system/frontend' 之設定 "composite" 必須為 true。`
+  - `參考的專案 '/Users/kawa_wei/Desktop/code-mac.nosync/liheng-system/frontend' 不得停用發出。`
+
+**原因分析**
+- 根目錄 `tsconfig.json` 原先配置了 `"references": [{ "path": "./frontend" }, { "path": "./backend" }]`。在 TypeScript Project References 機制下，被參照的專案必須具備 `"composite": true` 且禁止設定 `"noEmit": true`。
+- `frontend` 為 Vite 專案（由 Vite 負責打包與發出產物，TypeScript 只負責 `noEmit` 類型檢查），導致 IDE 的 TypeScript Language Server 拋出衝突錯誤。
+
+**解決方案**
+- 調整根目錄 `tsconfig.json`，移除不需要的 Project References，作為 Monorepo Workspace 通用基底配置，前後端各自維持獨立的 TypeScript 建構與類型檢查設定。
+
+**驗證結果**
+- `pnpm --filter backend build` 與 `pnpm --filter frontend build` 均 100% 成功建構無錯誤。
+- IDE 診斷問題徹底消除。
+
+紀錄時間：13:28
+

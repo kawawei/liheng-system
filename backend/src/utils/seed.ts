@@ -128,6 +128,40 @@ export async function initDatabaseAndSeed(): Promise<void> {
       );
     `);
 
+    // 7. 建立 kb_documents 知識庫文檔主表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kb_documents (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        original_name VARCHAR(255) NOT NULL,
+        file_type VARCHAR(50) NOT NULL,
+        file_size INTEGER NOT NULL DEFAULT 0,
+        file_path VARCHAR(500) NOT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        error_message TEXT,
+        chunk_count INTEGER NOT NULL DEFAULT 0,
+        metadata JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMPTZ
+      );
+    `);
+
+    // 8. 建立 kb_chunks 知識庫切片分塊表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kb_chunks (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        document_id UUID NOT NULL REFERENCES kb_documents(id) ON DELETE CASCADE,
+        chunk_index INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        token_count INTEGER NOT NULL DEFAULT 0,
+        metadata JSONB DEFAULT '{}'::jsonb,
+        embedding vector(1536),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+
     // ========================================
     // 預設管理者與工程師帳號種子 (僅供登入使用)
     // ========================================

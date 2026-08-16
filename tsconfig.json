@@ -5,9 +5,5 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "baseUrl": "."
-  },
-  "references": [
-    { "path": "./frontend" },
-    { "path": "./backend" }
-  ]
+  }
 }
