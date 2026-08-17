@@ -309,7 +309,7 @@ export const ProjectDetailPage: React.FC = () => {
               <h2 className="card-title" style={{ margin: 0 }}>需求追加與變更單管理 (Change Orders)</h2>
               <Button variant="primary" size="sm" onClick={() => setIsAddCoOpen(!isAddCoOpen)}>
                 <TextIcon name="plus" size="sm" />
-                <span>+ 新增需求變更單</span>
+                <span>新增需求變更單</span>
               </Button>
             </div>
 

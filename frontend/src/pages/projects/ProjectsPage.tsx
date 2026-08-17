@@ -116,7 +116,7 @@ export const ProjectsPage: React.FC = () => {
           onClick={() => setIsCreateModalOpen(true)}
         >
           <TextIcon name="plus" size="md" />
-          <span>+ 新增專案 (簽約立案)</span>
+          <span>新增專案 (簽約立案)</span>
         </Button>
       </div>
 
