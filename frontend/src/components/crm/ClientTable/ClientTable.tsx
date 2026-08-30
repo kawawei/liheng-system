@@ -88,11 +88,26 @@ export const ClientTable: React.FC<ClientTableProps> = ({
 
                 {/* 3. 聯絡人 */}
                 <td>
-                  <div>{c.contactPerson}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <TextIcon name="phone" size="sm" />
-                    <span>{c.contactPhone}</span>
-                  </div>
+                  <div style={{ fontWeight: 500 }}>{c.contactPerson}</div>
+                  {c.contactPhone && (
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                      <TextIcon name="phone" size="sm" />
+                      <span>{c.contactPhone}</span>
+                    </div>
+                  )}
+                  {(c.lineName || c.lineId) && (
+                    <div style={{ fontSize: '12px', color: '#059669', fontFamily: 'var(--font-mono)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '11px', background: '#ecfdf5', padding: '1px 4px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>LINE</span>
+                      <span>
+                        {c.lineName && c.lineId
+                          ? `${c.lineName} (${c.lineId})`
+                          : c.lineName || c.lineId}
+                      </span>
+                    </div>
+                  )}
+                  {!c.contactPhone && !c.lineName && !c.lineId && (
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>-</div>
+                  )}
                 </td>
 
                 {/* 4. 公司名稱 / 統編 */}

@@ -59,7 +59,9 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
   const [status, setStatus] = useState<ClientStatus>(client.status);
   const [name, setName] = useState(client.name);
   const [contactPerson, setContactPerson] = useState(client.contactPerson);
-  const [contactPhone, setContactPhone] = useState(client.contactPhone);
+  const [contactPhone, setContactPhone] = useState(client.contactPhone || '');
+  const [lineName, setLineName] = useState(client.lineName || '');
+  const [lineId, setLineId] = useState(client.lineId || '');
   const [companyName, setCompanyName] = useState(client.companyName || '');
   const [taxId, setTaxId] = useState(client.taxId || '');
   const [companyPhone, setCompanyPhone] = useState(client.companyPhone || '');
@@ -98,7 +100,6 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
     const errs: { [key: string]: string } = {};
     if (!name.trim()) errs.name = '請輸入客戶名稱';
     if (!contactPerson.trim()) errs.contactPerson = '請輸入聯絡人姓名';
-    if (!contactPhone.trim()) errs.contactPhone = '請輸入聯絡人電話';
 
     if (taxId.trim() && !/^\d{8}$/.test(taxId.trim())) {
       errs.taxId = '統一編號必須為 8 位數字';
@@ -127,7 +128,9 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
       status,
       name: name.trim(),
       contactPerson: contactPerson.trim(),
-      contactPhone: contactPhone.trim(),
+      contactPhone: contactPhone.trim() || undefined,
+      lineName: lineName.trim() || undefined,
+      lineId: lineId.trim() || undefined,
       companyName: companyName.trim(),
       taxId: taxId.trim(),
       companyPhone: companyPhone.trim(),
@@ -324,12 +327,25 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
                 error={errors.contactPerson}
               />
               <TextField
-                label="行動電話"
-                required
+                label="行動電話 (選填)"
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
                 placeholder="例如: 0912-345-678"
-                error={errors.contactPhone}
+              />
+            </div>
+
+            <div className="form-grid-2" style={{ marginTop: '12px' }}>
+              <TextField
+                label="LINE 名稱 (選填)"
+                value={lineName}
+                onChange={(e) => setLineName(e.target.value)}
+                placeholder="例如: 小陳 (顯示名稱 / 暱稱)"
+              />
+              <TextField
+                label="LINE ID (選填)"
+                value={lineId}
+                onChange={(e) => setLineId(e.target.value)}
+                placeholder="例如: chen_12345"
               />
             </div>
 

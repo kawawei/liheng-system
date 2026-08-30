@@ -14,7 +14,9 @@ interface BackendClient {
   companyName?: string | null;
   taxId?: string | null;
   contactPerson: string;
-  contactPhone: string;
+  contactPhone?: string | null;
+  lineName?: string | null;
+  lineId?: string | null;
   companyPhone?: string | null;
   email?: string | null;
   address?: string | null;
@@ -48,7 +50,9 @@ function adaptClient(c: BackendClient): Client {
     companyName: c.companyName || undefined,
     taxId: c.taxId || undefined,
     contactPerson: c.contactPerson,
-    contactPhone: c.contactPhone,
+    contactPhone: c.contactPhone || undefined,
+    lineName: c.lineName || undefined,
+    lineId: c.lineId || undefined,
     companyPhone: c.companyPhone || undefined,
     email: c.email || undefined,
     address: c.address || undefined,
@@ -99,7 +103,9 @@ export const clientService = {
       companyName: data.companyName || null,
       taxId: data.taxId || null,
       contactPerson: data.contactPerson,
-      contactPhone: data.contactPhone,
+      contactPhone: data.contactPhone || null,
+      lineName: data.lineName || null,
+      lineId: data.lineId || null,
       companyPhone: data.companyPhone || null,
       email: data.email || null,
       address: data.address || null,
@@ -120,6 +126,8 @@ export const clientService = {
       taxId: data.taxId,
       contactPerson: data.contactPerson,
       contactPhone: data.contactPhone,
+      lineName: data.lineName,
+      lineId: data.lineId,
       companyPhone: data.companyPhone,
       email: data.email,
       address: data.address,

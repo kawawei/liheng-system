@@ -53,7 +53,9 @@ export interface Client {
   companyName?: string;
   taxId?: string;
   contactPerson: string;
-  contactPhone: string;
+  contactPhone?: string;
+  lineName?: string;
+  lineId?: string;
   companyPhone?: string;
   email?: string;
   address?: string;

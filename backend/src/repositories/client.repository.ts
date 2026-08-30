@@ -28,6 +28,8 @@ export class ClientRepository {
           ilike(clients.companyName, searchPattern),
           ilike(clients.contactPerson, searchPattern),
           ilike(clients.contactPhone, searchPattern),
+          ilike(clients.lineName, searchPattern),
+          ilike(clients.lineId, searchPattern),
           ilike(clients.taxId, searchPattern),
           ilike(clients.systemType, searchPattern)
         )!

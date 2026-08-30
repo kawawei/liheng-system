@@ -1,8 +1,8 @@
 /**
  * @file ClientsPage.tsx
  * @description CRM 客戶關係管理頁面 / CRM Clients Management Page
- * @description_en Page level container handling client list, creation modal, project initiation modal, deletion, and full-page client detail editing via backend API
- * @description_zh 頁面級容器，負責客戶列表、多專案膠囊展示、新增客戶、為客戶正式立案與導頁至 ClientsDetailPage 獨立詳情頁 (串接真實 API 與 @kawawei/frontend-modules 消息組件)
+ * @description_en Page level container handling client list, full-page creation, project initiation modal, deletion, and full-page client detail editing via backend API
+ * @description_zh 頁面級容器，負責客戶列表、多專案膠囊展示、全頁面新增客戶 (ClientCreatePage)、為客戶正式立案與導頁至 ClientsDetailPage 獨立詳情頁
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -11,15 +11,16 @@ import { message } from '@kawawei/frontend-modules';
 import { TextIcon } from '../../components/icon/TextIcon';
 import { Button } from '../../components/button/Button';
 import { Client, Project } from '../../types';
-import { ClientTable, ClientFormModal, CreateProjectModal } from '../../components/crm';
+import { ClientTable, CreateProjectModal } from '../../components/crm';
 import { ClientsDetailPage } from './ClientsDetailPage';
+import { ClientCreatePage } from './ClientCreatePage';
 import { clientService } from '../../services/client.service';
 import { projectService } from '../../services/project.service';
 import './ClientsPage.css';
 
 export const ClientsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [initiatingClient, setInitiatingClient] = useState<Client | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
@@ -59,24 +60,12 @@ export const ClientsPage: React.FC = () => {
       (c.companyName && c.companyName.toLowerCase().includes(q)) ||
       (c.contactPerson && c.contactPerson.toLowerCase().includes(q)) ||
       (c.contactPhone && c.contactPhone.toLowerCase().includes(q)) ||
+      (c.lineName && c.lineName.toLowerCase().includes(q)) ||
+      (c.lineId && c.lineId.toLowerCase().includes(q)) ||
       (c.taxId && c.taxId.toLowerCase().includes(q)) ||
       (c.systemType && c.systemType.toLowerCase().includes(q));
     return matchesStatus && matchesSearch;
   });
-
-  // ========================================
-  // 新增客戶處理 (API) / Create Client Handler
-  // ========================================
-  const handleCreateClient = async (newClientData: Client) => {
-    try {
-      await clientService.createClient(newClientData);
-      message.success('客戶建檔成功');
-      setShowModal(false);
-      await fetchClients();
-    } catch (err: any) {
-      message.error(err.response?.data?.message || '新增客戶失敗');
-    }
-  };
 
   // ========================================
   // 刪除客戶處理 (API 軟刪除) / Delete Client Handler
@@ -130,7 +119,20 @@ export const ClientsPage: React.FC = () => {
     }
   };
 
-  // 若處於編輯狀態，則以全頁面渲染 ClientsDetailPage
+  // 1. 若處於全頁面新增客戶狀態，渲染 ClientCreatePage
+  if (isCreating) {
+    return (
+      <ClientCreatePage
+        onBack={() => setIsCreating(false)}
+        onClientCreated={() => {
+          setIsCreating(false);
+          fetchClients();
+        }}
+      />
+    );
+  }
+
+  // 2. 若處於編輯狀態，則以全頁面渲染 ClientsDetailPage
   if (editingClient) {
     return (
       <ClientsDetailPage
@@ -155,7 +157,7 @@ export const ClientsPage: React.FC = () => {
 
         <Button
           variant="primary"
-          onClick={() => setShowModal(true)}
+          onClick={() => setIsCreating(true)}
         >
           <TextIcon name="plus" size="sm" />
           <span>新增客戶</span>
@@ -216,7 +218,7 @@ export const ClientsPage: React.FC = () => {
             <input
               type="text"
               className="form-input input-with-icon"
-              placeholder="搜尋客戶名稱、聯絡人、電話..."
+              placeholder="搜尋客戶名稱、聯絡人、電話、LINE..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ paddingLeft: '38px', height: '38px', fontSize: '14px' }}
@@ -238,13 +240,6 @@ export const ClientsPage: React.FC = () => {
           onInitiateProject={(c) => setInitiatingClient(c)}
         />
       )}
-
-      {/* 新增客戶彈窗組件 */}
-      <ClientFormModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onSubmit={handleCreateClient}
-      />
 
       {/* 為客戶轉正式專案立案彈窗組件 */}
       <CreateProjectModal

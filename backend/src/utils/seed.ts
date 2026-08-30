@@ -44,7 +44,9 @@ export async function initDatabaseAndSeed(): Promise<void> {
         company_name VARCHAR(100),
         tax_id VARCHAR(20),
         contact_person VARCHAR(50) NOT NULL,
-        contact_phone VARCHAR(30) NOT NULL,
+        contact_phone VARCHAR(30),
+        line_name VARCHAR(100),
+        line_id VARCHAR(100),
         company_phone VARCHAR(30),
         email VARCHAR(100),
         address VARCHAR(200),
@@ -55,6 +57,9 @@ export async function initDatabaseAndSeed(): Promise<void> {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         deleted_at TIMESTAMPTZ
       );
+      ALTER TABLE clients ALTER COLUMN contact_phone DROP NOT NULL;
+      ALTER TABLE clients ADD COLUMN IF NOT EXISTS line_name VARCHAR(100);
+      ALTER TABLE clients ADD COLUMN IF NOT EXISTS line_id VARCHAR(100);
     `);
 
     // 4. 建立 client_activity_logs 資料表
