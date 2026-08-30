@@ -120,3 +120,24 @@ YYYY-MM-DD HH:MM — [問題標題]
 
 紀錄時間：13:28
 
+### 2026-08-30 17:47 — [生產環境 Node.js ESM 執行期 ERR_MODULE_NOT_FOUND 模組解析問題排查與修復]
+
+**問題描述**
+- 場景：生產環境後端 Docker 容器啟動後進入 unhealthy 狀態，重啟失敗。
+- 錯誤訊息：`Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/backend/dist/controllers/auth.controller' imported from /app/backend/dist/index.js`。
+
+**原因分析**
+- 後端 `package.json` 聲明了 `"type": "module"`（原生 ES Modules 模式）。Node.js 原生執行編譯產物 `dist/index.js` 時，嚴格要求相對路徑 import 語句必須包含 `.js` 副檔名（例如 `import ... from './controllers/auth.controller.js'`）。
+- 由於 TypeScript 源碼中採用標準無副檔名導入，編譯後的 `dist/index.js` 保留了無副檔名形式，導致原生 `node dist/index.js` 載入失敗。
+
+**解決方案**
+- 將後端 `package.json` 中的 `tsx` 執行引擎移至 `dependencies` 生產依賴中。
+- 將 `npm start` 調整為 `tsx src/index.ts`，並相應優化 `docker/server/Dockerfile.backend`，直接透過 tsx 進行統一的 ESM 模組路徑解析與執行。
+
+**驗證結果**
+- 後端容器 `liheng-system-backend` 順利啟動，健康檢查即刻轉為 `healthy`。
+- 登入端點 `POST /api/v1/auth/login` 與客戶管理端點 `GET /api/v1/clients` 測試全部 100% 回應正常。
+
+紀錄時間：17:47
+
+
