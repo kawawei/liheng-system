@@ -62,12 +62,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '4px',
-        padding: '2px 8px',
+        gap: '5px',
+        padding: '3px 10px',
         borderRadius: 'var(--radius-full)',
-        fontSize: '12px',
-        fontWeight: 500,
+        fontSize: '13px',
+        fontWeight: 600,
         border: '1px solid transparent',
+        whiteSpace: 'nowrap',
         ...getStyle()
       }}
     >
