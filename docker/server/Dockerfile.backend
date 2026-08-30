@@ -2,46 +2,21 @@
 # 利恒系統 後端生產環境 Dockerfile
 # Liheng System Backend Server Production Dockerfile
 # ========================================
-
-# 階段 1: 編譯構建 / Build Stage
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# 安裝 pnpm
-RUN npm install -g pnpm@9
-
-# 複製專案設定與依賴檔
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
-COPY backend/package.json backend/tsconfig.json ./backend/
-
-# 安裝後端依賴
-RUN pnpm --filter backend install --frozen-lockfile || pnpm --filter backend install
-
-# 複製後端原始碼
-COPY backend/ ./backend/
-
-# 執行 TypeScript 編譯
-RUN pnpm --filter backend build
-
-# 階段 2: 生產運行 / Production Runtime
-FROM node:20-alpine AS runner
+FROM node:20-alpine
 
 WORKDIR /app/backend
 
 ENV NODE_ENV=production
 
-# 安裝 pnpm 與 wget/curl (用於 Healthcheck)
+# 安裝 pnpm 與 wget/curl
 RUN npm install -g pnpm@9 && apk add --no-cache wget curl
 
-# 複製 package.json
-COPY backend/package.json ./
+# 複製專案依賴檔與後端原始碼
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+COPY backend/ ./
 
-# 安裝生產依賴
-RUN pnpm install --prod
-
-# 從 builder 複製編譯後的 JavaScript 代碼
-COPY --from=builder /app/backend/dist ./dist
+# 安裝後端依賴 (包含 tsx 執行期)
+RUN pnpm install
 
 # 建立上傳與日誌目錄
 RUN mkdir -p uploads logs
@@ -49,7 +24,7 @@ RUN mkdir -p uploads logs
 EXPOSE 8080
 
 # 健康檢查
-HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/v1/health || exit 1
 
-CMD ["node", "dist/index.js"]
+CMD ["pnpm", "start"]
