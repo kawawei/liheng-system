@@ -1,8 +1,8 @@
 /**
  * @file ClientsPage.tsx
  * @description CRM 客戶關係管理頁面 / CRM Clients Management Page
- * @description_en Page level container handling client list, full-page creation, project initiation modal, deletion, and full-page client detail editing via backend API
- * @description_zh 頁面級容器，負責客戶列表、多專案膠囊展示、全頁面新增客戶 (ClientCreatePage)、為客戶正式立案與導頁至 ClientsDetailPage 獨立詳情頁
+ * @description_en Page level container handling client list, unified full-page creation & detail editing via ClientsDetailPage, project initiation, and deletion
+ * @description_zh 頁面級容器，負責客戶列表、多專案膠囊展示、統一全頁面新增與詳情編輯 (ClientsDetailPage)、為客戶正式立案與刪除
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -13,7 +13,6 @@ import { Button } from '../../components/button/Button';
 import { Client, Project } from '../../types';
 import { ClientTable, CreateProjectModal } from '../../components/crm';
 import { ClientsDetailPage } from './ClientsDetailPage';
-import { ClientCreatePage } from './ClientCreatePage';
 import { clientService } from '../../services/client.service';
 import { projectService } from '../../services/project.service';
 import './ClientsPage.css';
@@ -90,14 +89,8 @@ export const ClientsPage: React.FC = () => {
   // 更新客戶資料與狀態 / Update Client Handler
   // ========================================
   const handleUpdateClient = async (updatedClient: Client) => {
-    try {
-      await clientService.updateClient(updatedClient.id, updatedClient);
-      message.success('客戶資料已更新');
-      setEditingClient(updatedClient);
-      await fetchClients();
-    } catch (err: any) {
-      message.error(err.response?.data?.message || '更新客戶資料失敗');
-    }
+    setEditingClient(updatedClient);
+    await fetchClients();
   };
 
   // ========================================
@@ -119,13 +112,15 @@ export const ClientsPage: React.FC = () => {
     }
   };
 
-  // 1. 若處於全頁面新增客戶狀態，渲染 ClientCreatePage
+  // 1. 若處於新增客戶狀態，統一渲染 ClientsDetailPage
   if (isCreating) {
     return (
-      <ClientCreatePage
+      <ClientsDetailPage
+        client={null}
         onBack={() => setIsCreating(false)}
-        onClientCreated={() => {
+        onUpdateClient={(created) => {
           setIsCreating(false);
+          setEditingClient(created);
           fetchClients();
         }}
       />
