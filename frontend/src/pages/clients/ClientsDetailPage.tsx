@@ -193,14 +193,59 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
 
   return (
     <div className="client-detail-page">
-      {/* 頂部導覽列 / Top Action Header */}
+      {/* 頂部客戶標題列 / Top Client Title Header */}
       <div className="client-detail-header">
         <div className="client-detail-title-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <h1 className="client-detail-title" style={{ margin: 0 }}>{name || '客戶詳情'}</h1>
           <StatusBadge label={currentStatusInfo.label} variant={currentStatusInfo.variant} />
         </div>
+      </div>
 
-        <div className="client-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'nowrap' }}>
+      {/* 頁籤切換導航與右側操作列 / Tab Navigation & Right Actions */}
+      <div className="client-tabs-nav">
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            type="button"
+            className={`tab-item-btn ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            <TextIcon name="building" size="sm" />
+            <span>基本資料與需求編輯</span>
+          </button>
+          <button
+            type="button"
+            className={`tab-item-btn ${activeTab === 'timeline' ? 'active' : ''}`}
+            onClick={() => setActiveTab('timeline')}
+          >
+            <TextIcon name="clock" size="sm" />
+            <span>聯繫歷史</span>
+          </button>
+          <button
+            type="button"
+            className={`tab-item-btn ${activeTab === 'projects' ? 'active' : ''}`}
+            onClick={() => setActiveTab('projects')}
+          >
+            <TextIcon name="projects" size="sm" />
+            <span>名下關聯專案 ({projects.length})</span>
+          </button>
+        </div>
+
+        {/* 頁籤右側操作群組 (狀態下拉選單、新增紀錄、儲存修改、返回列表) */}
+        <div className="client-tabs-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'nowrap' }}>
+          {/* 僅在聯繫歷史頁籤時顯示 [+ 新增紀錄] 按鈕 */}
+          {activeTab === 'timeline' && (
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => setIsAddLogModalOpen(true)}
+              style={{ height: '36px', display: 'flex', alignItems: 'center', gap: '6px', padding: '0 14px' }}
+            >
+              <TextIcon name="plus" size="sm" />
+              <span>新增紀錄</span>
+            </Button>
+          )}
+
           {/* 客戶階段下拉選單 */}
           <div className="header-status-select-wrapper" style={{ width: '130px' }}>
             <SelectField
@@ -231,50 +276,6 @@ export const ClientsDetailPage: React.FC<ClientsDetailPageProps> = ({
             <span>返回列表</span>
           </Button>
         </div>
-      </div>
-
-      {/* 頁籤切換導航 / Tab Navigation */}
-      <div className="client-tabs-nav">
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
-            className={`tab-item-btn ${activeTab === 'info' ? 'active' : ''}`}
-            onClick={() => setActiveTab('info')}
-          >
-            <TextIcon name="building" size="sm" />
-            <span>基本資料與需求編輯</span>
-          </button>
-          <button
-            type="button"
-            className={`tab-item-btn ${activeTab === 'timeline' ? 'active' : ''}`}
-            onClick={() => setActiveTab('timeline')}
-          >
-            <TextIcon name="clock" size="sm" />
-            <span>聯繫歷史</span>
-          </button>
-          <button
-            type="button"
-            className={`tab-item-btn ${activeTab === 'projects' ? 'active' : ''}`}
-            onClick={() => setActiveTab('projects')}
-          >
-            <TextIcon name="projects" size="sm" />
-            <span>名下關聯專案 ({projects.length})</span>
-          </button>
-        </div>
-
-        {/* 僅在聯繫歷史頁籤時顯示 [+ 新增紀錄] 按鈕 */}
-        {activeTab === 'timeline' && (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => setIsAddLogModalOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '4px' }}
-          >
-            <TextIcon name="plus" size="sm" />
-            <span>新增紀錄</span>
-          </Button>
-        )}
       </div>
 
       {/* Tab 內容區塊 / Tab Content */}
