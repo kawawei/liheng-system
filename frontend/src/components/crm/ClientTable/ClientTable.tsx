@@ -147,13 +147,13 @@ export const ClientTable: React.FC<ClientTableProps> = ({
 
                 {/* 9. 操作按鈕 (立案 / 編輯 / 刪除) */}
                 <td style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="primary"
                       size="sm"
                       title="為此客戶建立正式專案 (立案)"
                       onClick={() => onInitiateProject(c)}
-                      style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                      style={{ height: '34px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                     >
                       <TextIcon name="plus" size="sm" />
                       <span style={{ fontSize: '13.5px', fontWeight: 600, letterSpacing: '0.5px' }}>立案</span>
@@ -163,18 +163,18 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       size="sm"
                       title="編輯客戶資料"
                       onClick={() => onEditClient(c)}
-                      style={{ padding: '6px 9px' }}
+                      style={{ width: '34px', height: '34px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                      <TextIcon name="edit" size="sm" />
+                      <TextIcon name="edit" size="md" />
                     </Button>
                     <Button
                       variant="danger"
                       size="sm"
                       title="刪除客戶"
                       onClick={() => onDeleteClient(c.id, c.name)}
-                      style={{ padding: '6px 9px' }}
+                      style={{ width: '34px', height: '34px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                      <TextIcon name="trash" size="sm" />
+                      <TextIcon name="trash" size="md" />
                     </Button>
                   </div>
                 </td>
