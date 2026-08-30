@@ -1,0 +1,46 @@
+# ========================================
+# 利恒系統 前端生產環境 Dockerfile
+# Liheng System Frontend Server Production Dockerfile
+# ========================================
+
+# 階段 1: 編譯構建 / Build Stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# 安裝 pnpm
+RUN npm install -g pnpm@9
+
+# 複製專案設定與依賴檔
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+COPY frontend/package.json ./frontend/
+
+# 安裝前端依賴
+RUN pnpm --filter frontend install --frozen-lockfile || pnpm --filter frontend install
+
+# 複製前端原始碼
+COPY frontend/ ./frontend/
+
+# 接收建置參數
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
+# 執行生產建置
+RUN pnpm --filter frontend build
+
+# 階段 2: Nginx 靜態伺服 / Runtime Stage
+FROM nginx:alpine AS runner
+
+# 複製 Nginx 配置
+COPY docker/server/nginx.conf /etc/nginx/conf.d/default.conf
+
+# 複製建置產物
+COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+# 健康檢查
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]
