@@ -39,6 +39,11 @@ import {
   UserCog,
   Shield,
   BookOpen,
+  Bug,
+  Ticket,
+  Video,
+  Image as ImageIcon,
+  Paperclip,
   LucideIcon
 } from 'lucide-react';
 
@@ -89,7 +94,12 @@ export type IconName =
   | 'edit'
   | 'save'
   | 'book'
-  | 'knowledge';
+  | 'knowledge'
+  | 'bug'
+  | 'ticket'
+  | 'video'
+  | 'image'
+  | 'attachment';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -141,7 +151,12 @@ const iconMap: Record<IconName, LucideIcon> = {
   threads: AtSign,
   trash: Trash2,
   edit: Pencil,
-  save: Save
+  save: Save,
+  bug: Bug,
+  ticket: Ticket,
+  video: Video,
+  image: ImageIcon,
+  attachment: Paperclip
 };
 
 const sizeMap: Record<IconSize, number> = {

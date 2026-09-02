@@ -166,6 +166,71 @@ export async function initDatabaseAndSeed(): Promise<void> {
       );
     `);
 
+    // 9. 擴充 users 支援 client_id 欄位
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS client_id UUID REFERENCES clients(id) ON DELETE SET NULL;
+    `);
+
+    // 10. 建立 issues 問題工單主表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS issues (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        issue_no VARCHAR(50) NOT NULL UNIQUE,
+        project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+        client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+        created_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        created_by_name VARCHAR(100) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        category VARCHAR(50) NOT NULL DEFAULT 'BUG',
+        severity VARCHAR(30) NOT NULL DEFAULT 'MEDIUM',
+        status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+        description TEXT NOT NULL,
+        environment_info JSONB DEFAULT '{}'::jsonb,
+        assigned_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        assigned_user_name VARCHAR(100),
+        fixed_in_version VARCHAR(50),
+        resolution_summary TEXT,
+        resolved_at TIMESTAMPTZ,
+        closed_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMPTZ
+      );
+    `);
+
+    // 11. 建立 issue_attachments 媒體附件表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS issue_attachments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        issue_id UUID REFERENCES issues(id) ON DELETE CASCADE,
+        file_name VARCHAR(255) NOT NULL,
+        file_path VARCHAR(500) NOT NULL,
+        file_type VARCHAR(30) NOT NULL DEFAULT 'image',
+        mime_type VARCHAR(100) NOT NULL,
+        file_size INTEGER NOT NULL DEFAULT 0,
+        uploaded_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        uploaded_by_name VARCHAR(100),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 12. 建立 issue_comments 對話留言表
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS issue_comments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        issue_id UUID NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        author_name VARCHAR(100) NOT NULL,
+        author_role VARCHAR(30) NOT NULL DEFAULT 'client',
+        content TEXT NOT NULL,
+        attachments JSONB DEFAULT '[]'::jsonb,
+        is_internal BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMPTZ
+      );
+    `);
+
 
     // ========================================
     // 預設管理者與工程師帳號種子 (僅供登入使用)

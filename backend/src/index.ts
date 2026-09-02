@@ -13,7 +13,9 @@ import { userController } from './controllers/user.controller';
 import { clientController } from './controllers/client.controller';
 import { projectController } from './controllers/project.controller';
 import { healthController } from './controllers/health.controller';
+import path from 'path';
 import { kbController, uploadMiddleware } from './controllers/kb.controller';
+import { issueController, issueUploadMiddleware } from './controllers/issue.controller';
 import { authenticateToken, requireSuperAdmin } from './middlewares/auth.middleware';
 
 import { errorHandler } from './middlewares/error.middleware';
@@ -33,6 +35,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// 靜態資源目錄 (圖片、影片、上傳附件)
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
 // ========================================
 // 路由註冊 (RESTful API /api/v1) / Routes
@@ -81,6 +86,16 @@ apiRouter.get('/kb/documents/:id', authenticateToken, (req, res, next) => kbCont
 apiRouter.get('/kb/documents/:id/chunks', authenticateToken, (req, res, next) => kbController.getDocumentChunks(req, res, next));
 apiRouter.delete('/kb/documents/:id', authenticateToken, requireSuperAdmin, (req, res, next) => kbController.deleteDocument(req, res, next));
 apiRouter.post('/kb/search', authenticateToken, (req, res, next) => kbController.searchChunks(req, res, next));
+
+// 7. 問題工單與修復追蹤 / Issues Module
+apiRouter.get('/issues', authenticateToken, (req, res, next) => issueController.getIssues(req, res, next));
+apiRouter.get('/issues/:id', authenticateToken, (req, res, next) => issueController.getIssueById(req, res, next));
+apiRouter.post('/issues', authenticateToken, (req, res, next) => issueController.createIssue(req, res, next));
+apiRouter.put('/issues/:id', authenticateToken, (req, res, next) => issueController.updateIssue(req, res, next));
+apiRouter.patch('/issues/:id/status', authenticateToken, (req, res, next) => issueController.updateStatus(req, res, next));
+apiRouter.post('/issues/:id/comments', authenticateToken, (req, res, next) => issueController.addComment(req, res, next));
+apiRouter.delete('/issues/:id', authenticateToken, (req, res, next) => issueController.deleteIssue(req, res, next));
+apiRouter.post('/issues/upload', authenticateToken, issueUploadMiddleware.single('file'), (req, res, next) => issueController.uploadMedia(req, res, next));
 
 app.use('/api/v1', apiRouter);
 

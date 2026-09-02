@@ -16,7 +16,8 @@ export const users = pgTable('users', {
   username: varchar('username', { length: 50 }).notNull().unique(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   realName: varchar('real_name', { length: 50 }).notNull(),
-  role: varchar('role', { length: 20 }).notNull().default('engineer'), // 'super_admin' | 'engineer'
+  role: varchar('role', { length: 20 }).notNull().default('engineer'), // 'super_admin' | 'engineer' | 'client'
+  clientId: uuid('client_id').references(() => clients.id, { onDelete: 'set null' }),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -128,4 +129,5 @@ export type ProjectWbsRecord = typeof projectWbs.$inferSelect;
 export type NewProjectWbsRecord = typeof projectWbs.$inferInsert;
 
 export * from './kb.schema';
+export * from './issue.schema';
 

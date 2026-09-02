@@ -26,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard', label: '儀表板', icon: 'dashboard', roles: ['super_admin', 'engineer'] },
   { to: '/clients', label: '客戶管理 (CRM)', icon: 'users', roles: ['super_admin', 'engineer'] },
   { to: '/projects', label: '專案管理 (WBS)', icon: 'projects', roles: ['super_admin', 'engineer'] },
+  { to: '/issues', label: '問題追蹤 (Issues)', icon: 'bug', roles: ['super_admin', 'engineer', 'client'] },
   { to: '/finance', label: '財務收支', icon: 'finance', roles: ['super_admin'] },
   { to: '/search', label: '知識庫', icon: 'knowledge', roles: ['super_admin', 'engineer'] },
   { to: '/accounts', label: '帳號管理', icon: 'user-cog', roles: ['super_admin'] }

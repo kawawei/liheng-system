@@ -5,7 +5,9 @@
  * @description_zh 定義使用者、角色、CRM客戶、合約報價、專案管理與財務收支等型別介面
  */
 
-export type UserRole = 'super_admin' | 'engineer';
+export type UserRole = 'super_admin' | 'engineer' | 'client';
+
+export * from './issue.types';
 
 export interface UserProfile {
   id: string;

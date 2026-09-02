@@ -9,6 +9,7 @@ import { ProjectDetailPage } from './pages/projects/ProjectDetailPage';
 import { FinancePage } from './pages/finance/FinancePage';
 import { AccountsPage } from './pages/accounts/AccountsPage';
 import { SearchPage } from './pages/search/SearchPage';
+import { IssuesPage } from './pages/issues/IssuesPage';
 import { useAuth } from './hooks/useAuth';
 
 /**
@@ -45,6 +46,7 @@ export const App: React.FC = () => {
           <Route path="clients" element={<ClientsPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/:id" element={<ProjectDetailPage />} />
+          <Route path="issues" element={<IssuesPage />} />
           <Route path="finance" element={<FinancePage />} />
           <Route path="accounts" element={<AccountsPage />} />
           <Route path="search" element={<SearchPage />} />
