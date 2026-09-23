@@ -8,3 +8,5 @@ dist
 .env*
 !frontend/package.json
 !frontend/.npmrc
+!frontend/dist
+!frontend/dist/**

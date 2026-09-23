@@ -29,6 +29,29 @@ YYYY-MM-DD HH:MM — [問題標題]
 
 ## 問題紀錄列表 (Issues List)
 
+### 2026-09-23 15:30 — [前端 Nginx 容器 IPv6 健康檢查失敗與純裝配 .dockerignore 排除修復]
+
+**問題描述**
+- 場景 1：43 伺服器上前台容器 `liheng-system-frontend` 啟動後持續顯示 `Up (unhealthy)`。
+  - 錯誤訊息：`Connecting to localhost ([::1]:80) wget: can't connect to remote host: Connection refused`。
+- 場景 2：本地切換為「本機原生算力 + 容器純裝配」模式建置前端映像檔時報錯。
+  - 錯誤訊息：`ERROR: failed to solve: failed to compute cache key: "/frontend/dist": not found`。
+
+**原因分析**
+- 原因 1：Alpine 映像檔內之 `wget` 預設優先將 `localhost` 解析為 IPv6 位址 `[::1]:80`，而 `nginx.conf` 僅配置了 `listen 80;`（僅監聽 IPv4），導致內部健康檢查請求被 Connection refused。
+- 原因 2：根目錄之 `.dockerignore` 預設配置了 `**/dist`，造成本地透過 Mac 原生編譯產出的 `frontend/dist` 在 Build Context 傳遞時被忽略。
+
+**解決方案**
+- 方案 1：在 `docker/server/nginx.conf` 中增加 `listen [::]:80;` 同時支援 IPv4 與 IPv6 監聽，並將 healthcheck 改為直接指定 `http://127.0.0.1/health`。
+- 方案 2：在 `.dockerignore` 中針對前端靜態目錄增加白名單放行規則 `!frontend/dist` 與 `!frontend/dist/**`。
+
+**驗證結果**
+- 本地 `docker build` 純裝配映像檔順利讀取 `frontend/dist`，3 秒極速建置完成。
+- 43 測試伺服器上 `liheng-system-frontend` 容器順利轉為 `Up (healthy)`。
+- 外部執行 `curl -I http://127.0.0.1:84/health` 回傳 `HTTP/1.1 200 OK`。
+
+紀錄時間：15:30
+
 ### 2026-08-14 20:08 — [修復 React 19 與 @kawawei/frontend-modules 版本不吻合 Error: Incompatible React versions]
 
 **問題描述**

@@ -47,11 +47,11 @@ services:
   # ========================================
   backend:
     container_name: ${PROJECT_NAME:-liheng-system}-backend
-    build:
-      context: ../../
-      dockerfile: docker/server/Dockerfile.backend
+    image: liheng-system-backend:latest
     ports:
       - "${BACKEND_PORT:-8084}:8080"
+    env_file:
+      - ../../env/server/.env
     environment:
       - NODE_ENV=production
       - PORT=8080
@@ -74,7 +74,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/api/v1/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/api/v1/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -86,11 +86,7 @@ services:
   # ========================================
   frontend:
     container_name: ${PROJECT_NAME:-liheng-system}-frontend
-    build:
-      context: ../../
-      dockerfile: docker/server/Dockerfile.frontend
-      args:
-        - VITE_API_URL=${VITE_API_URL}
+    image: liheng-system-frontend:latest
     ports:
       - "${FRONTEND_PORT:-84}:80"
     environment:
@@ -99,7 +95,7 @@ services:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 3
